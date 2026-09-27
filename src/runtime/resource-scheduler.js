@@ -241,6 +241,12 @@ export function buildSchedulerDiagnostics({
       lastCompletionAtMs: completedTimes.length ? Math.max(...completedTimes) : null
     },
     waits: {
+      averageQueueAgeMs: average(
+        schedulerTelemetry.map((item) => item.queueAgeMs ?? 0)
+      ),
+      maxQueueAgeMs: schedulerTelemetry.length
+        ? Math.max(...schedulerTelemetry.map((item) => item.queueAgeMs ?? 0))
+        : 0,
       averageResourceWaitMs: average(
         schedulerTelemetry.map((item) => item.resourceWaitMs ?? 0)
       ),

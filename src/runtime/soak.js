@@ -595,11 +595,7 @@ export async function runDeterministicMediaSoak({
     .filter(([, scenario]) => scenario === "cancel_during_render")
     .map(([jobId]) => jobId);
   for (const jobId of cancelDuringJobs) {
-    const running = harness.exchange({
-      contractVersion: "media.job.v1",
-      action: "resume_or_poll",
-      jobId
-    });
+    const running = runtime.runAcceptedJob(jobId);
     await executor.waitStarted(jobId);
     await harness.exchange({
       contractVersion: "media.job.v1",
