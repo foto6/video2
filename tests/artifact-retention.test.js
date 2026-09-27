@@ -204,12 +204,11 @@ test("succeeded live job persists path-free retention metadata and restart prese
 });
 
 test("planner deduplicates references and blocks job, checkpoint, release and reconciliation reachability",()=>{
-  const bytes="planner-record\n";
-  const a=orphanRecord("gc/a.bin","a",bytes);
-  const b=orphanRecord("gc/b.bin","b",bytes);
-  const c=orphanRecord("gc/c.bin","c",bytes);
-  const d=orphanRecord("gc/d.bin","d",bytes);
-  const e=orphanRecord("gc/e.bin","e",bytes);
+  const a=orphanRecord("gc/a.bin","a","planner-a\n");
+  const b=orphanRecord("gc/b.bin","b","planner-b\n");
+  const c=orphanRecord("gc/c.bin","c","planner-c\n");
+  const d=orphanRecord("gc/d.bin","d","planner-d\n");
+  const e=orphanRecord("gc/e.bin","e","planner-e\n");
   const pins=JSON.parse(readFileSync(new URL("fixtures/creator-pins.json",corpusUrl),"utf8"));
 
   const checkpointPins=[
