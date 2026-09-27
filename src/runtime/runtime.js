@@ -7,10 +7,19 @@ import { fingerprint } from "../stable.js";
 import { canonicalizeTimeline } from "../timeline.js";
 import {
   atomicFinalize,
+  cleanupFinalOutput,
   cleanupTempOutput,
-  outputDigest,
+  outputDigestSync,
   prepareTempOutput
 } from "./atomic-output.js";
+import {
+  artifactManifestDigest,
+  buildArtifactManifest,
+  evidenceDigest,
+  validatedProfileDigest,
+  validatedRequestDigest,
+  verifyArtifactManifestForJob
+} from "./artifact-manifest.js";
 import { RenderRuntimeError, runtimeError } from "./errors.js";
 import { isTerminalRenderStatus, transitionRuntimeJob } from "./lifecycle.js";
 import { validateRuntimePaths } from "./path-policy.js";
@@ -383,7 +392,17 @@ export class RenderRuntimeV2 {
     let job = this.store.get(jobId);
     if (!job) throw runtimeError("job_not_found", `unknown job: ${jobId}`);
     job = updateCounter(job, "protocol", "pollCount");
-    return this.store.put(job);
+    job = this.store.put(job);
+    return this.#ensureArtifactIntegrity(job);
+  }
+
+  exportArtifactManifest(jobId) {
+    const job = this.#ensureArtifactIntegrity(this.store.get(jobId));
+    if (!job) throw runtimeError("job_not_found", `unknown job: ${jobId}`);
+    if (job.status !== "succeeded" || job.dryRun || !job.artifactManifest) {
+      throw runtimeError("artifact_manifest_unavailable", "artifact manifest is available only for succeeded live jobs");
+    }
+    return clone(job.artifactManifest);
   }
 
   cancel(jobId, reason = "cancelled_by_request") {
@@ -487,9 +506,19 @@ export class RenderRuntimeV2 {
   recoverInterruptedJobs() {
     const recovered = [];
     for (let job of this.store.list()) {
-      if (isTerminalRenderStatus(job.status)) continue;
+      if (isTerminalRenderStatus(job.status)) {
+        if (job.status === "succeeded" && !job.dryRun) {
+          recovered.push(this.#ensureArtifactIntegrity(job));
+        }
+        continue;
+      }
       job = this.#ensureScheduling(job);
       job = { ...job, telemetry: normalizedTelemetry(job.telemetry) };
+
+      if (job.status === "qa" && job.pendingArtifact && existsSync(job.resolvedOutputPath)) {
+        recovered.push(this.#reconcileFinalizedArtifact(job));
+        continue;
+      }
 
       if (job.reconciliation?.required) {
         job = this.#restoreUncertainRenderReservation(job);
@@ -674,7 +703,11 @@ export class RenderRuntimeV2 {
     if (!job) throw runtimeError("job_not_found", `unknown job: ${jobId}`);
     job = updateCounter(job, "protocol", "pollCount");
     job = updateCounter(job, "protocol", "resumeCount");
-    this.store.put(job);
+    job = this.store.put(job);
+
+    if (isTerminalRenderStatus(job.status)) {
+      return this.#ensureArtifactIntegrity(job);
+    }
 
     if (job.reconciliation?.required) {
       if (!this.attemptReconciler) return this.store.get(jobId);
@@ -1040,6 +1073,210 @@ export class RenderRuntimeV2 {
     return this.store.put(job);
   }
 
+  #artifactPending(job, preparedDigest, preparedAtMs) {
+    return {
+      version: "media.artifact_pending.v1",
+      attemptToken: job.currentAttempt?.token ?? null,
+      renderFingerprint: job.renderFingerprint,
+      validatedRequestDigest: validatedRequestDigest(job),
+      profileDigest: validatedProfileDigest(job),
+      preparedDigest: {
+        size: preparedDigest.size,
+        sha256: preparedDigest.sha256
+      },
+      probeEvidenceDigest: evidenceDigest(job.probe),
+      qaEvidenceDigest: evidenceDigest(job.qa),
+      preparedAtMs,
+      finalizedAtMs: null
+    };
+  }
+
+  #validatePendingArtifact(job) {
+    const pending = job.pendingArtifact;
+    if (!pending || pending.version !== "media.artifact_pending.v1") {
+      throw runtimeError("artifact_integrity_failure", "pending artifact provenance is missing or invalid");
+    }
+    const checks = [
+      [pending.attemptToken === job.currentAttempt?.token, "attempt token"],
+      [pending.renderFingerprint === job.renderFingerprint, "render fingerprint"],
+      [pending.validatedRequestDigest === validatedRequestDigest(job), "validated request digest"],
+      [pending.profileDigest === validatedProfileDigest(job), "profile digest"],
+      [pending.probeEvidenceDigest === evidenceDigest(job.probe), "probe evidence"],
+      [pending.qaEvidenceDigest === evidenceDigest(job.qa), "QA evidence"]
+    ];
+    const failed = checks.find(([ok]) => !ok);
+    if (failed) {
+      throw runtimeError("artifact_integrity_failure", `pending artifact provenance mismatch: ${failed[1]}`);
+    }
+    return pending;
+  }
+
+  #commitArtifactManifest(job, finalDigest, {
+    preparedAtMs,
+    finalizedAtMs,
+    finalizationMethod = "atomic_rename"
+  } = {}) {
+    const manifest = buildArtifactManifest(job, {
+      finalDigest,
+      preparedDigest: finalDigest,
+      preparedAtMs,
+      finalizedAtMs,
+      manifestCommittedAtMs: this.clock(),
+      finalizationMethod
+    });
+    return {
+      ...job,
+      artifactManifest: manifest,
+      artifactManifestSha256: artifactManifestDigest(manifest),
+      pendingArtifact: null
+    };
+  }
+
+  #reconcileFinalizedArtifact(job) {
+    if (job.dryRun || job.status !== "qa") {
+      throw runtimeError("artifact_integrity_failure", "finalized-artifact reconciliation requires a live QA-stage job");
+    }
+    const pending = this.#validatePendingArtifact(job);
+    if (job.tempOutputPath && existsSync(job.tempOutputPath)) {
+      throw runtimeError("artifact_integrity_failure", "both temporary and final artifact exist during reconciliation");
+    }
+    const finalDigest = outputDigestSync(job.resolvedOutputPath);
+    if (
+      finalDigest.sha256 !== pending.preparedDigest.sha256 ||
+      finalDigest.size !== pending.preparedDigest.size
+    ) {
+      cleanupFinalOutput(job.resolvedOutputPath);
+      const failed = transitionRuntimeJob(job, "failed", {
+        reason: "artifact_integrity_failure",
+        atMs: this.clock(),
+        patch: {
+          tempOutputPath: null,
+          pendingArtifact: null,
+          failure: {
+            code: "artifact_integrity_failure",
+            category: "integrity",
+            message: "finalized artifact bytes do not match pre-finalize digest",
+            retryable: false,
+            details: null
+          }
+        }
+      });
+      return this.store.put(failed);
+    }
+
+    if (job.cancellationRequested) {
+      cleanupFinalOutput(job.resolvedOutputPath);
+      return this.store.put(transitionRuntimeJob(job, "cancelled", {
+        reason: "cancelled_after_atomic_finalize",
+        atMs: this.clock(),
+        patch: {
+          tempOutputPath: null,
+          pendingArtifact: null,
+          scheduling: { ...(job.scheduling ?? {}), reservation: null }
+        }
+      }));
+    }
+
+    let telemetry = normalizedTelemetry(job.telemetry);
+    telemetry.outputSize = finalDigest.size;
+    telemetry.outputSha256 = finalDigest.sha256;
+    telemetry.sideEffects.successfulFinalizations = Math.max(
+      1,
+      telemetry.sideEffects.successfulFinalizations
+    );
+    const finalizedAtMs = pending.finalizedAtMs ?? this.clock();
+    let complete = {
+      ...job,
+      telemetry,
+      currentAttempt: {
+        ...(job.currentAttempt ?? {}),
+        state: "finalized_reconciled",
+        finalizedAtMs
+      }
+    };
+    complete = this.#commitArtifactManifest(complete, finalDigest, {
+      preparedAtMs: pending.preparedAtMs,
+      finalizedAtMs
+    });
+    complete = transitionRuntimeJob(complete, "succeeded", {
+      reason: "artifact_finalize_reconciled",
+      atMs: this.clock(),
+      patch: {
+        failure: null,
+        tempOutputPath: null,
+        reconciliation: { required: false },
+        scheduling: { ...(complete.scheduling ?? {}), reservation: null },
+        telemetry: complete.telemetry,
+        artifactManifest: complete.artifactManifest,
+        artifactManifestSha256: complete.artifactManifestSha256,
+        pendingArtifact: null,
+        currentAttempt: complete.currentAttempt
+      }
+    });
+    return this.store.put(complete);
+  }
+
+  #migrateLegacySucceededArtifact(job) {
+    if (!existsSync(job.resolvedOutputPath)) {
+      throw runtimeError("artifact_integrity_failure", "succeeded artifact file is missing");
+    }
+    if (!job.qa?.passed || !job.currentAttempt?.token) {
+      throw runtimeError("artifact_integrity_failure", "legacy succeeded job lacks QA or attempt provenance");
+    }
+    const finalDigest = outputDigestSync(job.resolvedOutputPath);
+    if (
+      job.telemetry?.outputSha256 !== finalDigest.sha256 ||
+      job.telemetry?.outputSize !== finalDigest.size
+    ) {
+      throw runtimeError("artifact_integrity_failure", "legacy succeeded artifact bytes do not match persisted digest");
+    }
+    const finalizedAtMs = job.currentAttempt?.finalizedAtMs ?? job.createdAtMs ?? this.clock();
+    const migrated = this.#commitArtifactManifest(job, finalDigest, {
+      preparedAtMs: finalizedAtMs,
+      finalizedAtMs,
+      finalizationMethod: "legacy_atomic_rename_verified"
+    });
+    return this.store.put(migrated);
+  }
+
+  #ensureArtifactIntegrity(input) {
+    if (!input) return input;
+    let job = input;
+    if (job.status !== "succeeded" || job.dryRun) return job;
+    if (!job.artifactManifest) job = this.#migrateLegacySucceededArtifact(job);
+
+    let manifest;
+    try {
+      manifest = verifyArtifactManifestForJob(job, job.artifactManifest);
+    } catch (error) {
+      if (error?.code === "artifact_manifest_invalid") {
+        throw runtimeError("artifact_integrity_failure", error.message);
+      }
+      throw error;
+    }
+
+    if (job.artifactManifestSha256 !== artifactManifestDigest(manifest)) {
+      throw runtimeError("artifact_integrity_failure", "artifact manifest digest mismatch");
+    }
+    if (!existsSync(job.resolvedOutputPath)) {
+      throw runtimeError("artifact_integrity_failure", "final artifact file is missing");
+    }
+    const actual = outputDigestSync(job.resolvedOutputPath);
+    if (
+      actual.sha256 !== manifest.content.sha256 ||
+      actual.size !== manifest.content.size
+    ) {
+      throw runtimeError("artifact_integrity_failure", "final artifact bytes do not match manifest");
+    }
+    if (
+      job.telemetry?.outputSha256 !== manifest.content.sha256 ||
+      job.telemetry?.outputSize !== manifest.content.size
+    ) {
+      throw runtimeError("artifact_integrity_failure", "artifact manifest does not match persisted output telemetry");
+    }
+    return job;
+  }
+
   async #executeQa(job, controller) {
     if (controller.signal.aborted || job.cancellationRequested) return this.#cancelStage(job, "cancelled_before_qa");
 
@@ -1093,31 +1330,87 @@ export class RenderRuntimeV2 {
       return this.#retryOrFail(job, runtimeError("qa_failed", "render QA failed", qa), "qa");
     }
 
+    const preparedAtMs = this.clock();
+    const preparedDigest = outputDigestSync(job.tempOutputPath);
     telemetry = normalizedTelemetry(job.telemetry);
     telemetry.sideEffects.finalizeInvocations += 1;
-    job = { ...job, telemetry };
+    job = {
+      ...job,
+      telemetry,
+      pendingArtifact: this.#artifactPending(job, preparedDigest, preparedAtMs)
+    };
     this.store.put(job);
 
     try {
       atomicFinalize(job.tempOutputPath, job.resolvedOutputPath);
     } catch (error) {
-      return this.#retryOrFail(this.store.get(job.id), error, "finalize");
+      job = { ...this.store.get(job.id), pendingArtifact: null };
+      this.store.put(job);
+      return this.#retryOrFail(job, error, "finalize");
     }
 
-    const digest = await outputDigest(job.resolvedOutputPath);
+    const finalizedAtMs = this.clock();
     job = this.store.get(job.id);
+    telemetry = normalizedTelemetry(job.telemetry);
+    telemetry.sideEffects.successfulFinalizations += 1;
+    job = {
+      ...job,
+      telemetry,
+      pendingArtifact: {
+        ...job.pendingArtifact,
+        finalizedAtMs
+      },
+      currentAttempt: {
+        ...(job.currentAttempt ?? {}),
+        state: "atomic_finalized",
+        finalizedAtMs
+      }
+    };
+    this.store.put(job);
+
+    if (controller.signal.aborted || job.cancellationRequested) {
+      cleanupFinalOutput(job.resolvedOutputPath);
+      job = transitionRuntimeJob(job, "cancelled", {
+        reason: "cancelled_after_atomic_finalize",
+        atMs: this.clock(),
+        patch: {
+          tempOutputPath: null,
+          pendingArtifact: null,
+          scheduling: { ...job.scheduling, reservation: null }
+        }
+      });
+      return this.store.put(job);
+    }
+
+    const digest = outputDigestSync(job.resolvedOutputPath);
+    if (digest.sha256 !== preparedDigest.sha256 || digest.size !== preparedDigest.size) {
+      cleanupFinalOutput(job.resolvedOutputPath);
+      return this.#retryOrFail(
+        { ...job, pendingArtifact: null, tempOutputPath: null },
+        runtimeError("artifact_integrity_failure", "finalized bytes differ from pre-finalize digest"),
+        "finalize"
+      );
+    }
+
     telemetry = normalizedTelemetry(job.telemetry);
     telemetry.outputSize = digest.size;
     telemetry.outputSha256 = digest.sha256;
-    telemetry.sideEffects.successfulFinalizations += 1;
+    job = { ...job, telemetry };
+    job = this.#commitArtifactManifest(job, digest, {
+      preparedAtMs,
+      finalizedAtMs
+    });
     job = transitionRuntimeJob(job, "succeeded", {
       reason: "qa_passed",
       atMs: this.clock(),
       patch: {
         failure: null,
         tempOutputPath: null,
+        pendingArtifact: null,
+        artifactManifest: job.artifactManifest,
+        artifactManifestSha256: job.artifactManifestSha256,
         reconciliation: { required: false },
-        telemetry,
+        telemetry: job.telemetry,
         scheduling: {
           ...job.scheduling,
           reservation: null
@@ -1125,7 +1418,7 @@ export class RenderRuntimeV2 {
         currentAttempt: {
           ...(job.currentAttempt ?? {}),
           state: "finalized",
-          finalizedAtMs: this.clock()
+          finalizedAtMs
         }
       }
     });

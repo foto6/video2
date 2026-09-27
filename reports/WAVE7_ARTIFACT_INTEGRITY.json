@@ -1,0 +1,40 @@
+{
+  "reportVersion": "primary-media.wave7.artifact-integrity.v1",
+  "compatibilityHead": "e14140cafdf435c653b5b49432e7288ec25d06de",
+  "contractVersion": "media.artifact_manifest.v1",
+  "fixtureCorpus": "conformance/media.artifact_manifest.v1/manifest.json",
+  "fixtureCount": 3,
+  "fixtureHashes": {
+    "fixtures/canonical.json": "be74cd528a2c5c7410deff20997e797ec4e68d8b876673c83be670d3bc319c66",
+    "fixtures/same-content-alternate-job.json": "8325330f594138a1266ad268ad95b4f776958705e9fd402d5c9b83b8bca4261f",
+    "fixtures/gpu-profile.json": "fbcfbe38c563d64b1e366166282f94924881e99fa605bd6e7165a4aaed91efaa"
+  },
+  "integrityCases": [
+    "artifact_tamper",
+    "artifact_truncate",
+    "artifact_missing",
+    "artifact_substitution_same_size",
+    "wrong_job_manifest",
+    "wrong_render_fingerprint",
+    "qa_evidence_mismatch",
+    "duplicate_finalize_restart",
+    "cancel_after_atomic_finalize",
+    "success_before_manifest_commit_restart",
+    "concurrent_status_reads",
+    "same_bytes_different_temp_path"
+  ],
+  "recovery": {
+    "preFinalizeDigestPersisted": true,
+    "successBeforeManifestCommitRerender": false,
+    "committedManifestRestartReadOnly": true
+  },
+  "scheduler": {
+    "resourceReleaseChecked": true,
+    "finalizationCountExactlyOneForSucceededLive": true
+  },
+  "mediaRenderV1Preserved": true,
+  "mediaJobV1Preserved": true,
+  "publishing": false,
+  "protectedPathPolicyChanged": false,
+  "optionalFfmpegSmokeRemainsOptional": true
+}

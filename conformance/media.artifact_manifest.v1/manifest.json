@@ -1,0 +1,33 @@
+{
+  "fixtureVersion": "media.artifact_manifest.v1.fixture.1",
+  "contractVersion": "media.artifact_manifest.v1",
+  "producerCompatibilityHead": "e14140cafdf435c653b5b49432e7288ec25d06de",
+  "fixtures": [
+    {
+      "path": "fixtures/canonical.json",
+      "sha256": "be74cd528a2c5c7410deff20997e797ec4e68d8b876673c83be670d3bc319c66",
+      "artifactManifestSha256": "1e938fb714071996c003c20512ac3dbbd9e49e10f554c8758bd9fe48f2258d1c",
+      "contentId": "sha256:4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893"
+    },
+    {
+      "path": "fixtures/same-content-alternate-job.json",
+      "sha256": "8325330f594138a1266ad268ad95b4f776958705e9fd402d5c9b83b8bca4261f",
+      "artifactManifestSha256": "03463f662c57882e24df7fe8472ccb5fb360e6b116612f0045ac4ac6d805d32a",
+      "contentId": "sha256:4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893"
+    },
+    {
+      "path": "fixtures/gpu-profile.json",
+      "sha256": "fbcfbe38c563d64b1e366166282f94924881e99fa605bd6e7165a4aaed91efaa",
+      "artifactManifestSha256": "c0a73403fd083f3960b57571f7ccd672ae701e899c005e464fb69430b27859fa",
+      "contentId": "sha256:8053040790fc8f660fa4ae6225b6e613befc3302122eda3efa58bd396b65852e"
+    }
+  ],
+  "consumerRules": {
+    "siblingImportRequired": false,
+    "contentIdentityField": "content.contentId",
+    "contentDigestField": "content.sha256",
+    "manifestDigestAlgorithm": "sha256(stable-json)",
+    "finalManifestRequiresLiveQaPass": true,
+    "filesystemPathFieldsPresent": false
+  }
+}

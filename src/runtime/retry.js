@@ -10,6 +10,9 @@ export function classifyRuntimeFailure(error) {
     return { code: code ?? "invalid_request", retryable: false, category: "policy" };
   }
   if (code === "qa_failed") return { code, retryable: false, category: "qa" };
+  if (code === "artifact_integrity_failure" || code === "artifact_manifest_invalid") {
+    return { code, retryable: false, category: "integrity" };
+  }
   if (code === "probe_failed") return { code, retryable: true, category: "probe" };
   if (code === "process_timeout") return { code, retryable: true, category: "process" };
   if (code === "process_failed" || code === "spawn_failed") return { code: code ?? "process_failed", retryable: true, category: "process" };

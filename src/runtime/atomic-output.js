@@ -3,6 +3,9 @@ import {
   createReadStream,
   existsSync,
   mkdirSync,
+  openSync,
+  readSync,
+  closeSync,
   renameSync,
   statSync,
   unlinkSync
@@ -48,4 +51,25 @@ export async function outputDigest(filePath) {
     stream.on("end", resolve);
   });
   return { size, sha256: hash.digest("hex") };
+}
+
+export function outputDigestSync(filePath) {
+  const size = statSync(filePath).size;
+  const hash = createHash("sha256");
+  const fd = openSync(filePath, "r");
+  const buffer = Buffer.allocUnsafe(1024 * 1024);
+  try {
+    for (;;) {
+      const bytes = readSync(fd, buffer, 0, buffer.length, null);
+      if (bytes === 0) break;
+      hash.update(buffer.subarray(0, bytes));
+    }
+  } finally {
+    closeSync(fd);
+  }
+  return { size, sha256: hash.digest("hex") };
+}
+
+export function cleanupFinalOutput(finalPath) {
+  if (finalPath && existsSync(finalPath)) unlinkSync(finalPath);
 }

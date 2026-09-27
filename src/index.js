@@ -13,7 +13,26 @@ export {
   parseMediaRenderRequest
 } from "./transport.js";
 
-export { atomicFinalize, cleanupTempOutput, outputDigest, prepareTempOutput, tempOutputPath } from "./runtime/atomic-output.js";
+export {
+  atomicFinalize,
+  cleanupFinalOutput,
+  cleanupTempOutput,
+  outputDigest,
+  outputDigestSync,
+  prepareTempOutput,
+  tempOutputPath
+} from "./runtime/atomic-output.js";
+export {
+  MEDIA_ARTIFACT_MANIFEST_VERSION,
+  artifactManifestDigest,
+  buildArtifactManifest,
+  evidenceDigest,
+  serializeArtifactManifest,
+  validateArtifactManifest,
+  validatedProfileDigest,
+  validatedRequestDigest,
+  verifyArtifactManifestForJob
+} from "./runtime/artifact-manifest.js";
 export {
   MEDIA_JOB_CONTRACT_VERSION,
   MEDIA_JOB_FIXTURE_VERSION,

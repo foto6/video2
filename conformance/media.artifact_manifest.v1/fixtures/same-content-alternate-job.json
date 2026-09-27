@@ -1,0 +1,98 @@
+{
+  "contractVersion": "media.artifact_manifest.v1",
+  "logicalJobId": "creator-checkpoint-artifact-002",
+  "idempotencyKey": "creator:checkpoint:artifact-002",
+  "renderFingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+  "attemptToken": "creator-checkpoint-artifact-002:render:1",
+  "validatedRequestDigest": "5555555555555555555555555555555555555555555555555555555555555555",
+  "profileDigest": "6666666666666666666666666666666666666666666666666666666666666666",
+  "content": {
+    "algorithm": "sha256",
+    "sha256": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+    "size": 31,
+    "contentId": "sha256:4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893"
+  },
+  "probeEvidence": {
+    "sha256": "87fd11bff87698f5c28d307816eafcf03764ddf011f08281d4198ce4cd73a4f2",
+    "value": {
+      "hasVideo": true,
+      "hasAudio": false,
+      "width": 64,
+      "height": 64,
+      "fps": 10,
+      "durationMs": 300,
+      "videoCodec": "h264",
+      "audioCodec": null,
+      "blackFrameRatio": 0.01
+    }
+  },
+  "qaEvidence": {
+    "sha256": "52a990a8698fd1e762a921c84801aaa7283823c6d827bf11a6be36572d08d255",
+    "passed": true,
+    "value": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "video-present",
+          "pass": true,
+          "actual": true,
+          "expected": true
+        },
+        {
+          "name": "width",
+          "pass": true,
+          "actual": 64,
+          "expected": 64
+        },
+        {
+          "name": "height",
+          "pass": true,
+          "actual": 64,
+          "expected": 64
+        },
+        {
+          "name": "fps",
+          "pass": true,
+          "actual": 10,
+          "expected": 10
+        },
+        {
+          "name": "duration",
+          "pass": true,
+          "actual": 300,
+          "expected": 300
+        },
+        {
+          "name": "audio-present",
+          "pass": true,
+          "actual": false,
+          "expected": false
+        },
+        {
+          "name": "black-frame-ratio",
+          "pass": true,
+          "actual": 0.01,
+          "expected": "<=0.98"
+        }
+      ],
+      "expected": {
+        "width": 64,
+        "height": 64,
+        "fps": 10,
+        "durationMs": 300,
+        "hasAudio": false
+      }
+    }
+  },
+  "finalization": {
+    "method": "atomic_rename",
+    "preparedSha256": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+    "preparedSize": 31,
+    "preparedAtMs": 1790506800000,
+    "finalizedAtMs": 1790506800100
+  },
+  "timestamps": {
+    "jobCreatedAtMs": 1790506799000,
+    "manifestCommittedAtMs": 1790506800200
+  }
+}
