@@ -1,0 +1,85 @@
+{
+  "fixtureVersion": "media.job.v1.fixture.1",
+  "name": "submit accepted",
+  "request": {
+    "contractVersion": "media.job.v1",
+    "action": "submit",
+    "idempotencyKey": "creator:conformance:job:1",
+    "request": {
+      "contractVersion": "media.render.v1",
+      "jobId": "creator-conformance-job",
+      "timeline": {
+        "id": "creator-conformance-job",
+        "version": 1,
+        "canvas": {
+          "width": 720,
+          "height": 1280,
+          "fps": 30,
+          "durationMs": 2000
+        },
+        "tracks": [
+          {
+            "id": "captions",
+            "kind": "caption",
+            "items": [
+              {
+                "id": "caption-1",
+                "startMs": 200,
+                "endMs": 1200,
+                "text": "Creator conformance"
+              }
+            ]
+          }
+        ]
+      },
+      "exportSpec": {
+        "videoCodec": "libx264",
+        "pixelFormat": "yuv420p"
+      },
+      "outputPath": "outputs/creator-conformance-job.mp4",
+      "dryRun": true
+    }
+  },
+  "response": {
+    "contractVersion": "media.job.v1",
+    "accepted": true,
+    "jobId": "creator-conformance-job",
+    "idempotencyKey": "creator:conformance:job:1",
+    "status": "queued",
+    "terminal": false,
+    "dryRun": true,
+    "renderFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+    "retryOwner": "media",
+    "reconciliation": {
+      "required": false
+    },
+    "failure": null,
+    "finalArtifact": null,
+    "telemetry": {
+      "planningMs": 1,
+      "queueWaitMs": 0,
+      "renderMs": 0,
+      "probeMs": 0,
+      "qaMs": 0,
+      "retries": 0,
+      "outputSize": null,
+      "outputSha256": null,
+      "sideEffects": {
+        "executorInvocations": 0,
+        "probeInvocations": 0,
+        "qaEvaluations": 0,
+        "finalizeInvocations": 0,
+        "successfulFinalizations": 0
+      },
+      "protocol": {
+        "submitCount": 1,
+        "duplicateSubmits": 0,
+        "pollCount": 0,
+        "resumeCount": 0,
+        "cancelRequests": 0,
+        "reconciliations": 0
+      }
+    },
+    "duplicate": false
+  }
+}

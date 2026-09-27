@@ -1,0 +1,51 @@
+{
+  "fixtureVersion": "media.job.v1.fixture.1",
+  "name": "job conflict",
+  "request": {
+    "contractVersion": "media.job.v1",
+    "action": "submit",
+    "idempotencyKey": "creator:conformance:job:2",
+    "request": {
+      "contractVersion": "media.render.v1",
+      "jobId": "creator-conformance-job",
+      "timeline": {
+        "id": "creator-conformance-job",
+        "version": 1,
+        "canvas": {
+          "width": 720,
+          "height": 1280,
+          "fps": 30,
+          "durationMs": 2000
+        },
+        "tracks": [
+          {
+            "id": "captions",
+            "kind": "caption",
+            "items": [
+              {
+                "id": "caption-1",
+                "startMs": 200,
+                "endMs": 1200,
+                "text": "Creator conformance"
+              }
+            ]
+          }
+        ]
+      },
+      "exportSpec": {
+        "videoCodec": "libx264",
+        "pixelFormat": "yuv420p"
+      },
+      "outputPath": "outputs/conflicting-job-output.mp4",
+      "dryRun": true
+    }
+  },
+  "response": {
+    "contractVersion": "media.job.v1",
+    "accepted": false,
+    "error": {
+      "code": "job_conflict",
+      "message": "logical render job id is already bound to different render work"
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "manifestVersion": "media.job.v1.consumer-manifest.1",
+  "contractVersion": "media.job.v1",
+  "fixtureVersion": "media.job.v1.fixture.1",
+  "producer": {
+    "repository": "foto6/video2",
+    "compatibilityBaseHead": "cc542d626622c780fba2d03d094815d3dca240f9"
+  },
+  "creatorReference": {
+    "repository": "foto6/video1",
+    "head": "7ece5182bdf0791eadda28f10e7316f3a496ded4",
+    "genericContract": {
+      "submitMethod": "submit_operation",
+      "readMethod": "read_operation",
+      "externalOperationIdField": "jobId",
+      "readAction": "resume_or_poll"
+    }
+  },
+  "actions": [
+    "submit",
+    "get",
+    "status",
+    "cancel",
+    "resume_or_poll"
+  ],
+  "statuses": [
+    "planned",
+    "queued",
+    "rendering",
+    "probing",
+    "qa",
+    "succeeded",
+    "retry_wait",
+    "cancelled",
+    "failed"
+  ],
+  "retryOwnership": {
+    "afterAcceptance": "creator_resumes_same_job",
+    "submitAcceptanceGap": "repeat_submit_same_idempotency_key_and_job_id",
+    "creatorOwns": [
+      "submit_until_acceptance_is_known",
+      "poll_or_resume_same_job"
+    ],
+    "mediaOwns": [
+      "process_retry",
+      "probe_retry",
+      "qa_retry",
+      "restart_reconciliation",
+      "atomic_finalize"
+    ],
+    "uncertainRestart": "reconciliation_required_before_new_executor",
+    "finalArtifact": "succeeded_live_qa_passing_atomic_finalize_only"
+  },
+  "preservedContracts": {
+    "mediaRenderV1": {
+      "path": "fixtures/media.render.v1.request.json",
+      "sha256": "9cf2cc5c3ff851cb0445c7c5ef3f75e555cc31304adaf02ea864d6790d9b5d16"
+    }
+  },
+  "fixtures": [
+    {
+      "path": "conformance/media.job.v1/fixtures/cancel.cancelled.json",
+      "sha256": "ec0de827fa7fea02cb62a4566e90dee7bf69c44d877d76417a5a6c3d7adaa729",
+      "action": "cancel",
+      "outcome": "cancelled"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/error.idempotency_conflict.json",
+      "sha256": "8ff4ea4903a8b266ec8faaa99ab5c46cc89daaa98ead26682568030197f84ddf",
+      "action": "submit",
+      "outcome": "idempotency_conflict"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/error.job_conflict.json",
+      "sha256": "6c6b8ed1cb9c93b9678f9162b929a918cc279c4e451867282e096086061f5007",
+      "action": "submit",
+      "outcome": "job_conflict"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/resume_or_poll.succeeded.json",
+      "sha256": "5887ab48b44c8c8d74182c00d487bba465335b9503717b2690dd67fa2cf78449",
+      "action": "resume_or_poll",
+      "outcome": "succeeded"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/status.cancelled.json",
+      "sha256": "a40c739af3bfb7b00fe1f31b95314673e7af26300e964aa0c13e544980677a0d",
+      "action": "status",
+      "outcome": "cancelled"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/status.failed.json",
+      "sha256": "4483a9ec35ccccf2a27bf32dd44294d0efd152ec254314e0325cfb35a66be39d",
+      "action": "status",
+      "outcome": "failed"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/status.queued.json",
+      "sha256": "95b0bc8c3e6077ab2c93b4ceb1984b7ef3d6830ae08da24e8c0a2fbddfda165b",
+      "action": "status",
+      "outcome": "queued"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/status.reconciliation-blocked.json",
+      "sha256": "590ef915ea42003900dd3dea99c7a6f1ae78df1279c3b31b932d219d792026e5",
+      "action": "status",
+      "outcome": "retry_wait"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/status.running.json",
+      "sha256": "0bce576f66c13739a8be4052cc923fa42238a0ebbe016e6ae1f979011421e1b2",
+      "action": "status",
+      "outcome": "rendering"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/status.succeeded.json",
+      "sha256": "bb9b13f337864322103fb767bcbaabe33aac7ea7d590590bf7363f51a95cca8f",
+      "action": "status",
+      "outcome": "succeeded"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/submit.accepted.json",
+      "sha256": "56ac13170517957b4df1241edcf85e9a07fe247bedd509275718167e64322050",
+      "action": "submit",
+      "outcome": "queued"
+    },
+    {
+      "path": "conformance/media.job.v1/fixtures/submit.duplicate.json",
+      "sha256": "786300f2a0b465642d773c652d6ef0a8dc83cbb602065c010bf4f6fb87f33eae",
+      "action": "submit",
+      "outcome": "queued"
+    }
+  ]
+}

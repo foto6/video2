@@ -1,0 +1,50 @@
+{
+  "fixtureVersion": "media.job.v1.fixture.1",
+  "name": "status cancelled",
+  "request": {
+    "contractVersion": "media.job.v1",
+    "action": "status",
+    "jobId": "creator-live-job"
+  },
+  "response": {
+    "contractVersion": "media.job.v1",
+    "accepted": true,
+    "jobId": "creator-live-job",
+    "idempotencyKey": "creator:live:1",
+    "status": "cancelled",
+    "terminal": true,
+    "dryRun": false,
+    "renderFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+    "retryOwner": "media",
+    "reconciliation": {
+      "required": false
+    },
+    "failure": null,
+    "finalArtifact": null,
+    "telemetry": {
+      "planningMs": 1,
+      "queueWaitMs": 0,
+      "renderMs": 3,
+      "probeMs": 0,
+      "qaMs": 0,
+      "retries": 0,
+      "outputSize": null,
+      "outputSha256": null,
+      "sideEffects": {
+        "executorInvocations": 1,
+        "probeInvocations": 0,
+        "qaEvaluations": 0,
+        "finalizeInvocations": 0,
+        "successfulFinalizations": 0
+      },
+      "protocol": {
+        "submitCount": 1,
+        "duplicateSubmits": 0,
+        "pollCount": 1,
+        "resumeCount": 0,
+        "cancelRequests": 1,
+        "reconciliations": 0
+      }
+    }
+  }
+}

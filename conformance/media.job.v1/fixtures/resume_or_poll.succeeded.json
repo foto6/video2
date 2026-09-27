@@ -1,0 +1,50 @@
+{
+  "fixtureVersion": "media.job.v1.fixture.1",
+  "name": "resume or poll dry-run succeeded",
+  "request": {
+    "contractVersion": "media.job.v1",
+    "action": "resume_or_poll",
+    "jobId": "creator-conformance-job"
+  },
+  "response": {
+    "contractVersion": "media.job.v1",
+    "accepted": true,
+    "jobId": "creator-conformance-job",
+    "idempotencyKey": "creator:conformance:job:1",
+    "status": "succeeded",
+    "terminal": true,
+    "dryRun": true,
+    "renderFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+    "retryOwner": "media",
+    "reconciliation": {
+      "required": false
+    },
+    "failure": null,
+    "finalArtifact": null,
+    "telemetry": {
+      "planningMs": 1,
+      "queueWaitMs": 0,
+      "renderMs": 0,
+      "probeMs": 0,
+      "qaMs": 0,
+      "retries": 0,
+      "outputSize": null,
+      "outputSha256": null,
+      "sideEffects": {
+        "executorInvocations": 0,
+        "probeInvocations": 0,
+        "qaEvaluations": 0,
+        "finalizeInvocations": 0,
+        "successfulFinalizations": 0
+      },
+      "protocol": {
+        "submitCount": 1,
+        "duplicateSubmits": 0,
+        "pollCount": 1,
+        "resumeCount": 1,
+        "cancelRequests": 0,
+        "reconciliations": 0
+      }
+    }
+  }
+}

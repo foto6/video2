@@ -14,10 +14,21 @@ export {
 } from "./transport.js";
 
 export { atomicFinalize, cleanupTempOutput, outputDigest, prepareTempOutput, tempOutputPath } from "./runtime/atomic-output.js";
+export {
+  MEDIA_JOB_CONTRACT_VERSION,
+  MEDIA_JOB_FIXTURE_VERSION,
+  MediaJobProtocolHarness,
+  parseMediaJobConformanceFixture,
+  parseMediaJobEnvelope,
+  serializeMediaJobEnvelope,
+  serializeMediaJobWireResponse,
+  validateMediaJobErrorResponse,
+  validateMediaJobPublicResponse,
+  validateMediaJobWireResponse
+} from "./runtime/job-conformance.js";
 export { RenderRuntimeError } from "./runtime/errors.js";
 export { PersistentRenderJobStore } from "./runtime/job-store.js";
 export {
-  MEDIA_JOB_CONTRACT_VERSION,
   MediaJobProtocolV1,
   publicJobSnapshot
 } from "./runtime/job-protocol.js";

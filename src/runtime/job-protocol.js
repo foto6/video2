@@ -1,7 +1,12 @@
 import { isTerminalRenderStatus } from "./lifecycle.js";
 import { runtimeError } from "./errors.js";
+import {
+  MEDIA_JOB_CONTRACT_VERSION,
+  parseMediaJobEnvelope,
+  validateMediaJobPublicResponse
+} from "./job-conformance.js";
 
-export const MEDIA_JOB_CONTRACT_VERSION = "media.job.v1";
+export { MEDIA_JOB_CONTRACT_VERSION } from "./job-conformance.js";
 
 function requireObject(value, label) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -73,11 +78,8 @@ export class MediaJobProtocolV1 {
     this.runtime = runtime;
   }
 
-  async handle(message) {
-    requireObject(message, "media.job.v1 message");
-    if (message.contractVersion !== MEDIA_JOB_CONTRACT_VERSION) {
-      throw runtimeError("invalid_request", `contractVersion must be ${MEDIA_JOB_CONTRACT_VERSION}`);
-    }
+  async handle(input) {
+    const message = parseMediaJobEnvelope(input);
 
     switch (message.action) {
       case "submit": {
@@ -86,19 +88,31 @@ export class MediaJobProtocolV1 {
         }
         requireObject(message.request, "submit.request");
         const result = this.runtime.submit(message.request, { idempotencyKey: message.idempotencyKey });
-        return {
+        return validateMediaJobPublicResponse({
           ...publicJobSnapshot(result.job),
           duplicate: result.duplicate
-        };
+        }, { action: "submit" });
       }
       case "get":
-        return publicJobSnapshot(this.runtime.observe(message.jobId, "get"));
+        return validateMediaJobPublicResponse(
+          publicJobSnapshot(this.runtime.observe(message.jobId, "get")),
+          { action: "get" }
+        );
       case "status":
-        return publicJobSnapshot(this.runtime.observe(message.jobId, "status"));
+        return validateMediaJobPublicResponse(
+          publicJobSnapshot(this.runtime.observe(message.jobId, "status")),
+          { action: "status" }
+        );
       case "cancel":
-        return publicJobSnapshot(this.runtime.cancel(message.jobId, message.reason ?? "cancelled_by_creator"));
+        return validateMediaJobPublicResponse(
+          publicJobSnapshot(this.runtime.cancel(message.jobId, message.reason ?? "cancelled_by_creator")),
+          { action: "cancel" }
+        );
       case "resume_or_poll":
-        return publicJobSnapshot(await this.runtime.resumeOrPoll(message.jobId));
+        return validateMediaJobPublicResponse(
+          publicJobSnapshot(await this.runtime.resumeOrPoll(message.jobId)),
+          { action: "resume_or_poll" }
+        );
       default:
         throw runtimeError("invalid_request", `unsupported media.job.v1 action: ${message.action}`);
     }

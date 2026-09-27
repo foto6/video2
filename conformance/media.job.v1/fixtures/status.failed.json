@@ -1,0 +1,56 @@
+{
+  "fixtureVersion": "media.job.v1.fixture.1",
+  "name": "status failed",
+  "request": {
+    "contractVersion": "media.job.v1",
+    "action": "status",
+    "jobId": "creator-live-job"
+  },
+  "response": {
+    "contractVersion": "media.job.v1",
+    "accepted": true,
+    "jobId": "creator-live-job",
+    "idempotencyKey": "creator:live:1",
+    "status": "failed",
+    "terminal": true,
+    "dryRun": false,
+    "renderFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+    "retryOwner": "media",
+    "reconciliation": {
+      "required": false
+    },
+    "failure": {
+      "code": "qa_failed",
+      "category": "qa",
+      "message": "render QA failed",
+      "retryable": false,
+      "details": null
+    },
+    "finalArtifact": null,
+    "telemetry": {
+      "planningMs": 1,
+      "queueWaitMs": 0,
+      "renderMs": 10,
+      "probeMs": 2,
+      "qaMs": 1,
+      "retries": 0,
+      "outputSize": null,
+      "outputSha256": null,
+      "sideEffects": {
+        "executorInvocations": 1,
+        "probeInvocations": 1,
+        "qaEvaluations": 1,
+        "finalizeInvocations": 0,
+        "successfulFinalizations": 0
+      },
+      "protocol": {
+        "submitCount": 1,
+        "duplicateSubmits": 0,
+        "pollCount": 1,
+        "resumeCount": 0,
+        "cancelRequests": 0,
+        "reconciliations": 0
+      }
+    }
+  }
+}
