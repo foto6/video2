@@ -19,7 +19,7 @@ const TRANSITIONS = Object.freeze({
   rendering: new Set(["probing", "retry_wait", "cancelled", "failed"]),
   probing: new Set(["qa", "retry_wait", "cancelled", "failed"]),
   qa: new Set(["succeeded", "retry_wait", "cancelled", "failed"]),
-  retry_wait: new Set(["queued", "cancelled", "failed"]),
+  retry_wait: new Set(["queued", "probing", "qa", "cancelled", "failed"]),
   succeeded: new Set(),
   cancelled: new Set(),
   failed: new Set()

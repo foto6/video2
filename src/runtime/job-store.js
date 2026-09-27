@@ -21,6 +21,26 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function normalizedIdempotencyRecord(value, jobs) {
+  if (typeof value === "string" && jobs[value]) {
+    return { jobId: value, workSignature: jobs[value].workSignature ?? null };
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    typeof value.jobId === "string" &&
+    jobs[value.jobId]
+  ) {
+    return {
+      jobId: value.jobId,
+      workSignature: typeof value.workSignature === "string"
+        ? value.workSignature
+        : jobs[value.jobId].workSignature ?? null
+    };
+  }
+  return null;
+}
+
 function sanitizeState(raw) {
   if (!raw || typeof raw !== "object" || raw.version !== STORE_VERSION || typeof raw.jobs !== "object") {
     throw runtimeError("state_corrupt", "render job store root is invalid");
@@ -46,8 +66,9 @@ function sanitizeState(raw) {
   }
 
   if (raw.idempotency && typeof raw.idempotency === "object") {
-    for (const [key, jobId] of Object.entries(raw.idempotency)) {
-      if (typeof jobId === "string" && state.jobs[jobId]) state.idempotency[key] = jobId;
+    for (const [key, value] of Object.entries(raw.idempotency)) {
+      const record = normalizedIdempotencyRecord(value, state.jobs);
+      if (record) state.idempotency[key] = record;
     }
   }
   if (Array.isArray(raw.recoveryEvents)) state.recoveryEvents.unshift(...raw.recoveryEvents);
@@ -114,19 +135,53 @@ export class PersistentRenderJobStore {
     return Object.values(this.state.jobs).map(clone);
   }
 
-  findByIdempotencyKey(key) {
+  getIdempotencyRecord(key) {
     if (!key) return null;
-    const jobId = this.state.idempotency[key];
-    return jobId ? this.get(jobId) : null;
+    const record = this.state.idempotency[key];
+    return record ? clone(record) : null;
   }
 
-  create(job, { idempotencyKey = null } = {}) {
-    if (this.state.jobs[job.id]) throw runtimeError("duplicate_job", `job already exists: ${job.id}`);
-    if (idempotencyKey && this.state.idempotency[idempotencyKey]) {
-      return { job: this.get(this.state.idempotency[idempotencyKey]), duplicate: true };
+  findByIdempotencyKey(key) {
+    const record = this.getIdempotencyRecord(key);
+    return record ? this.get(record.jobId) : null;
+  }
+
+  bindIdempotency(key, jobId, workSignature) {
+    if (!key) return;
+    const existing = this.state.idempotency[key];
+    if (existing) {
+      if (existing.jobId !== jobId || existing.workSignature !== workSignature) {
+        throw runtimeError("idempotency_conflict", "idempotency key is already bound to different work");
+      }
+      return;
     }
+    if (!this.state.jobs[jobId]) throw runtimeError("job_not_found", `unknown job: ${jobId}`);
+    this.state.idempotency[key] = { jobId, workSignature };
+    this.#persist();
+  }
+
+  create(job, { idempotencyKey = null, workSignature = job.workSignature ?? null } = {}) {
+    const existingJob = this.state.jobs[job.id];
+    if (existingJob) {
+      if (workSignature && existingJob.workSignature === workSignature) {
+        if (idempotencyKey) this.bindIdempotency(idempotencyKey, existingJob.id, workSignature);
+        return { job: clone(existingJob), duplicate: true };
+      }
+      throw runtimeError("job_conflict", `job id is already bound to different work: ${job.id}`);
+    }
+
+    if (idempotencyKey && this.state.idempotency[idempotencyKey]) {
+      const record = this.state.idempotency[idempotencyKey];
+      if (record.workSignature === workSignature && record.jobId === job.id) {
+        return { job: this.get(record.jobId), duplicate: true };
+      }
+      throw runtimeError("idempotency_conflict", "idempotency key is already bound to different work");
+    }
+
     this.state.jobs[job.id] = clone(job);
-    if (idempotencyKey) this.state.idempotency[idempotencyKey] = job.id;
+    if (idempotencyKey) {
+      this.state.idempotency[idempotencyKey] = { jobId: job.id, workSignature };
+    }
     this.#persist();
     return { job: clone(job), duplicate: false };
   }
