@@ -1,0 +1,112 @@
+{
+  "contractVersion": "media.render.v1",
+  "jobId": "runtime-v2-full-pipeline",
+  "timeline": {
+    "id": "runtime-v2-full-pipeline",
+    "version": 1,
+    "canvas": {
+      "width": 720,
+      "height": 1280,
+      "fps": 30,
+      "durationMs": 6000
+    },
+    "tracks": [
+      {
+        "id": "caption-track",
+        "kind": "caption",
+        "items": [
+          {
+            "id": "caption-a",
+            "startMs": 300,
+            "endMs": 1800,
+            "text": "Runtime v2",
+            "style": {
+              "fontSize": 42,
+              "x": "(w-text_w)/2",
+              "y": "h-(text_h*2)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "audio-track",
+        "kind": "audio",
+        "items": [
+          {
+            "id": "music-a",
+            "startMs": 0,
+            "endMs": 6000,
+            "source": {
+              "uri": "fixtures/runtime-v2/media/music.wav",
+              "inMs": 0
+            },
+            "gainDb": -8
+          }
+        ]
+      },
+      {
+        "id": "video-track",
+        "kind": "video",
+        "items": [
+          {
+            "id": "video-a",
+            "startMs": 0,
+            "endMs": 3000,
+            "source": {
+              "uri": "fixtures/runtime-v2/media/a.mp4",
+              "inMs": 250
+            },
+            "reframe": {
+              "x": 80,
+              "y": 0
+            },
+            "transitionOut": {
+              "type": "fade",
+              "durationMs": 400
+            }
+          },
+          {
+            "id": "video-b",
+            "startMs": 3000,
+            "endMs": 6000,
+            "source": {
+              "uri": "fixtures/runtime-v2/media/b.mp4",
+              "inMs": 500
+            },
+            "crop": {
+              "width": 720,
+              "height": 1280,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "overlay-track",
+        "kind": "overlay",
+        "items": [
+          {
+            "id": "overlay-a",
+            "startMs": 1500,
+            "endMs": 3500,
+            "text": "OVERLAY",
+            "position": {
+              "x": 24,
+              "y": 36
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "exportSpec": {
+    "videoCodec": "libx264",
+    "audioCodec": "aac",
+    "videoBitrate": "5M",
+    "audioBitrate": "160k",
+    "pixelFormat": "yuv420p"
+  },
+  "outputPath": "outputs/runtime-v2/full-pipeline.mp4",
+  "dryRun": true
+}

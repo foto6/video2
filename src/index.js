@@ -12,3 +12,23 @@ export {
   handleMediaRenderRequest,
   parseMediaRenderRequest
 } from "./transport.js";
+
+export { atomicFinalize, cleanupTempOutput, outputDigest, prepareTempOutput, tempOutputPath } from "./runtime/atomic-output.js";
+export { RenderRuntimeError } from "./runtime/errors.js";
+export { PersistentRenderJobStore } from "./runtime/job-store.js";
+export {
+  RENDER_JOB_STATUSES,
+  isRenderJobStatus,
+  isTerminalRenderStatus,
+  transitionRuntimeJob
+} from "./runtime/lifecycle.js";
+export {
+  isProtectedPath,
+  normalizeWindowsPathCandidate,
+  resolveSandboxedPath,
+  validateRuntimePaths
+} from "./runtime/path-policy.js";
+export { DeterministicProcessExecutor } from "./runtime/process-executor.js";
+export { ResourceController, Semaphore } from "./runtime/resources.js";
+export { RetryPolicy, classifyRuntimeFailure } from "./runtime/retry.js";
+export { RenderRuntimeV2 } from "./runtime/runtime.js";

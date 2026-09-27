@@ -1,0 +1,12 @@
+{
+  "hasVideo": true,
+  "hasAudio": true,
+  "width": 720,
+  "height": 1280,
+  "fps": 30,
+  "durationMs": 6000,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "blackFrameRatio": 0.05,
+  "silenceRatio": 0.1
+}
