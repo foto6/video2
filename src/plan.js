@@ -60,7 +60,12 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
         operations.push({ type: "audio.mix", itemId: item.id, gainDb: item.gainDb ?? 0 });
       }
       if (item.transitionOut) {
-        operations.push({ type: "transition.apply", itemId: item.id, ...item.transitionOut });
+        operations.push({
+          type: "transition.apply",
+          itemId: item.id,
+          transitionType: item.transitionOut.type,
+          durationMs: item.transitionOut.durationMs
+        });
       }
     }
   }
