@@ -1,0 +1,44 @@
+{
+  "reportVersion": "primary-media.wave8.gc-dry-run.v1",
+  "compatibilityHead": "d155ffed33886085fdc0c13bb104859ece9c7532",
+  "contractVersion": "media.artifact_retention.v1",
+  "plannerVersion": "media.artifact_gc_plan.v1",
+  "executorVersion": "media.artifact_gc_execution.v1",
+  "dryRunOnlyInCi": true,
+  "stress": {
+    "fixture": "conformance/media.artifact_retention.v1/fixtures/stress.json",
+    "seed": 808080,
+    "records": 1200,
+    "eligible": 670,
+    "blocked": 530,
+    "jobReferences": 208,
+    "checkpointPinDeliveries": 165,
+    "releasePinDeliveries": 140,
+    "plannerWorkUnits": 1713,
+    "reachableArtifactsDeleted": 0,
+    "reachableEligibilityViolations": 0
+  },
+  "safetyChecks": [
+    "succeeded_job_manifest_blocks_gc",
+    "creator_checkpoint_pin_blocks_gc",
+    "release_candidate_pin_blocks_gc",
+    "unresolved_reconciliation_blocks_gc",
+    "manifest_digest_revalidated_before_delete",
+    "sandbox_path_revalidated_before_delete",
+    "protected_windows_root_rejected_lexically",
+    "symlink_reparse_like_target_rejected",
+    "pin_added_after_plan_blocks_execute",
+    "partial_failure_is_per_record",
+    "retry_does_not_delete_unrelated_files",
+    "already_missing_is_idempotent"
+  ],
+  "publishing": false,
+  "accountMutation": false,
+  "liveCleanupInCi": false,
+  "fixtureManifest": "conformance/media.artifact_retention.v1/manifest.json",
+  "fixtureHashes": {
+    "fixtures/canonical.json": "a966589e7796b946467f4ad16706cc2c9fbfcf3834e4ab9e8e537c5e13814c63",
+    "fixtures/creator-pins.json": "6dae44fcda7e224b76352de0cca4b001c4eca9c1162eeff1c029aca85c37a56a",
+    "fixtures/stress.json": "f63d4418aee0dda9f70264086ca4bba8040718017a127da02ebb77d062de31c3"
+  }
+}

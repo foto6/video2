@@ -12,6 +12,7 @@
     "test": "node --test",
     "test:ci": "node --test --test-reporter=spec",
     "test:artifact": "node --test tests/artifact-manifest.test.js",
+    "test:retention": "node --test tests/artifact-retention.test.js",
     "test:stress": "node --test tests/media-soak.test.js tests/resource-scheduler.test.js"
   }
 }

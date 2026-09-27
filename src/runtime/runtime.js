@@ -20,6 +20,9 @@ import {
   validatedRequestDigest,
   verifyArtifactManifestForJob
 } from "./artifact-manifest.js";
+import {
+  buildSucceededJobRetentionMetadata
+} from "./artifact-retention.js";
 import { RenderRuntimeError, runtimeError } from "./errors.js";
 import { isTerminalRenderStatus, transitionRuntimeJob } from "./lifecycle.js";
 import { validateRuntimePaths } from "./path-policy.js";
@@ -403,6 +406,15 @@ export class RenderRuntimeV2 {
       throw runtimeError("artifact_manifest_unavailable", "artifact manifest is available only for succeeded live jobs");
     }
     return clone(job.artifactManifest);
+  }
+
+  exportArtifactRetentionMetadata(jobId) {
+    const job = this.#ensureArtifactIntegrity(this.store.get(jobId));
+    if (!job) throw runtimeError("job_not_found", `unknown job: ${jobId}`);
+    if (job.status !== "succeeded" || job.dryRun || !job.artifactRetention) {
+      throw runtimeError("artifact_retention_unavailable", "retention metadata is available only for succeeded live jobs");
+    }
+    return clone(job.artifactRetention);
   }
 
   cancel(jobId, reason = "cancelled_by_request") {
@@ -1124,11 +1136,18 @@ export class RenderRuntimeV2 {
       manifestCommittedAtMs: this.clock(),
       finalizationMethod
     });
-    return {
+    const withManifest = {
       ...job,
       artifactManifest: manifest,
       artifactManifestSha256: artifactManifestDigest(manifest),
       pendingArtifact: null
+    };
+    return {
+      ...withManifest,
+      artifactRetention: buildSucceededJobRetentionMetadata(
+        { ...withManifest, status: "succeeded" },
+        { verifiedAtMs: manifest.timestamps.manifestCommittedAtMs }
+      )
     };
   }
 
@@ -1273,6 +1292,12 @@ export class RenderRuntimeV2 {
       job.telemetry?.outputSize !== manifest.content.size
     ) {
       throw runtimeError("artifact_integrity_failure", "artifact manifest does not match persisted output telemetry");
+    }
+    const artifactRetention = buildSucceededJobRetentionMetadata(job, {
+      verifiedAtMs: this.clock()
+    });
+    if (JSON.stringify(job.artifactRetention ?? null) !== JSON.stringify(artifactRetention)) {
+      job = this.store.put({ ...job, artifactRetention });
     }
     return job;
   }

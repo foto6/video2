@@ -23,6 +23,23 @@ export {
   tempOutputPath
 } from "./runtime/atomic-output.js";
 export {
+  ArtifactGcExecutor,
+  MEDIA_ARTIFACT_GC_EXECUTION_VERSION,
+  MEDIA_ARTIFACT_GC_PLAN_VERSION,
+  MEDIA_ARTIFACT_RETENTION_VERSION,
+  PersistentArtifactRetentionStore,
+  RETENTION_CLASSES,
+  artifactRetentionRecordId,
+  buildArtifactRetentionMetadata,
+  buildSucceededJobRetentionMetadata,
+  makeInternalRetentionRecord,
+  makeInternalRetentionRecordFromJob,
+  planArtifactGc,
+  validateArtifactGcPlan,
+  validateArtifactRetentionMetadata,
+  validateInternalRetentionRecord
+} from "./runtime/artifact-retention.js";
+export {
   MEDIA_ARTIFACT_MANIFEST_VERSION,
   artifactManifestDigest,
   buildArtifactManifest,
@@ -96,3 +113,8 @@ export {
   buildSchedulerSoakPlan,
   runResourceSchedulerSoak
 } from "./runtime/scheduler-soak.js";
+
+export {
+  buildRetentionStressCorpus,
+  runRetentionPlannerStress
+} from "./runtime/retention-soak.js";

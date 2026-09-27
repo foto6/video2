@@ -1,0 +1,26 @@
+{
+  "fixtureVersion": "creator.media_artifact_pins.v1",
+  "producerContract": "media.artifact_retention.v1",
+  "checkpointPins": [
+    {
+      "referenceId": "checkpoint-001",
+      "artifactDigest": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+      "logicalJobId": "creator-checkpoint-artifact-001",
+      "manifestDigest": "1e938fb714071996c003c20512ac3dbbd9e49e10f554c8758bd9fe48f2258d1c"
+    },
+    {
+      "referenceId": "checkpoint-001",
+      "artifactDigest": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+      "logicalJobId": "creator-checkpoint-artifact-001",
+      "manifestDigest": "1e938fb714071996c003c20512ac3dbbd9e49e10f554c8758bd9fe48f2258d1c"
+    }
+  ],
+  "releasePins": [
+    {
+      "referenceId": "release-candidate-001",
+      "artifactDigest": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+      "logicalJobId": "creator-checkpoint-artifact-001",
+      "manifestDigest": "1e938fb714071996c003c20512ac3dbbd9e49e10f554c8758bd9fe48f2258d1c"
+    }
+  ]
+}

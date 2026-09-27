@@ -1,0 +1,35 @@
+{
+  "fixtureVersion": "media.artifact_retention.stress.v1",
+  "seed": 808080,
+  "recordCount": 1200,
+  "rules": {
+    "protectedEvery": 20,
+    "checkpointPinnedEvery": 17,
+    "releasePinnedEvery": 19,
+    "cacheableParity": "even_after_pinned_rules",
+    "transientParity": "odd_after_pinned_rules",
+    "succeededJobEvery": 7,
+    "reconciliationEvery": 29,
+    "checkpointPinEvery": 11,
+    "duplicateCheckpointEvery": 22,
+    "releasePinEvery": 13,
+    "duplicateReleaseEvery": 26,
+    "manualHoldEvery": 31,
+    "embeddedReferenceEvery": 37
+  },
+  "expected": {
+    "classCounts": {
+      "protected": 60,
+      "checkpoint_pinned": 67,
+      "release_pinned": 57,
+      "cacheable": 481,
+      "transient": 535
+    },
+    "jobReferences": 208,
+    "checkpointPinDeliveries": 165,
+    "releasePinDeliveries": 140,
+    "eligible": 670,
+    "blocked": 530,
+    "workUnits": 1713
+  }
+}

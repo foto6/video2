@@ -1,0 +1,27 @@
+{
+  "manifestVersion": "media.artifact_retention.v1.fixture-manifest.1",
+  "contractVersion": "media.artifact_retention.v1",
+  "producerCompatibilityHead": "d155ffed33886085fdc0c13bb104859ece9c7532",
+  "files": [
+    {
+      "path": "fixtures/canonical.json",
+      "sha256": "a966589e7796b946467f4ad16706cc2c9fbfcf3834e4ab9e8e537c5e13814c63",
+      "purpose": "canonical path-free retention metadata"
+    },
+    {
+      "path": "fixtures/creator-pins.json",
+      "sha256": "6dae44fcda7e224b76352de0cca4b001c4eca9c1162eeff1c029aca85c37a56a",
+      "purpose": "Creator checkpoint and release-candidate pins"
+    },
+    {
+      "path": "fixtures/stress.json",
+      "sha256": "f63d4418aee0dda9f70264086ca4bba8040718017a127da02ebb77d062de31c3",
+      "purpose": "deterministic 1200-record GC stress descriptor"
+    }
+  ],
+  "publicPathPolicy": {
+    "absolutePathsExposed": false,
+    "protectedPathsExposed": false,
+    "storageKeysExposed": false
+  }
+}

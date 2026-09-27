@@ -1,0 +1,33 @@
+{
+  "contractVersion": "media.artifact_retention.v1",
+  "artifactDigest": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+  "logicalJobId": "creator-checkpoint-artifact-001",
+  "manifestDigest": "1e938fb714071996c003c20512ac3dbbd9e49e10f554c8758bd9fe48f2258d1c",
+  "createdAtMs": 1790506799000,
+  "finalizedAtMs": 1790506800100,
+  "retentionClass": "checkpoint_pinned",
+  "pinReasons": [
+    "creator_checkpoint:checkpoint-001"
+  ],
+  "references": [
+    {
+      "kind": "creator_checkpoint",
+      "id": "checkpoint-001",
+      "digest": "1e938fb714071996c003c20512ac3dbbd9e49e10f554c8758bd9fe48f2258d1c"
+    }
+  ],
+  "lastVerifiedIntegrity": {
+    "verifiedAtMs": 1790506800300,
+    "ok": true,
+    "sha256": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+    "size": 31
+  },
+  "deletionEligibility": {
+    "eligible": false,
+    "reasons": [
+      "creator_checkpoint_pin",
+      "retention_class:checkpoint_pinned"
+    ],
+    "evaluatedAtMs": 1790506800300
+  }
+}

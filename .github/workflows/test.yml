@@ -17,6 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm run test:retention
       - run: npm run test:artifact
       - run: npm run test:stress
       - run: npm test
