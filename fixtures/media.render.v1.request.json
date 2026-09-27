@@ -1,0 +1,78 @@
+{
+  "contractVersion": "media.render.v1",
+  "jobId": "creator-job-round1",
+  "timeline": {
+    "id": "round1-canonical-timeline",
+    "version": 1,
+    "canvas": {
+      "width": 720,
+      "height": 1280,
+      "fps": 30,
+      "durationMs": 4000
+    },
+    "tracks": [
+      {
+        "id": "captions",
+        "kind": "caption",
+        "items": [
+          {
+            "id": "caption-1",
+            "startMs": 500,
+            "endMs": 1700,
+            "text": "Round 1 media plan",
+            "style": {
+              "fontSize": 40
+            }
+          }
+        ]
+      },
+      {
+        "id": "video",
+        "kind": "video",
+        "items": [
+          {
+            "id": "clip-1",
+            "startMs": 0,
+            "endMs": 2000,
+            "source": {
+              "uri": "round1-input/clip-a.mp4",
+              "inMs": 0
+            },
+            "reframe": {
+              "x": 0,
+              "y": 0
+            },
+            "transitionOut": {
+              "type": "fade",
+              "durationMs": 250
+            }
+          },
+          {
+            "id": "clip-2",
+            "startMs": 2000,
+            "endMs": 4000,
+            "source": {
+              "uri": "round1-input/clip-b.mp4",
+              "inMs": 500
+            },
+            "crop": {
+              "width": 720,
+              "height": 1280,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "exportSpec": {
+    "videoCodec": "libx264",
+    "audioCodec": "aac",
+    "videoBitrate": "4M",
+    "audioBitrate": "128k",
+    "pixelFormat": "yuv420p"
+  },
+  "outputPath": "round1-temp/out.mp4",
+  "dryRun": true
+}

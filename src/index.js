@@ -7,3 +7,8 @@ export { buildRenderPlan } from "./plan.js";
 export { evaluateRenderQa } from "./qa.js";
 export { fingerprint, stableStringify } from "./stable.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
+export {
+  MEDIA_RENDER_CONTRACT_VERSION,
+  handleMediaRenderRequest,
+  parseMediaRenderRequest
+} from "./transport.js";
