@@ -1,0 +1,60 @@
+{
+  "reportVersion": "round2.wave6.media-resource-scheduler.v1",
+  "compatibilityHead": "c921308a9deef916d088dc7c2c1186071eccb6e8",
+  "seed": 606060,
+  "jobCount": 540,
+  "maxConcurrency": 8,
+  "resourceBudgets": {
+    "cpu": 6,
+    "gpu": 2,
+    "render": 4,
+    "probe": 3,
+    "qa": 2
+  },
+  "priorityWheel": [
+    "high",
+    "high",
+    "high",
+    "high",
+    "normal",
+    "normal",
+    "low"
+  ],
+  "expectedWorkload": {
+    "longJobs": 180,
+    "shortJobs": 360,
+    "dryRuns": 24,
+    "duplicateSubmitDeliveries": 120,
+    "cancelledQueued": 32,
+    "uncertainRestartJobs": 4,
+    "profileCounts": {
+      "interactive": 135,
+      "standard": 135,
+      "background": 135,
+      "gpu": 135
+    },
+    "priorityCounts": {
+      "high": 135,
+      "normal": 270,
+      "low": 135
+    }
+  },
+  "expectedResults": {
+    "terminalCounts": {
+      "cancelled": 32,
+      "succeeded": 508
+    },
+    "executorCallsObserved": 486,
+    "executorInvocationsPersisted": 490,
+    "probeCallsObserved": 486,
+    "lowPriorityJobsDispatched": 127,
+    "finalDispatchSequence": 508
+  },
+  "safety": {
+    "queueSaturation": "queue_saturated",
+    "reconciliationBlocksNewExecutor": true,
+    "clientNumericResourceRequestsTrusted": false,
+    "publishing": false,
+    "protectedPathPolicyChanged": false
+  }
+}

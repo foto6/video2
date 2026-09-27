@@ -321,9 +321,16 @@ export async function runResourceSchedulerSoak({
   }
 
   let uncertainCount = 0;
+  const held = { cpu: 0, gpu: 0, render: 0, probe: 0, qa: 0 };
   for (const spec of plan.jobs.filter((item) => item.uncertainRestart)) {
     let job = store.get(spec.jobId);
     if (isTerminalRenderStatus(job.status)) continue;
+    const requirements = job.scheduling.requirements.render;
+    const fits = Object.entries(held).every(([name, value]) =>
+      value + requirements[name] <= resourceLimits[name]
+    );
+    if (!fits) continue;
+
     const token = `${job.id}:render:1`;
     executor.seedToken(token);
     const partial = tempOutputPath(job.resolvedOutputPath, job.id);
@@ -348,13 +355,14 @@ export async function runResourceSchedulerSoak({
         reservation: {
           token,
           stage: "render",
-          requirements: job.scheduling.requirements.render,
+          requirements,
           external: false,
           uncertain: true
         }
       }
     };
     store.put(job);
+    for (const [name, value] of Object.entries(requirements)) held[name] += value;
     uncertainCount += 1;
   }
 

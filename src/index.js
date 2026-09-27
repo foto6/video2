@@ -45,7 +45,24 @@ export {
   validateRuntimePaths
 } from "./runtime/path-policy.js";
 export { DeterministicProcessExecutor } from "./runtime/process-executor.js";
-export { ResourceController, Semaphore } from "./runtime/resources.js";
+export {
+  DEFAULT_RESOURCE_BUDGETS,
+  RESOURCE_CLASSES,
+  ResourceController,
+  Semaphore,
+  normalizeResourceRequirements
+} from "./runtime/resources.js";
+export {
+  DEFAULT_PRIORITY_WHEEL,
+  MEDIA_SCHEDULER_DIAGNOSTICS_VERSION,
+  PRIORITY_CLASSES,
+  SCHEDULER_PROFILES,
+  DurableFairScheduler,
+  buildSchedulerDiagnostics,
+  deriveSchedulingProfile,
+  isSchedulerRunnable,
+  schedulerStage
+} from "./runtime/resource-scheduler.js";
 export { RetryPolicy, classifyRuntimeFailure } from "./runtime/retry.js";
 export { RenderRuntimeV2 } from "./runtime/runtime.js";
 
@@ -55,3 +72,8 @@ export {
   cleanupSoakRoot,
   runDeterministicMediaSoak
 } from "./runtime/soak.js";
+
+export {
+  buildSchedulerSoakPlan,
+  runResourceSchedulerSoak
+} from "./runtime/scheduler-soak.js";
