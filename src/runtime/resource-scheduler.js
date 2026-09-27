@@ -172,14 +172,13 @@ export class DurableFairScheduler {
       if (waitedDispatches >= this.starvationDispatchThreshold) {
         telemetry.scheduler.starvationCount += 1;
       }
-      selected.push(this.store.put({ ...chosen, scheduling, telemetry }));
+      selected.push({ ...chosen, scheduling, telemetry });
     }
 
-    this.store.updateSchedulerState({
+    return this.store.commitSchedulerSelection(selected, {
       fairCursor: cursor,
       dispatchSequence
     });
-    return selected;
   }
 }
 

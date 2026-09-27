@@ -575,11 +575,7 @@ export async function runDeterministicMediaSoak({
     .filter(([, scenario]) => scenario === "caller_timeout")
     .map(([jobId]) => jobId);
   for (const jobId of callerJobs) {
-    const running = harness.exchange({
-      contractVersion: "media.job.v1",
-      action: "resume_or_poll",
-      jobId
-    });
+    const running = runtime.runAcceptedJob(jobId);
     await executor.waitStarted(jobId);
     const before = executor.callsByJob.get(jobId);
     const duplicate = await harness.exchange({
@@ -630,11 +626,12 @@ export async function runDeterministicMediaSoak({
     state.maxWorkerActive = Math.max(state.maxWorkerActive, state.workerActive);
     invariant(state.workerActive <= workerSlots, `worker slots exceeded ${workerSlots}`);
     try {
-      return await harness.exchange({
-        contractVersion: "media.job.v1",
-        action: "resume_or_poll",
-        jobId
-      });
+      for (let guard = 0; guard < 10; guard += 1) {
+        const before = store.get(jobId);
+        if (!before || isTerminalRenderStatus(before.status) || before.reconciliation?.required) return before;
+        await runtime.runAcceptedJob(jobId);
+      }
+      throw new Error(`soak job ${jobId} exceeded direct-drive retry guard`);
     } finally {
       state.workerActive -= 1;
     }

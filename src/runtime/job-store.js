@@ -275,7 +275,7 @@ export class PersistentRenderJobStore {
     return clone(this.state.scheduler);
   }
 
-  updateSchedulerState(patch) {
+  #validatedSchedulerState(patch) {
     const next = { ...this.state.scheduler, ...patch };
     for (const key of ["nextEnqueueSequence", "fairCursor", "dispatchSequence"]) {
       if (!Number.isInteger(next[key]) || next[key] < 0) {
@@ -288,9 +288,27 @@ export class PersistentRenderJobStore {
     if (next.dispatchSequence < this.state.scheduler.dispatchSequence) {
       throw runtimeError("state_corrupt", "dispatchSequence cannot move backwards");
     }
-    this.state.scheduler = next;
+    return next;
+  }
+
+  updateSchedulerState(patch) {
+    this.state.scheduler = this.#validatedSchedulerState(patch);
     this.#persist();
-    return clone(next);
+    return clone(this.state.scheduler);
+  }
+
+  commitSchedulerSelection(jobs, schedulerPatch) {
+    if (!Array.isArray(jobs)) throw new TypeError("jobs must be an array");
+    const nextScheduler = this.#validatedSchedulerState(schedulerPatch);
+    for (const job of jobs) {
+      if (!job || typeof job.id !== "string" || !this.state.jobs[job.id]) {
+        throw runtimeError("job_not_found", "scheduler selection references unknown job");
+      }
+    }
+    for (const job of jobs) this.state.jobs[job.id] = clone(job);
+    this.state.scheduler = nextScheduler;
+    this.#persist();
+    return jobs.map(clone);
   }
 
   recoveryEvents() {

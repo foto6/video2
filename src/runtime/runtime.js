@@ -595,12 +595,11 @@ export class RenderRuntimeV2 {
       return this.store.put(job);
     }
 
-    job = this.#releaseExternalReservation(job);
-
     if (outcome === "render_complete") {
       if (!job.tempOutputPath || !existsSync(job.tempOutputPath)) {
         throw runtimeError("reconciliation_missing_output", "reconciled render has no temporary output");
       }
+      job = this.#releaseExternalReservation(job);
       if (job.cancellationRequested) {
         cleanupTempOutput(job.tempOutputPath);
         job = transitionRuntimeJob(job, "cancelled", {
@@ -631,6 +630,7 @@ export class RenderRuntimeV2 {
     }
 
     if (outcome === "not_running") {
+      job = this.#releaseExternalReservation(job);
       cleanupTempOutput(job.tempOutputPath);
       if (job.cancellationRequested) {
         job = transitionRuntimeJob(job, "cancelled", {

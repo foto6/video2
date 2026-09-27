@@ -11,7 +11,13 @@ export const DEFAULT_RESOURCE_BUDGETS = Object.freeze({
 });
 
 function normalizeBudgets(input = {}) {
-  const budgets = { ...DEFAULT_RESOURCE_BUDGETS, ...input };
+  const derivedCpu = input.cpu ?? Math.max(
+    DEFAULT_RESOURCE_BUDGETS.cpu,
+    input.render ?? 0,
+    input.probe ?? 0,
+    input.qa ?? 0
+  );
+  const budgets = { ...DEFAULT_RESOURCE_BUDGETS, ...input, cpu: derivedCpu };
   for (const name of RESOURCE_CLASSES) {
     const value = budgets[name];
     const minimum = name === "gpu" ? 0 : 1;
