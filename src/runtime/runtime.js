@@ -9,12 +9,17 @@ import {
   atomicFinalize,
   cleanupTempOutput,
   outputDigest,
-  prepareTempOutput,
-  tempOutputPath
+  prepareTempOutput
 } from "./atomic-output.js";
 import { RenderRuntimeError, runtimeError } from "./errors.js";
 import { isTerminalRenderStatus, transitionRuntimeJob } from "./lifecycle.js";
 import { validateRuntimePaths } from "./path-policy.js";
+import {
+  DurableFairScheduler,
+  buildSchedulerDiagnostics,
+  deriveSchedulingProfile,
+  isSchedulerRunnable
+} from "./resource-scheduler.js";
 import { ResourceController } from "./resources.js";
 import { RetryPolicy } from "./retry.js";
 
@@ -78,6 +83,15 @@ function withFailure(error, decision) {
   };
 }
 
+function schedulerTelemetry(input = {}) {
+  return {
+    queueAgeMs: input.queueAgeMs ?? 0,
+    resourceWaitMs: input.resourceWaitMs ?? 0,
+    dispatches: input.dispatches ?? 0,
+    starvationCount: input.starvationCount ?? 0
+  };
+}
+
 function normalizedTelemetry(telemetry = {}) {
   return {
     planningMs: telemetry.planningMs ?? 0,
@@ -102,7 +116,8 @@ function normalizedTelemetry(telemetry = {}) {
       resumeCount: telemetry.protocol?.resumeCount ?? 0,
       cancelRequests: telemetry.protocol?.cancelRequests ?? 0,
       reconciliations: telemetry.protocol?.reconciliations ?? 0
-    }
+    },
+    scheduler: schedulerTelemetry(telemetry.scheduler)
   };
 }
 
@@ -124,12 +139,16 @@ export class RenderRuntimeV2 {
     retryPolicy = new RetryPolicy(),
     processTimeoutMs = 120000,
     clock = () => Date.now(),
-    attemptReconciler = null
+    attemptReconciler = null,
+    queueLimit = 1024,
+    schedulerOptions = {},
+    schedulerPollDispatchLimit = null
   } = {}) {
     if (!store) throw new TypeError("store is required");
     if (!executor || typeof executor.run !== "function") throw new TypeError("executor.run is required");
     if (!probe || typeof probe.inspect !== "function") throw new TypeError("probe.inspect is required");
     if (!Number.isInteger(maxConcurrency) || maxConcurrency < 1) throw new TypeError("maxConcurrency must be positive");
+    if (!Number.isInteger(queueLimit) || queueLimit < 1) throw new TypeError("queueLimit must be positive");
     if (attemptReconciler !== null && typeof attemptReconciler.reconcile !== "function") {
       throw new TypeError("attemptReconciler.reconcile is required");
     }
@@ -140,11 +159,22 @@ export class RenderRuntimeV2 {
     this.sandboxRoot = sandboxRoot;
     this.liveExecutionEnabled = liveExecutionEnabled;
     this.maxConcurrency = maxConcurrency;
-    this.resources = new ResourceController(resourceLimits);
+    this.clock = clock;
+    this.resources = new ResourceController(resourceLimits, { clock });
     this.retryPolicy = retryPolicy;
     this.processTimeoutMs = processTimeoutMs;
-    this.clock = clock;
     this.attemptReconciler = attemptReconciler;
+    this.queueLimit = queueLimit;
+    this.scheduler = new DurableFairScheduler({
+      store,
+      clock,
+      ...schedulerOptions
+    });
+    this.schedulerPollDispatchLimit = schedulerPollDispatchLimit ??
+      Math.max(2, this.scheduler.priorityWheel.length);
+    if (!Number.isInteger(this.schedulerPollDispatchLimit) || this.schedulerPollDispatchLimit < 1) {
+      throw new TypeError("schedulerPollDispatchLimit must be positive");
+    }
     this.active = new Map();
     this.inflightRuns = new Map();
   }
@@ -161,6 +191,10 @@ export class RenderRuntimeV2 {
     const paths = validateRuntimePaths(timeline, request.outputPath, { sandboxRoot: this.sandboxRoot });
     const plan = buildRenderPlan(timeline, exportSpec);
     compileFfmpegCommand(timeline, exportSpec, paths.outputPath);
+    const schedulingProfile = deriveSchedulingProfile(timeline, exportSpec, request.dryRun);
+    for (const requirements of Object.values(schedulingProfile.requirements)) {
+      this.resources.assertFitsBudget(requirements);
+    }
     const plannedAtMs = this.clock();
     const workSignature = fingerprint({
       jobId: request.jobId,
@@ -174,10 +208,47 @@ export class RenderRuntimeV2 {
       exportSpec,
       paths,
       plan,
+      schedulingProfile,
       planningStarted,
       plannedAtMs,
       workSignature
     };
+  }
+
+  #pendingCount() {
+    return this.store.list().filter((job) => !isTerminalRenderStatus(job.status)).length;
+  }
+
+  #ensureScheduling(job) {
+    if (job.scheduling?.enqueueSequence !== undefined) {
+      return {
+        ...job,
+        telemetry: normalizedTelemetry(job.telemetry)
+      };
+    }
+
+    const profile = deriveSchedulingProfile(job.timeline, job.exportSpec ?? {}, job.dryRun === true);
+    for (const requirements of Object.values(profile.requirements)) {
+      this.resources.assertFitsBudget(requirements);
+    }
+    const schedulerState = this.store.getSchedulerState();
+    const sequence = this.store.allocateEnqueueSequence();
+    const updated = {
+      ...job,
+      scheduling: {
+        profile: profile.profile,
+        priorityClass: profile.priorityClass,
+        enqueueSequence: sequence,
+        enqueuedDispatchSequence: schedulerState.dispatchSequence,
+        enqueuedAtMs: job.queuedAtMs ?? job.createdAtMs ?? this.clock(),
+        lastDispatchSequence: null,
+        lastDispatchAtMs: null,
+        requirements: profile.requirements,
+        reservation: null
+      },
+      telemetry: normalizedTelemetry(job.telemetry)
+    };
+    return this.store.put(updated);
   }
 
   #markDuplicate(existing) {
@@ -212,6 +283,15 @@ export class RenderRuntimeV2 {
       return { job: this.#markDuplicate(existingById), duplicate: true };
     }
 
+    if (this.#pendingCount() >= this.queueLimit) {
+      throw runtimeError(
+        "queue_saturated",
+        `render queue is saturated at configured limit ${this.queueLimit}`
+      );
+    }
+
+    const schedulerState = this.store.getSchedulerState();
+    const enqueueSequence = this.store.allocateEnqueueSequence();
     let job = {
       schemaVersion: 2,
       id: request.jobId,
@@ -237,6 +317,17 @@ export class RenderRuntimeV2 {
       failure: null,
       createdAtMs: prepared.planningStarted,
       queuedAtMs: null,
+      scheduling: {
+        profile: prepared.schedulingProfile.profile,
+        priorityClass: prepared.schedulingProfile.priorityClass,
+        enqueueSequence,
+        enqueuedDispatchSequence: schedulerState.dispatchSequence,
+        enqueuedAtMs: prepared.plannedAtMs,
+        lastDispatchSequence: null,
+        lastDispatchAtMs: null,
+        requirements: prepared.schedulingProfile.requirements,
+        reservation: null
+      },
       history: [{ from: null, to: "planned", reason: "submit", atMs: prepared.plannedAtMs }],
       telemetry: {
         planningMs: Math.max(0, prepared.plannedAtMs - prepared.planningStarted),
@@ -261,7 +352,8 @@ export class RenderRuntimeV2 {
           resumeCount: 0,
           cancelRequests: 0,
           reconciliations: 0
-        }
+        },
+        scheduler: schedulerTelemetry()
       }
     };
 
@@ -271,10 +363,17 @@ export class RenderRuntimeV2 {
     });
     if (created.duplicate) return { job: this.#markDuplicate(created.job), duplicate: true };
 
+    const queuedAtMs = this.clock();
     job = transitionRuntimeJob(job, "queued", {
       reason: "planned",
-      atMs: this.clock(),
-      patch: { queuedAtMs: this.clock() }
+      atMs: queuedAtMs,
+      patch: {
+        queuedAtMs,
+        scheduling: {
+          ...job.scheduling,
+          enqueuedAtMs: queuedAtMs
+        }
+      }
     });
     this.store.put(job);
     return { job, duplicate: false };
@@ -319,7 +418,13 @@ export class RenderRuntimeV2 {
       cleanupTempOutput(job.tempOutputPath);
       job = transitionRuntimeJob(job, "cancelled", {
         reason,
-        atMs: this.clock()
+        atMs: this.clock(),
+        patch: {
+          scheduling: {
+            ...(job.scheduling ?? {}),
+            reservation: null
+          }
+        }
       });
       return this.store.put(job);
     }
@@ -328,7 +433,13 @@ export class RenderRuntimeV2 {
       cleanupTempOutput(job.tempOutputPath);
       job = transitionRuntimeJob(job, "cancelled", {
         reason,
-        atMs: this.clock()
+        atMs: this.clock(),
+        patch: {
+          scheduling: {
+            ...(job.scheduling ?? {}),
+            reservation: null
+          }
+        }
       });
       return this.store.put(job);
     }
@@ -336,23 +447,68 @@ export class RenderRuntimeV2 {
     return this.store.put(job);
   }
 
+  #restoreUncertainRenderReservation(job) {
+    const requirements = job.scheduling?.requirements?.render ??
+      deriveSchedulingProfile(job.timeline, job.exportSpec ?? {}, job.dryRun === true).requirements.render;
+    const token = job.scheduling?.reservation?.token ??
+      job.currentAttempt?.token ??
+      `${job.id}:render:${job.telemetry?.sideEffects?.executorInvocations ?? job.attempts ?? 1}`;
+
+    this.resources.reserveExternal(token, requirements);
+    return {
+      ...job,
+      scheduling: {
+        ...(job.scheduling ?? {}),
+        reservation: {
+          token,
+          stage: "render",
+          requirements,
+          external: true,
+          uncertain: true
+        }
+      }
+    };
+  }
+
+  #releaseExternalReservation(job) {
+    const reservation = job.scheduling?.reservation;
+    if (reservation?.external && reservation.token) {
+      this.resources.releaseExternal(reservation.token);
+    }
+    return {
+      ...job,
+      scheduling: {
+        ...(job.scheduling ?? {}),
+        reservation: null
+      }
+    };
+  }
+
   recoverInterruptedJobs() {
     const recovered = [];
     for (let job of this.store.list()) {
       if (isTerminalRenderStatus(job.status)) continue;
+      job = this.#ensureScheduling(job);
       job = { ...job, telemetry: normalizedTelemetry(job.telemetry) };
+
+      if (job.reconciliation?.required) {
+        job = this.#restoreUncertainRenderReservation(job);
+        recovered.push(this.store.put(job));
+        continue;
+      }
 
       if (job.status === "planned") {
         job = transitionRuntimeJob(job, "queued", {
           reason: "restart_requeue_planned",
           atMs: this.clock(),
-          patch: { queuedAtMs: this.clock() }
+          patch: { queuedAtMs: job.queuedAtMs ?? this.clock() }
         });
         recovered.push(this.store.put(job));
         continue;
       }
 
       if (job.status === "rendering") {
+        job = this.#restoreUncertainRenderReservation(job);
         job = transitionRuntimeJob(job, "retry_wait", {
           reason: "restart_interrupted",
           atMs: this.clock(),
@@ -381,6 +537,16 @@ export class RenderRuntimeV2 {
         continue;
       }
 
+      if (job.scheduling?.reservation) {
+        job = {
+          ...job,
+          scheduling: {
+            ...job.scheduling,
+            reservation: null
+          }
+        };
+      }
+
       if (job.cancellationRequested) {
         cleanupTempOutput(job.tempOutputPath);
         if (job.status === "queued" || job.status === "retry_wait" || job.status === "probing" || job.status === "qa") {
@@ -401,6 +567,8 @@ export class RenderRuntimeV2 {
             recoveredAtMs: this.clock()
           }
         };
+        recovered.push(this.store.put(job));
+      } else if (job.status === "retry_wait") {
         recovered.push(this.store.put(job));
       }
     }
@@ -427,6 +595,8 @@ export class RenderRuntimeV2 {
       return this.store.put(job);
     }
 
+    job = this.#releaseExternalReservation(job);
+
     if (outcome === "render_complete") {
       if (!job.tempOutputPath || !existsSync(job.tempOutputPath)) {
         throw runtimeError("reconciliation_missing_output", "reconciled render has no temporary output");
@@ -436,7 +606,10 @@ export class RenderRuntimeV2 {
         job = transitionRuntimeJob(job, "cancelled", {
           reason: "reconciled_cancelled",
           atMs: this.clock(),
-          patch: { reconciliation: { required: false } }
+          patch: {
+            reconciliation: { required: false },
+            scheduling: { ...job.scheduling, reservation: null }
+          }
         });
       } else {
         job = transitionRuntimeJob(job, "probing", {
@@ -445,6 +618,7 @@ export class RenderRuntimeV2 {
           patch: {
             reconciliation: { required: false },
             retryStage: null,
+            scheduling: { ...job.scheduling, reservation: null },
             currentAttempt: {
               ...(job.currentAttempt ?? {}),
               state: "rendered_reconciled",
@@ -464,7 +638,8 @@ export class RenderRuntimeV2 {
           atMs: this.clock(),
           patch: {
             reconciliation: { required: false },
-            tempOutputPath: null
+            tempOutputPath: null,
+            scheduling: { ...job.scheduling, reservation: null }
           }
         });
       } else {
@@ -473,6 +648,7 @@ export class RenderRuntimeV2 {
           reconciliation: { required: false },
           tempOutputPath: null,
           retryStage: "queued",
+          scheduling: { ...job.scheduling, reservation: null },
           currentAttempt: {
             ...(job.currentAttempt ?? {}),
             state: "reconciled_not_running",
@@ -484,6 +660,13 @@ export class RenderRuntimeV2 {
     }
 
     throw runtimeError("invalid_reconciliation", "reconciliation outcome must be still_running, unknown, render_complete, or not_running");
+  }
+
+  #selectRunnable(limit) {
+    const jobs = this.store.list().map((job) =>
+      isSchedulerRunnable(job) ? this.#ensureScheduling(job) : job
+    );
+    return this.scheduler.select(jobs, limit, new Set(this.inflightRuns.keys()));
   }
 
   async resumeOrPoll(jobId) {
@@ -500,7 +683,24 @@ export class RenderRuntimeV2 {
       if (job.reconciliation?.required || isTerminalRenderStatus(job.status)) return job;
     }
 
-    return this.runAcceptedJob(jobId);
+    const existing = this.inflightRuns.get(jobId);
+    if (existing) {
+      await existing;
+      return this.store.get(jobId);
+    }
+
+    for (let dispatch = 0; dispatch < this.schedulerPollDispatchLimit; dispatch += 1) {
+      const current = this.store.get(jobId);
+      if (!current || isTerminalRenderStatus(current.status) || current.reconciliation?.required) return current;
+
+      const selected = this.#selectRunnable(1);
+      if (selected.length === 0) return current;
+      await this.runAcceptedJob(selected[0].id);
+
+      const after = this.store.get(jobId);
+      if (!after || isTerminalRenderStatus(after.status) || after.reconciliation?.required) return after;
+    }
+    return this.store.get(jobId);
   }
 
   async #retryOrFail(job, error, stage) {
@@ -513,6 +713,11 @@ export class RenderRuntimeV2 {
     };
     const decision = this.retryPolicy.decide(error, stageAttempts[stage] ?? job.attempts ?? 0);
 
+    const clearedScheduling = {
+      ...(job.scheduling ?? {}),
+      reservation: null
+    };
+
     if (decision.code === "cancelled" || job.cancellationRequested) {
       cleanupTempOutput(job.tempOutputPath);
       job = transitionRuntimeJob(job, "cancelled", {
@@ -521,7 +726,8 @@ export class RenderRuntimeV2 {
         patch: {
           failure: withFailure(error, decision),
           cancellationRequested: true,
-          tempOutputPath: null
+          tempOutputPath: null,
+          scheduling: clearedScheduling
         }
       });
       return this.store.put(job);
@@ -539,6 +745,7 @@ export class RenderRuntimeV2 {
           retryStage,
           tempOutputPath: retryStage === "queued" ? null : job.tempOutputPath,
           failure: withFailure(error, decision),
+          scheduling: clearedScheduling,
           telemetry: { ...telemetry, retries: telemetry.retries + 1 }
         }
       });
@@ -551,7 +758,8 @@ export class RenderRuntimeV2 {
       atMs: this.clock(),
       patch: {
         failure: withFailure(error, decision),
-        tempOutputPath: null
+        tempOutputPath: null,
+        scheduling: clearedScheduling
       }
     });
     return this.store.put(job);
@@ -578,10 +786,33 @@ export class RenderRuntimeV2 {
       atMs: this.clock(),
       patch: {
         cancellationRequested: true,
-        tempOutputPath: null
+        tempOutputPath: null,
+        scheduling: {
+          ...(job.scheduling ?? {}),
+          reservation: null
+        }
       }
     });
     return this.store.put(job);
+  }
+
+  #addResourceWait(job, waitMs) {
+    const telemetry = normalizedTelemetry(job.telemetry);
+    telemetry.scheduler.resourceWaitMs += waitMs;
+    return { ...job, telemetry };
+  }
+
+  #clearReservation(jobId, token) {
+    const current = this.store.get(jobId);
+    if (!current) return null;
+    if (current.scheduling?.reservation?.token !== token) return current;
+    return this.store.put({
+      ...current,
+      scheduling: {
+        ...current.scheduling,
+        reservation: null
+      }
+    });
   }
 
   async #executeQueued(job, controller) {
@@ -589,15 +820,13 @@ export class RenderRuntimeV2 {
     const queueWaitMs = Math.max(0, this.clock() - (job.queuedAtMs ?? this.clock()));
 
     if (job.dryRun) {
+      const telemetry = normalizedTelemetry(job.telemetry);
+      telemetry.queueWaitMs += queueWaitMs;
+      telemetry.scheduler.queueAgeMs = Math.max(telemetry.scheduler.queueAgeMs, queueWaitMs);
       job = transitionRuntimeJob(job, "succeeded", {
         reason: "dry_run_plan_only",
         atMs: this.clock(),
-        patch: {
-          telemetry: {
-            ...normalizedTelemetry(job.telemetry),
-            queueWaitMs: normalizedTelemetry(job.telemetry).queueWaitMs + queueWaitMs
-          }
-        }
+        patch: { telemetry }
       });
       return this.store.put(job);
     }
@@ -619,14 +848,33 @@ export class RenderRuntimeV2 {
       return this.store.put(job);
     }
 
+    const requirements = job.scheduling.requirements.render;
+    let lease;
+    try {
+      lease = await this.resources.acquire(requirements, controller.signal);
+    } catch (error) {
+      if (controller.signal.aborted || error?.code === "cancelled") {
+        return this.#cancelStage(this.store.get(job.id), "cancelled_waiting_for_render_resources");
+      }
+      throw error;
+    }
+
+    if (controller.signal.aborted || this.store.get(job.id)?.cancellationRequested) {
+      lease.release();
+      return this.#cancelStage(this.store.get(job.id), "cancelled_after_render_resource_acquire");
+    }
+
     const tempPath = prepareTempOutput(job.resolvedOutputPath, job.id);
-    let telemetry = normalizedTelemetry(job.telemetry);
+    let telemetry = normalizedTelemetry(this.store.get(job.id).telemetry);
     telemetry.queueWaitMs += queueWaitMs;
+    telemetry.scheduler.queueAgeMs = Math.max(telemetry.scheduler.queueAgeMs, queueWaitMs);
+    telemetry.scheduler.resourceWaitMs += lease.waitMs;
     telemetry.sideEffects.executorInvocations += 1;
     const invocation = telemetry.sideEffects.executorInvocations;
     const startedAtMs = this.clock();
+    const token = `${job.id}:render:${invocation}`;
 
-    job = transitionRuntimeJob(job, "rendering", {
+    job = transitionRuntimeJob(this.store.get(job.id), "rendering", {
       reason: "worker_start",
       atMs: startedAtMs,
       patch: {
@@ -637,8 +885,18 @@ export class RenderRuntimeV2 {
         qa: null,
         failure: null,
         telemetry,
+        scheduling: {
+          ...job.scheduling,
+          reservation: {
+            token,
+            stage: "render",
+            requirements,
+            external: false,
+            uncertain: false
+          }
+        },
         currentAttempt: {
-          token: `${job.id}:render:${invocation}`,
+          token,
           renderInvocation: invocation,
           state: "started",
           startedAtMs
@@ -649,21 +907,33 @@ export class RenderRuntimeV2 {
 
     const command = compileFfmpegCommand(job.timeline, job.exportSpec, tempPath);
     const renderStarted = this.clock();
-    let processResult;
+    let processResult = null;
+    let executionError = null;
     try {
-      processResult = await this.resources.withResource("render", controller.signal, () =>
-        this.executor.run(command, { signal: controller.signal, timeoutMs: this.processTimeoutMs })
-      );
+      processResult = await this.executor.run(command, {
+        signal: controller.signal,
+        timeoutMs: this.processTimeoutMs
+      });
     } catch (error) {
-      if (controller.signal.aborted) {
-        return this.#retryOrFail(this.store.get(job.id), runtimeError("cancelled", "render process was cancelled"), "render");
-      }
-      return this.#retryOrFail(this.store.get(job.id), runtimeError("spawn_failed", error.message), "render");
+      executionError = error;
+    } finally {
+      lease.release();
+      this.#clearReservation(job.id, token);
     }
 
     job = this.store.get(job.id);
     telemetry = normalizedTelemetry(job.telemetry);
     telemetry.renderMs += phaseDuration(this.clock, renderStarted);
+
+    if (executionError) {
+      job = { ...job, telemetry };
+      this.store.put(job);
+      if (controller.signal.aborted) {
+        return this.#retryOrFail(job, runtimeError("cancelled", "render process was cancelled"), "render");
+      }
+      return this.#retryOrFail(job, runtimeError("spawn_failed", executionError.message), "render");
+    }
+
     job = {
       ...job,
       processResult: processSnapshot(processResult),
@@ -705,34 +975,67 @@ export class RenderRuntimeV2 {
 
   async #executeProbing(job, controller) {
     if (job.cancellationRequested) return this.#cancelStage(job, "cancelled_before_probe");
-    let telemetry = normalizedTelemetry(job.telemetry);
+
+    const requirements = job.scheduling.requirements.probe;
+    let lease;
+    try {
+      lease = await this.resources.acquire(requirements, controller.signal);
+    } catch (error) {
+      if (controller.signal.aborted || error?.code === "cancelled") {
+        return this.#cancelStage(this.store.get(job.id), "cancelled_waiting_for_probe_resources");
+      }
+      throw error;
+    }
+
+    let telemetry = normalizedTelemetry(this.store.get(job.id).telemetry);
+    telemetry.scheduler.resourceWaitMs += lease.waitMs;
     telemetry.sideEffects.probeInvocations += 1;
-    job = { ...job, telemetry };
+    const token = `${job.id}:probe:${telemetry.sideEffects.probeInvocations}`;
+    job = {
+      ...this.store.get(job.id),
+      telemetry,
+      scheduling: {
+        ...job.scheduling,
+        reservation: {
+          token,
+          stage: "probe",
+          requirements,
+          external: false,
+          uncertain: false
+        }
+      }
+    };
     this.store.put(job);
 
     const probeStarted = this.clock();
-    let probe;
+    let probe = null;
+    let probeError = null;
     try {
-      probe = await this.resources.withResource("probe", controller.signal, () =>
-        this.probe.inspect(job.tempOutputPath, { signal: controller.signal })
-      );
+      probe = await this.probe.inspect(job.tempOutputPath, { signal: controller.signal });
     } catch (error) {
-      if (controller.signal.aborted) {
-        return this.#retryOrFail(this.store.get(job.id), runtimeError("cancelled", "probe was cancelled"), "probing");
-      }
-      return this.#retryOrFail(this.store.get(job.id), runtimeError("probe_failed", `probe failed: ${error.message}`), "probing");
+      probeError = error;
+    } finally {
+      lease.release();
+      this.#clearReservation(job.id, token);
     }
 
     job = this.store.get(job.id);
     telemetry = normalizedTelemetry(job.telemetry);
     telemetry.probeMs += phaseDuration(this.clock, probeStarted);
+    job = { ...job, telemetry };
+    this.store.put(job);
+
+    if (probeError) {
+      if (controller.signal.aborted) {
+        return this.#retryOrFail(job, runtimeError("cancelled", "probe was cancelled"), "probing");
+      }
+      return this.#retryOrFail(job, runtimeError("probe_failed", `probe failed: ${probeError.message}`), "probing");
+    }
+
     job = transitionRuntimeJob(job, "qa", {
       reason: "probe_complete",
       atMs: this.clock(),
-      patch: {
-        probe: clone(probe),
-        telemetry
-      }
+      patch: { probe: clone(probe) }
     });
     return this.store.put(job);
   }
@@ -740,13 +1043,46 @@ export class RenderRuntimeV2 {
   async #executeQa(job, controller) {
     if (controller.signal.aborted || job.cancellationRequested) return this.#cancelStage(job, "cancelled_before_qa");
 
-    let telemetry = normalizedTelemetry(job.telemetry);
+    const requirements = job.scheduling.requirements.qa;
+    let lease;
+    try {
+      lease = await this.resources.acquire(requirements, controller.signal);
+    } catch (error) {
+      if (controller.signal.aborted || error?.code === "cancelled") {
+        return this.#cancelStage(this.store.get(job.id), "cancelled_waiting_for_qa_resources");
+      }
+      throw error;
+    }
+
+    let telemetry = normalizedTelemetry(this.store.get(job.id).telemetry);
+    telemetry.scheduler.resourceWaitMs += lease.waitMs;
     telemetry.sideEffects.qaEvaluations += 1;
-    job = { ...job, telemetry };
+    const token = `${job.id}:qa:${telemetry.sideEffects.qaEvaluations}`;
+    job = {
+      ...this.store.get(job.id),
+      telemetry,
+      scheduling: {
+        ...job.scheduling,
+        reservation: {
+          token,
+          stage: "qa",
+          requirements,
+          external: false,
+          uncertain: false
+        }
+      }
+    };
     this.store.put(job);
 
     const qaStarted = this.clock();
-    const qa = evaluateRenderQa(job.timeline, job.probe);
+    let qa;
+    try {
+      qa = evaluateRenderQa(job.timeline, job.probe);
+    } finally {
+      lease.release();
+      this.#clearReservation(job.id, token);
+    }
+
     job = this.store.get(job.id);
     telemetry = normalizedTelemetry(job.telemetry);
     telemetry.qaMs += phaseDuration(this.clock, qaStarted);
@@ -782,6 +1118,10 @@ export class RenderRuntimeV2 {
         tempOutputPath: null,
         reconciliation: { required: false },
         telemetry,
+        scheduling: {
+          ...job.scheduling,
+          reservation: null
+        },
         currentAttempt: {
           ...(job.currentAttempt ?? {}),
           state: "finalized",
@@ -800,6 +1140,7 @@ export class RenderRuntimeV2 {
         let job = this.store.get(jobId);
         if (!job || isTerminalRenderStatus(job.status)) return job;
         if (job.reconciliation?.required) return job;
+        job = this.#ensureScheduling(job);
 
         if (job.status === "retry_wait") {
           job = this.#advanceRetryWait(job);
@@ -807,15 +1148,18 @@ export class RenderRuntimeV2 {
           continue;
         }
         if (job.status === "queued") {
-          await this.#executeQueued(job, controller);
+          const result = await this.#executeQueued(job, controller);
+          if (result?.status === "retry_wait") return result;
           continue;
         }
         if (job.status === "probing") {
-          await this.#executeProbing(job, controller);
+          const result = await this.#executeProbing(job, controller);
+          if (result?.status === "retry_wait") return result;
           continue;
         }
         if (job.status === "qa") {
-          await this.#executeQa(job, controller);
+          const result = await this.#executeQa(job, controller);
+          if (result?.status === "retry_wait") return result;
           continue;
         }
         if (job.status === "rendering") return job;
@@ -840,18 +1184,21 @@ export class RenderRuntimeV2 {
   async drain() {
     const completed = [];
     for (;;) {
-      const runnable = this.store.list()
-        .filter((job) =>
-          !job.reconciliation?.required &&
-          (job.status === "queued" || job.status === "retry_wait" || job.status === "probing" || job.status === "qa")
-        )
-        .sort((a, b) => (a.createdAtMs ?? 0) - (b.createdAtMs ?? 0) || a.id.localeCompare(b.id));
-
-      if (runnable.length === 0) break;
-      const batch = runnable.slice(0, this.maxConcurrency);
-      const results = await Promise.all(batch.map((job) => this.runAcceptedJob(job.id)));
+      const selected = this.#selectRunnable(this.maxConcurrency);
+      if (selected.length === 0) break;
+      const results = await Promise.all(selected.map((job) => this.runAcceptedJob(job.id)));
       completed.push(...results);
     }
     return completed;
+  }
+
+  getSchedulerDiagnostics() {
+    return buildSchedulerDiagnostics({
+      jobs: this.store.list(),
+      queueLimit: this.queueLimit,
+      resourceSnapshot: this.resources.snapshot(),
+      schedulerState: this.store.getSchedulerState(),
+      nowMs: this.clock()
+    });
   }
 }

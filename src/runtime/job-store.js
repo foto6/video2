@@ -13,8 +13,22 @@ import { runtimeError } from "./errors.js";
 
 const STORE_VERSION = 2;
 
+function schedulerStateDefaults() {
+  return {
+    nextEnqueueSequence: 1,
+    fairCursor: 0,
+    dispatchSequence: 0
+  };
+}
+
 function emptyState() {
-  return { version: STORE_VERSION, jobs: {}, idempotency: {}, recoveryEvents: [] };
+  return {
+    version: STORE_VERSION,
+    jobs: {},
+    idempotency: {},
+    recoveryEvents: [],
+    scheduler: schedulerStateDefaults()
+  };
 }
 
 function clone(value) {
@@ -39,6 +53,49 @@ function normalizedIdempotencyRecord(value, jobs) {
     };
   }
   return null;
+}
+
+function maxPersistedEnqueueSequence(jobs) {
+  let max = 0;
+  for (const job of Object.values(jobs)) {
+    const value = job?.scheduling?.enqueueSequence;
+    if (Number.isInteger(value) && value > max) max = value;
+  }
+  return max;
+}
+
+function sanitizeSchedulerState(rawScheduler, jobs) {
+  const minimumNext = maxPersistedEnqueueSequence(jobs) + 1;
+  if (rawScheduler === undefined) {
+    return {
+      ...schedulerStateDefaults(),
+      nextEnqueueSequence: Math.max(1, minimumNext)
+    };
+  }
+  if (!rawScheduler || typeof rawScheduler !== "object" || Array.isArray(rawScheduler)) {
+    throw runtimeError("state_corrupt", "render job store scheduler state is invalid");
+  }
+
+  const allowed = new Set(["nextEnqueueSequence", "fairCursor", "dispatchSequence"]);
+  const extra = Object.keys(rawScheduler).filter((key) => !allowed.has(key));
+  if (extra.length > 0) {
+    throw runtimeError("state_corrupt", `render job store scheduler state has unknown fields: ${extra.join(", ")}`);
+  }
+
+  const values = {
+    nextEnqueueSequence: rawScheduler.nextEnqueueSequence,
+    fairCursor: rawScheduler.fairCursor,
+    dispatchSequence: rawScheduler.dispatchSequence
+  };
+  for (const [key, value] of Object.entries(values)) {
+    if (!Number.isInteger(value) || value < 0) {
+      throw runtimeError("state_corrupt", `render job store scheduler.${key} is invalid`);
+    }
+  }
+  if (values.nextEnqueueSequence < minimumNext) {
+    throw runtimeError("state_corrupt", "render job store scheduler sequence regressed behind persisted jobs");
+  }
+  return values;
 }
 
 function sanitizeState(raw) {
@@ -72,6 +129,7 @@ function sanitizeState(raw) {
     }
   }
   if (Array.isArray(raw.recoveryEvents)) state.recoveryEvents.unshift(...raw.recoveryEvents);
+  state.scheduler = sanitizeSchedulerState(raw.scheduler, state.jobs);
   return state;
 }
 
@@ -204,6 +262,35 @@ export class PersistentRenderJobStore {
     this.state.jobs[job.id] = clone(job);
     this.#persist();
     return clone(job);
+  }
+
+  allocateEnqueueSequence() {
+    const sequence = this.state.scheduler.nextEnqueueSequence;
+    this.state.scheduler.nextEnqueueSequence += 1;
+    this.#persist();
+    return sequence;
+  }
+
+  getSchedulerState() {
+    return clone(this.state.scheduler);
+  }
+
+  updateSchedulerState(patch) {
+    const next = { ...this.state.scheduler, ...patch };
+    for (const key of ["nextEnqueueSequence", "fairCursor", "dispatchSequence"]) {
+      if (!Number.isInteger(next[key]) || next[key] < 0) {
+        throw runtimeError("state_corrupt", `invalid scheduler state field: ${key}`);
+      }
+    }
+    if (next.nextEnqueueSequence < this.state.scheduler.nextEnqueueSequence) {
+      throw runtimeError("state_corrupt", "nextEnqueueSequence cannot move backwards");
+    }
+    if (next.dispatchSequence < this.state.scheduler.dispatchSequence) {
+      throw runtimeError("state_corrupt", "dispatchSequence cannot move backwards");
+    }
+    this.state.scheduler = next;
+    this.#persist();
+    return clone(next);
   }
 
   recoveryEvents() {
