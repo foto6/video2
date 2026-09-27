@@ -571,8 +571,21 @@ export class RenderRuntimeV2 {
     return this.store.put(job);
   }
 
+  #cancelStage(job, reason) {
+    cleanupTempOutput(job.tempOutputPath);
+    job = transitionRuntimeJob(job, "cancelled", {
+      reason,
+      atMs: this.clock(),
+      patch: {
+        cancellationRequested: true,
+        tempOutputPath: null
+      }
+    });
+    return this.store.put(job);
+  }
+
   async #executeQueued(job, controller) {
-    if (job.cancellationRequested) return this.cancel(job.id, "cancelled_before_start");
+    if (job.cancellationRequested) return this.#cancelStage(job, "cancelled_before_start");
     const queueWaitMs = Math.max(0, this.clock() - (job.queuedAtMs ?? this.clock()));
 
     if (job.dryRun) {
@@ -691,7 +704,7 @@ export class RenderRuntimeV2 {
   }
 
   async #executeProbing(job, controller) {
-    if (job.cancellationRequested) return this.cancel(job.id, "cancelled_before_probe");
+    if (job.cancellationRequested) return this.#cancelStage(job, "cancelled_before_probe");
     let telemetry = normalizedTelemetry(job.telemetry);
     telemetry.sideEffects.probeInvocations += 1;
     job = { ...job, telemetry };
@@ -725,7 +738,7 @@ export class RenderRuntimeV2 {
   }
 
   async #executeQa(job, controller) {
-    if (controller.signal.aborted || job.cancellationRequested) return this.cancel(job.id, "cancelled_before_qa");
+    if (controller.signal.aborted || job.cancellationRequested) return this.#cancelStage(job, "cancelled_before_qa");
 
     let telemetry = normalizedTelemetry(job.telemetry);
     telemetry.sideEffects.qaEvaluations += 1;

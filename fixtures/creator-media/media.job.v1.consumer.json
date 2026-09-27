@@ -1,0 +1,63 @@
+{
+  "contractVersion": "media.job.v1",
+  "submit": {
+    "contractVersion": "media.job.v1",
+    "action": "submit",
+    "idempotencyKey": "creator:campaign-7:edit:1",
+    "request": {
+      "contractVersion": "media.render.v1",
+      "jobId": "creator-campaign-7-edit-1",
+      "timeline": {
+        "id": "creator-campaign-7-edit-1",
+        "version": 1,
+        "canvas": {
+          "width": 720,
+          "height": 1280,
+          "fps": 30,
+          "durationMs": 2000
+        },
+        "tracks": [
+          {
+            "id": "captions",
+            "kind": "caption",
+            "items": [
+              {
+                "id": "caption-1",
+                "startMs": 200,
+                "endMs": 1200,
+                "text": "Creator to Media"
+              }
+            ]
+          }
+        ]
+      },
+      "exportSpec": {
+        "videoCodec": "libx264",
+        "pixelFormat": "yuv420p"
+      },
+      "outputPath": "outputs/creator/campaign-7-edit-1.mp4",
+      "dryRun": true
+    }
+  },
+  "poll": {
+    "contractVersion": "media.job.v1",
+    "action": "resume_or_poll",
+    "jobId": "creator-campaign-7-edit-1"
+  },
+  "status": {
+    "contractVersion": "media.job.v1",
+    "action": "status",
+    "jobId": "creator-campaign-7-edit-1"
+  },
+  "cancel": {
+    "contractVersion": "media.job.v1",
+    "action": "cancel",
+    "jobId": "creator-campaign-7-edit-1",
+    "reason": "creator_cancelled"
+  },
+  "responseContract": {
+    "retryOwner": "media",
+    "finalArtifactOnlyWhenSucceeded": true,
+    "partialOutputExposed": false
+  }
+}

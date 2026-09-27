@@ -392,16 +392,22 @@ test("duplicate jobs and idempotency keys are deterministic", () => {
     });
     const first = fixtureRequest();
     const a = runtime.submit(first, { idempotencyKey: "idem-1" });
-
-    const second = fixtureRequest();
-    second.jobId = "different-job";
-    second.outputPath = "outputs/different.mp4";
-    const b = runtime.submit(second, { idempotencyKey: "idem-1" });
+    const b = runtime.submit(clone(first), { idempotencyKey: "idem-1" });
+    const c = runtime.submit(clone(first));
 
     assert.equal(a.duplicate, false);
     assert.equal(b.duplicate, true);
+    assert.equal(c.duplicate, true);
     assert.equal(b.job.id, first.jobId);
-    assert.throws(() => runtime.submit(first), /job already exists/);
+    assert.equal(c.job.id, first.jobId);
+
+    const conflict = fixtureRequest();
+    conflict.jobId = "different-job";
+    conflict.outputPath = "outputs/different.mp4";
+    assert.throws(
+      () => runtime.submit(conflict, { idempotencyKey: "idem-1" }),
+      /idempotency key is already bound to different render work/
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

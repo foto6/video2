@@ -17,6 +17,11 @@ export { atomicFinalize, cleanupTempOutput, outputDigest, prepareTempOutput, tem
 export { RenderRuntimeError } from "./runtime/errors.js";
 export { PersistentRenderJobStore } from "./runtime/job-store.js";
 export {
+  MEDIA_JOB_CONTRACT_VERSION,
+  MediaJobProtocolV1,
+  publicJobSnapshot
+} from "./runtime/job-protocol.js";
+export {
   RENDER_JOB_STATUSES,
   isRenderJobStatus,
   isTerminalRenderStatus,
