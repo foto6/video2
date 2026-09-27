@@ -48,3 +48,10 @@ export { DeterministicProcessExecutor } from "./runtime/process-executor.js";
 export { ResourceController, Semaphore } from "./runtime/resources.js";
 export { RetryPolicy, classifyRuntimeFailure } from "./runtime/retry.js";
 export { RenderRuntimeV2 } from "./runtime/runtime.js";
+
+export {
+  SOAK_SCENARIOS,
+  buildDeterministicSoakPlan,
+  cleanupSoakRoot,
+  runDeterministicMediaSoak
+} from "./runtime/soak.js";

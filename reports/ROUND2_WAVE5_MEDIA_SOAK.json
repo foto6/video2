@@ -1,0 +1,63 @@
+{
+  "reportVersion": "round2.wave5.media-soak.v1",
+  "compatibilityHead": "839c388b4713afc598f6badf70955255b7e1239b",
+  "wave4ConformanceManifest": "conformance/media.job.v1/consumer-manifest.json",
+  "seeds": [
+    20260927,
+    271828,
+    314159
+  ],
+  "jobsPerSeed": 105,
+  "totalLogicalJobRuns": 315,
+  "injectedEventsPerSeed": 210,
+  "totalInjectedEvents": 630,
+  "resourceLimits": {
+    "worker": 6,
+    "render": 3,
+    "probe": 2
+  },
+  "scenarioCountsPerSeed": {
+    "normal": 7,
+    "duplicate_submit": 7,
+    "caller_timeout": 7,
+    "process_failure": 7,
+    "process_timeout": 7,
+    "probe_transient": 7,
+    "qa_failure": 7,
+    "cancel_before_render": 7,
+    "cancel_during_render": 7,
+    "restart_rendering": 7,
+    "restart_probing": 7,
+    "restart_qa": 7,
+    "restart_retry_wait": 7,
+    "uncertain_render_outcome": 7,
+    "dry_run": 7
+  },
+  "expectedPerSeed": {
+    "terminalCounts": {
+      "succeeded": 84,
+      "failed": 7,
+      "cancelled": 14
+    },
+    "restartCount": 9,
+    "sideEffects": {
+      "executorInvocationsPersisted": 126,
+      "executorCallsObserved": 91,
+      "probeInvocationsPersisted": 91,
+      "probeCallsObserved": 84,
+      "successfulFinalizations": 77
+    }
+  },
+  "invariants": [
+    "max_one_active_render_attempt_per_logical_job",
+    "attempt_token_executor_invocation_unique",
+    "idempotency_binding_immutable",
+    "reconciliation_required_blocks_executor",
+    "worker_render_probe_limits_never_exceeded",
+    "terminal_status_never_regresses",
+    "succeeded_live_has_one_successful_finalize_and_final_artifact",
+    "failed_cancelled_dry_run_have_no_final_artifact",
+    "public_media_job_response_never_leaks_partial_path",
+    "terminal_cleanup_has_no_expected_orphan_temp"
+  ]
+}

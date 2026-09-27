@@ -359,7 +359,7 @@ test("persistent store recovers corrupt root state and quarantines invalid job s
   try {
     const filePath = path.join(root, "jobs.json");
     writeFileSync(filePath, "{ definitely not json", "utf8");
-    const recovered = new PersistentRenderJobStore({ filePath });
+    const recovered = new PersistentRenderJobStore({ filePath, recoverCorrupt: true });
     assert.equal(recovered.list().length, 0);
     assert.equal(recovered.recoveryEvents().some((entry) => entry.type === "store_reset_corrupt"), true);
     assert.equal(existsSync(`${filePath}.corrupt`), true);

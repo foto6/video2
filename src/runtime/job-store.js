@@ -76,7 +76,7 @@ function sanitizeState(raw) {
 }
 
 export class PersistentRenderJobStore {
-  constructor({ filePath, recoverCorrupt = true } = {}) {
+  constructor({ filePath, recoverCorrupt = false } = {}) {
     if (!filePath) throw new TypeError("filePath is required");
     this.filePath = path.resolve(filePath);
     this.tmpPath = `${this.filePath}.tmp`;
@@ -97,7 +97,14 @@ export class PersistentRenderJobStore {
         renameSync(this.tmpPath, this.filePath);
         recovered.recoveryEvents.push({ type: "temp_store_promoted" });
         return recovered;
-      } catch {
+      } catch (error) {
+        if (!this.recoverCorrupt) {
+          throw runtimeError(
+            "state_corrupt",
+            "temporary render job store is corrupt; refusing implicit reset",
+            { filePath: this.tmpPath, cause: error?.message ?? String(error) }
+          );
+        }
         unlinkSync(this.tmpPath);
       }
     }
@@ -111,7 +118,13 @@ export class PersistentRenderJobStore {
     try {
       return this.#parseFile(this.filePath);
     } catch (error) {
-      if (!this.recoverCorrupt) throw error;
+      if (!this.recoverCorrupt) {
+        throw runtimeError(
+          "state_corrupt",
+          "render job store is corrupt; refusing implicit reset",
+          { filePath: this.filePath, cause: error?.message ?? String(error) }
+        );
+      }
       if (existsSync(this.corruptPath)) unlinkSync(this.corruptPath);
       renameSync(this.filePath, this.corruptPath);
       const state = emptyState();
