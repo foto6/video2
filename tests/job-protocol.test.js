@@ -1,5 +1,6 @@
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -391,6 +392,7 @@ test("restart leaves uncertain accepted render reconciliation-blocked until Medi
 
     let persisted = firstStore.get(request.jobId);
     const partial = tempOutputPath(persisted.resolvedOutputPath, persisted.id);
+    mkdirSync(path.dirname(partial), { recursive: true });
     writeFileSync(partial, "uncertain-partial");
     persisted = {
       ...persisted,
