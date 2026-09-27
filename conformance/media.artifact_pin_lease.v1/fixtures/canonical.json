@@ -1,0 +1,13 @@
+{
+  "contractVersion": "media.artifact_pin_lease.v1",
+  "artifactDigest": "4cf2a37d274bab0a5cff978426452c90da0547349b68e0d5e969eb9ad6ad9893",
+  "manifestDigest": "1e938fb714071996c003c20512ac3dbbd9e49e10f554c8758bd9fe48f2258d1c",
+  "ownerKind": "creator_checkpoint",
+  "ownerId": "checkpoint-001",
+  "pinReason": "creator_checkpoint_active",
+  "createdAtMs": 1790506801000,
+  "renewedAtMs": 1790506801000,
+  "expiresAtMs": 1790510401000,
+  "generation": 1,
+  "canonicalDigest": "0a1e42db32d9bf3c9340b1c5521d928175712bad69669ce0e608a1294ab2fa8a"
+}

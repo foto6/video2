@@ -1,0 +1,16 @@
+{
+  "fixtureVersion": "media.artifact_pin_lease.v1.stress.1",
+  "seed": 909090,
+  "leaseCount": 10000,
+  "retentionRecordCount": 1200,
+  "expiryRule": "index % 7 == 0 is expired at planner clock",
+  "expected": {
+    "activeLeases": 8571,
+    "expiredLeases": 1429,
+    "recordsPinnedByActiveLease": 1200,
+    "eligibleAfterLeases": 0,
+    "blockedAfterLeases": 1200,
+    "reachableEligibilityViolations": 0,
+    "plannerWorkUnits": 11713
+  }
+}

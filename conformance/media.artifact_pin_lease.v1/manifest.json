@@ -1,0 +1,37 @@
+{
+  "manifestVersion": "media.artifact_pin_lease.v1.fixture-manifest.1",
+  "contractVersion": "media.artifact_pin_lease.v1",
+  "producerCompatibilityHead": "4290379ea51d512eeab6b1897353e4cf130908f2",
+  "files": [
+    {
+      "path": "fixtures/canonical.json",
+      "sha256": "8c4059ff6cd42095b1aa867f1b2b9c79b7f60fc353ed590f67b2ca43b4150ee6",
+      "purpose": "canonical Creator checkpoint pin lease"
+    },
+    {
+      "path": "fixtures/operations.json",
+      "sha256": "8e50201dec81578bd9f89da8451f62bf952bf5bf3ba92773e42b7126adae547e",
+      "purpose": "transport-neutral acquire renew release inspect sequence"
+    },
+    {
+      "path": "fixtures/stress.json",
+      "sha256": "4d169962ae6cd788a310a1245b1f40566e56de2eeb1f7d1038b7e40d933e246e",
+      "purpose": "deterministic 10000-lease GC stress descriptor"
+    }
+  ],
+  "consumerRules": {
+    "siblingImportRequired": false,
+    "compareAndSetField": "generation",
+    "identityFields": [
+      "artifactDigest",
+      "manifestDigest",
+      "ownerKind",
+      "ownerId",
+      "pinReason",
+      "expiresAtMs"
+    ],
+    "canonicalDigestAlgorithm": "sha256(stable-json-without-canonicalDigest)",
+    "expiryBoundary": "active iff expiresAtMs is null or nowMs < expiresAtMs",
+    "filesystemPathFieldsPresent": false
+  }
+}

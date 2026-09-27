@@ -1,0 +1,30 @@
+{
+  "reportVersion": "primary-media.wave9.external-pin-leases.v1",
+  "compatibilityHead": "4290379ea51d512eeab6b1897353e4cf130908f2",
+  "contractVersion": "media.artifact_pin_lease.v1",
+  "fixtureManifest": "conformance/media.artifact_pin_lease.v1/manifest.json",
+  "fixtureManifestSha256": "1431f9feed07b29832281cb3e14542b03bea369ca5e2c98a91b695f2e1a915d4",
+  "stress": {
+    "fixture": "conformance/media.artifact_pin_lease.v1/fixtures/stress.json",
+    "seed": 909090,
+    "leases": 10000,
+    "activeLeases": 8571,
+    "expiredLeases": 1429,
+    "retentionRecords": 1200,
+    "recordsPinnedByActiveLease": 1200,
+    "eligibleAfterLeases": 0,
+    "blockedAfterLeases": 1200,
+    "reachableEligibilityViolations": 0,
+    "plannerWorkUnits": 11713,
+    "liveCleanupInCi": false
+  },
+  "semantics": {
+    "duplicateAcquire": "idempotent only for exact active identity",
+    "renew": "compare-and-set generation; increments generation",
+    "release": "compare-and-set generation; removes active lease",
+    "expiryBoundary": "nowMs >= expiresAtMs is inactive",
+    "gcToctou": "pin lease store re-read before delete"
+  },
+  "publishing": false,
+  "accountMutation": false
+}

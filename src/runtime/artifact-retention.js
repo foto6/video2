@@ -16,6 +16,10 @@ import {
   artifactManifestDigest,
   validateArtifactManifest
 } from "./artifact-manifest.js";
+import {
+  isArtifactPinLeaseActive,
+  validateArtifactPinLease
+} from "./artifact-pin-lease.js";
 import { outputDigestSync } from "./atomic-output.js";
 import { runtimeError } from "./errors.js";
 import { isProtectedPath, resolveSandboxedPath } from "./path-policy.js";
@@ -304,6 +308,17 @@ function classifyRecord(record, context) {
     references.set(stableStringify(ref), ref);
   }
 
+  const leaseKey = `${metadata.artifactDigest}:${metadata.manifestDigest}`;
+  for (const lease of context.pinLeaseIndex.get(leaseKey) ?? []) {
+    reasons.add("external_pin_lease");
+    const ref = {
+      kind: "external_pin_lease",
+      id: `${lease.ownerKind}:${lease.ownerId}`,
+      digest: lease.canonicalDigest
+    };
+    references.set(stableStringify(ref), ref);
+  }
+
   const deletionReasons = [...reasons].sort();
   const eligible = deletionReasons.length === 0 &&
     (metadata.retentionClass === "transient" || metadata.retentionClass === "cacheable");
@@ -322,12 +337,50 @@ function classifyRecord(record, context) {
   };
 }
 
-function normalizeContext({ jobs = [], checkpointPins = [], releasePins = [], nowMs = Date.now() } = {}) {
-  if (!Array.isArray(jobs) || !Array.isArray(checkpointPins) || !Array.isArray(releasePins)) {
-    fail("retention_invalid", "jobs/checkpointPins/releasePins must be arrays");
+function normalizeContext({
+  jobs = [],
+  checkpointPins = [],
+  releasePins = [],
+  pinLeases = [],
+  nowMs = Date.now()
+} = {}) {
+  if (
+    !Array.isArray(jobs) ||
+    !Array.isArray(checkpointPins) ||
+    !Array.isArray(releasePins) ||
+    !Array.isArray(pinLeases)
+  ) {
+    fail("retention_invalid", "jobs/checkpointPins/releasePins/pinLeases must be arrays");
   }
   assertTimestamp(nowMs, "nowMs");
-  return { jobs, checkpointPins, releasePins, nowMs };
+
+  const activePinLeases = [];
+  const pinLeaseIndex = new Map();
+  for (const rawLease of pinLeases) {
+    const lease = validateArtifactPinLease(rawLease);
+    if (!isArtifactPinLeaseActive(lease, { nowMs })) continue;
+    activePinLeases.push(lease);
+    const key = `${lease.artifactDigest}:${lease.manifestDigest}`;
+    const values = pinLeaseIndex.get(key) ?? [];
+    values.push(lease);
+    pinLeaseIndex.set(key, values);
+  }
+  for (const values of pinLeaseIndex.values()) {
+    values.sort((a, b) =>
+      a.ownerKind.localeCompare(b.ownerKind) ||
+      a.ownerId.localeCompare(b.ownerId) ||
+      a.generation - b.generation
+    );
+  }
+
+  return {
+    jobs,
+    checkpointPins,
+    releasePins,
+    pinLeases: activePinLeases,
+    pinLeaseIndex,
+    nowMs
+  };
 }
 
 export function artifactRetentionRecordId({ metadata, storageKey }) {
@@ -399,10 +452,11 @@ export function planArtifactGc({
   jobs = [],
   checkpointPins = [],
   releasePins = [],
+  pinLeases = [],
   nowMs = Date.now()
 } = {}) {
   if (!Array.isArray(records)) fail("retention_invalid", "records must be an array");
-  const context = normalizeContext({ jobs, checkpointPins, releasePins, nowMs });
+  const context = normalizeContext({ jobs, checkpointPins, releasePins, pinLeases, nowMs });
   const entries = [];
   let eligibleCount = 0;
   let blockedCount = 0;
@@ -435,7 +489,7 @@ export function planArtifactGc({
       records: records.length,
       eligible: eligibleCount,
       blocked: blockedCount,
-      workUnits: records.length + jobs.length + checkpointPins.length + releasePins.length
+      workUnits: records.length + jobs.length + checkpointPins.length + releasePins.length + pinLeases.length
     }
   };
   return {
@@ -572,15 +626,20 @@ export class ArtifactGcExecutor {
   constructor({
     store,
     sandboxRoot,
-    referenceProvider = () => ({ jobs: [], checkpointPins: [], releasePins: [] }),
+    referenceProvider = () => ({ jobs: [], checkpointPins: [], releasePins: [], pinLeases: [] }),
+    pinLeaseStore = null,
     clock = () => Date.now()
   } = {}) {
     if (!store) throw new TypeError("store is required");
     if (!sandboxRoot) throw new TypeError("sandboxRoot is required");
     if (typeof referenceProvider !== "function") throw new TypeError("referenceProvider must be a function");
+    if (pinLeaseStore !== null && typeof pinLeaseStore.listActive !== "function") {
+      throw new TypeError("pinLeaseStore.listActive is required");
+    }
     this.store = store;
     this.sandboxRoot = path.resolve(sandboxRoot);
     this.referenceProvider = referenceProvider;
+    this.pinLeaseStore = pinLeaseStore;
     this.clock = clock;
   }
 
@@ -604,12 +663,17 @@ export class ArtifactGcExecutor {
   }
 
   #currentContext() {
+    const nowMs = this.clock();
     const value = this.referenceProvider() ?? {};
+    const storeLeases = this.pinLeaseStore
+      ? this.pinLeaseStore.listActive({ nowMs })
+      : [];
     return normalizeContext({
       jobs: value.jobs ?? [],
       checkpointPins: value.checkpointPins ?? [],
       releasePins: value.releasePins ?? [],
-      nowMs: this.clock()
+      pinLeases: [...(value.pinLeases ?? []), ...storeLeases],
+      nowMs
     });
   }
 
@@ -687,6 +751,7 @@ export class ArtifactGcExecutor {
           jobs: context.jobs,
           checkpointPins: context.checkpointPins,
           releasePins: context.releasePins,
+          pinLeases: context.pinLeases,
           nowMs: context.nowMs
         });
         if (!fresh.entries[0].eligible) {

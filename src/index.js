@@ -23,6 +23,15 @@ export {
   tempOutputPath
 } from "./runtime/atomic-output.js";
 export {
+  MEDIA_ARTIFACT_PIN_LEASE_VERSION,
+  PersistentArtifactPinLeaseStore,
+  artifactPinLeaseDigest,
+  artifactPinOwnerKey,
+  createArtifactPinLease,
+  isArtifactPinLeaseActive,
+  validateArtifactPinLease
+} from "./runtime/artifact-pin-lease.js";
+export {
   ArtifactGcExecutor,
   MEDIA_ARTIFACT_GC_EXECUTION_VERSION,
   MEDIA_ARTIFACT_GC_PLAN_VERSION,
@@ -118,3 +127,8 @@ export {
   buildRetentionStressCorpus,
   runRetentionPlannerStress
 } from "./runtime/retention-soak.js";
+
+export {
+  buildPinLeaseStressCorpus,
+  runPinLeaseStress
+} from "./runtime/pin-lease-soak.js";
