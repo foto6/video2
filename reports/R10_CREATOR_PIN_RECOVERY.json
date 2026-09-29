@@ -1,0 +1,52 @@
+{
+  "reportVersion": "media.r10.creator_pin_recovery.v1",
+  "baselineSha": "750d4ef36be76adbacc72210116ece8bda50c60d",
+  "branch": "agent/media-r10-native-mcp-consumer-20260929",
+  "nativeMcpExposureReport": "reports/R10_NATIVE_MCP_EXPOSURE.json",
+  "nativeToolExposureBlocker": "NATIVE_PC_MCP_NOT_EXPOSED",
+  "companionContractVersion": "media.creator_pin_recovery.v1",
+  "frozenContracts": [
+    "media.render.v1",
+    "media.job.v1",
+    "media.artifact_manifest.v1",
+    "media.artifact_retention.v1",
+    "media.artifact_pin_lease.v1"
+  ],
+  "baselineParity": {
+    "wave9PinLeaseFixtureManifestSha256": "1431f9feed07b29832281cb3e14542b03bea369ca5e2c98a91b695f2e1a915d4",
+    "wave9TenThousandLeasePlanDigest": "c868608856674c50e5cf2cfa8ac27d2df7bf82d4e2e0ade11cac43d50fd1a703",
+    "wave8DryRunPlanDigest": "fe91cc40234047ba6e8ea6723e0362ae40effe5bc94224fab7ca65c046d24f21"
+  },
+  "deterministicMatrix": {
+    "fixture": "conformance/media.creator_pin_recovery.r10/fixtures/restart-matrix.json",
+    "seeds": [
+      17,
+      29,
+      71,
+      101
+    ],
+    "fourFailurePoints": [
+      "after_prepare_before_effect",
+      "after_lease_effect_before_binding_commit",
+      "after_effect_before_commit",
+      "after_commit_before_ack"
+    ],
+    "scenarios": 16,
+    "expectedPreparedUnproven": 4,
+    "expectedAppliedEventReconciliations": 8,
+    "expectedCommittedAckRecoveries": 4,
+    "expectedDuplicateEffects": 0,
+    "expectedRealVideoReadsOrWrites": 0
+  },
+  "safety": {
+    "historicalAckIsNotProofOfCurrentLease": true,
+    "exactOwnerActionEpochEventVerification": true,
+    "noBlindSecondLease": true,
+    "unknownRetainsGcBlock": true,
+    "noProtectedPathAccess": true,
+    "noRealVideoInspection": true,
+    "noNativeMcpFallback": true,
+    "noServiceMutation": true,
+    "noMergeOrRelease": true
+  }
+}

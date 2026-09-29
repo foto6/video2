@@ -360,6 +360,23 @@ function sanitizeState(raw) {
         binding.manifestDigest !== entry.manifestDigest) {
       fail("pin_lease_state_corrupt", "prepared Creator binding mismatch");
     }
+    // R9 journals without these companion provenance fields remain readable.
+    // R10 journals bind owner identity and exact mutation args durably.
+    if (entry.ownerKind !== undefined || entry.ownerId !== undefined) {
+      if (!["creator_checkpoint", "creator_job", "release_candidate"].includes(entry.ownerKind) ||
+          typeof entry.ownerId !== "string" ||
+          artifactPinOwnerKey(entry.ownerKind, entry.ownerId) !== entry.ownerKey) {
+        fail("pin_lease_state_corrupt", "journaled owner identity mismatch");
+      }
+      const expectedId =
+        entry.ownerKind === "creator_checkpoint" ? binding.checkpointId :
+        entry.ownerKind === "release_candidate" ? binding.releaseCandidateId :
+        binding.creatorJobId;
+      if (expectedId !== entry.ownerId) {
+        fail("pin_lease_state_corrupt", "journaled owner differs from Creator binding");
+      }
+      sha256(entry.argsDigest, "request argsDigest");
+    }
     artifactPinScope(entry.artifactDigest, entry.manifestDigest);
     state.requestJournal[requestId] = clone(entry);
   }
@@ -809,6 +826,24 @@ export class PersistentArtifactPinLeaseStore {
           fail("pin_request_conflict", "requestId reused for different command");
         }
         if (prior.status === "committed") {
+          // A persisted acknowledgement proves historical completion, NOT
+          // that its lease remains held following a later CAS mutation/expiry.
+          if (prior.action === "release") {
+            if (this.state.leases[prior.ownerKey] ||
+                (this.state.generations[prior.ownerKey] ?? 0) !== prior.response?.generation) {
+              fail("pin_request_superseded", "committed release was followed by an owner replacement; inspect current generation");
+            }
+          } else {
+            const acknowledgedLease = prior.response?.lease ?? prior.response;
+            const currentLease = this.state.leases[prior.ownerKey];
+            const currentBinding = this.state.ownerBindings[prior.ownerKey];
+            if (!acknowledgedLease || !currentLease ||
+                currentLease.canonicalDigest !== acknowledgedLease.canonicalDigest ||
+                !currentBinding || currentBinding.bindingDigest !== prior.bindingDigest ||
+                !isArtifactPinLeaseActive(currentLease, { nowMs: this.clock() })) {
+              fail("pin_request_superseded", "committed historical acknowledgement is no longer a verified active pin");
+            }
+          }
           return { ...clone(prior.response), replayed: true };
         }
         if (prior.status === "rejected" || prior.status === "aborted") {
@@ -863,11 +898,15 @@ export class PersistentArtifactPinLeaseStore {
         action,
         requestDigest,
         ownerKey,
+        ownerKind: args.ownerKind,
+        ownerId: args.ownerId,
+        argsDigest: fingerprint(args),
         bindingDigest,
         binding: normalizedBinding,
         artifactDigest: normalizedBinding.artifactDigest,
         manifestDigest: normalizedBinding.manifestDigest,
         scopeEpochAtPrepare: this.state.mutationEpochs[scope] ?? 0,
+        expectedGeneration: action === "acquire" ? expectedOwnerEpoch : args.expectedGeneration,
         preparedAtMs: nowMs
       };
       this.state.requestJournal[requestId] = prepared;
@@ -932,6 +971,31 @@ export class PersistentArtifactPinLeaseStore {
     });
   }
 
+  recoverySnapshot({ requestId } = {}) {
+    validateRequestId(requestId);
+    return this.withCoordination(() => {
+      this.#refresh();
+      const row = this.state.requestJournal[requestId] ?? null;
+      if (!row) {
+        return {
+          journal: null, lease: null, ownerBinding: null, ownerGeneration: null,
+          matchingEvents: [], scopeEpoch: null, observedAtMs: this.clock()
+        };
+      }
+      const scope = artifactPinScope(row.artifactDigest, row.manifestDigest);
+      return {
+        journal: { ...clone(row), requestId },
+        lease: this.state.leases[row.ownerKey] ? clone(this.state.leases[row.ownerKey]) : null,
+        ownerBinding: this.state.ownerBindings[row.ownerKey]
+          ? clone(this.state.ownerBindings[row.ownerKey]) : null,
+        ownerGeneration: this.state.generations[row.ownerKey] ?? 0,
+        matchingEvents: this.state.events.filter((event) => event.requestId === requestId).map(clone),
+        scopeEpoch: this.state.mutationEpochs[scope] ?? 0,
+        observedAtMs: this.clock()
+      };
+    });
+  }
+
   journaledRequest(requestId) {
     validateRequestId(requestId);
     this.#refresh();
@@ -949,16 +1013,32 @@ export class PersistentArtifactPinLeaseStore {
       if (row.status !== "prepared") {
         fail("pin_request_closed", "request cannot be reconciled as applied");
       }
-      const event = this.state.events.find((item) => item.requestId === requestId);
-      if (!event || event.artifactDigest !== row.artifactDigest ||
-          event.manifestDigest !== row.manifestDigest) {
-        fail("pin_outcome_unknown", "effect absent or unproven; requires explicit no-effect reconciliation");
+      const events = this.state.events.filter((item) => item.requestId === requestId);
+      if (events.length !== 1) {
+        fail("pin_outcome_unknown", "missing or duplicated event evidence; no blind side-effect replay");
+      }
+      const event = events[0];
+      const correctEventType = row.action === "acquire"
+        ? ["acquire", "reacquire"].includes(event.type)
+        : event.type === row.action;
+      if (!correctEventType ||
+          artifactPinOwnerKey(event.ownerKind, event.ownerId) !== row.ownerKey ||
+          event.artifactDigest !== row.artifactDigest ||
+          event.manifestDigest !== row.manifestDigest ||
+          event.canonicalDigest === undefined ||
+          (this.state.mutationEpochs[artifactPinScope(row.artifactDigest, row.manifestDigest)] ?? 0) <= row.scopeEpochAtPrepare ||
+          (row.expectedGeneration !== undefined && event.generation !==
+            (row.action === "release" ? row.expectedGeneration : row.expectedGeneration + 1))) {
+        fail("pin_outcome_unknown", "persisted event does not prove the requested owner/action/epoch/provenance");
       }
 
       const lease = this.state.leases[row.ownerKey];
       let response;
       if (row.action === "release") {
-        if (lease) fail("pin_outcome_unknown", "release event conflicts with still-present lease");
+        if (lease || this.state.generations[row.ownerKey] !== event.generation ||
+            !/^[a-f0-9]{64}$/.test(event.canonicalDigest)) {
+          fail("pin_outcome_unknown", "release event conflicts with lease/generation/canonical provenance");
+        }
         response = {
           released: true,
           ownerKind: event.ownerKind,
@@ -969,7 +1049,10 @@ export class PersistentArtifactPinLeaseStore {
         };
       } else {
         if (!lease || lease.canonicalDigest !== event.canonicalDigest ||
-            lease.generation !== event.generation) {
+            lease.generation !== event.generation ||
+            this.state.generations[row.ownerKey] !== event.generation ||
+            lease.artifactDigest !== row.artifactDigest ||
+            lease.manifestDigest !== row.manifestDigest) {
           fail("pin_outcome_unknown", "lease bytes do not match persisted side-effect evidence");
         }
         response = row.action === "acquire"

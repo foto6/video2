@@ -1,0 +1,32 @@
+{
+  "contractVersion": "media.creator_pin_recovery_matrix.r10.v1",
+  "baselineSha": "750d4ef36be76adbacc72210116ece8bda50c60d",
+  "seeds": [
+    17,
+    29,
+    71,
+    101
+  ],
+  "faults": [
+    "after_prepare_before_effect",
+    "after_lease_effect_before_binding_commit",
+    "after_effect_before_commit",
+    "after_commit_before_ack"
+  ],
+  "expected": {
+    "scenarios": 16,
+    "preparedUnproven": 4,
+    "reconciledFromEvent": 8,
+    "committedAckRecovered": 4,
+    "duplicateEffectInvocations": 0,
+    "realVideoReadsOrWrites": 0
+  },
+  "requirements": {
+    "persistedRequestId": true,
+    "canonicalManifestFixtureUsed": true,
+    "noSecondLeaseOnUnknown": true,
+    "noRealVideoFiles": true,
+    "noWindowsDeviceMutation": true,
+    "noNativeMcpSubstitution": true
+  }
+}

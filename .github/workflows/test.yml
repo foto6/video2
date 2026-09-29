@@ -5,6 +5,7 @@ on:
     branches:
       - agent/media-engine
       - agent/media-r9-pin-gc-chaos-20260928
+      - agent/media-r10-native-mcp-consumer-20260929
   pull_request:
 
 permissions:
@@ -18,6 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm run test:r10
       - run: npm run test:pin-chaos
       - run: npm run test:pin
       - run: npm run test:retention

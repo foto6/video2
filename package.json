@@ -15,6 +15,7 @@
     "test:retention": "node --test tests/artifact-retention.test.js",
     "test:pin": "node --test tests/artifact-pin-lease.test.js",
     "test:stress": "node --test tests/media-soak.test.js tests/resource-scheduler.test.js",
-    "test:pin-chaos": "node --test tests/pin-gc-chaos.test.js"
+    "test:pin-chaos": "node --test tests/pin-gc-chaos.test.js",
+    "test:r10": "node --test tests/native-mcp-exposure-r10.test.js tests/creator-pin-recovery-r10.test.js"
   }
 }

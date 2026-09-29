@@ -145,3 +145,13 @@ export {
   prepareScopedGcApproval,
   simulateScopedArtifactGc
 } from "./runtime/artifact-gc-chaos-simulation.js";
+
+export {
+  MEDIA_CREATOR_PIN_RECOVERY_VERSION,
+  inspectCreatorPinRecovery,
+  reconcileCreatorPinRecovery
+} from "./runtime/creator-pin-recovery.js";
+export {
+  MEDIA_NATIVE_PC_EXPOSURE_AUDIT_VERSION,
+  evaluateNativePcMcpExposure
+} from "./runtime/native-mcp-exposure-gate.js";

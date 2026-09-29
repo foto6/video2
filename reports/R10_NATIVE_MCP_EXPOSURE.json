@@ -1,0 +1,78 @@
+{
+  "contractVersion": "media.native_pc_exposure_audit.v1",
+  "observedAt": "2026-09-29",
+  "source": "independent current ChatGPT functions.exec ALL_TOOLS enumeration and skills__list",
+  "advertisedToolCount": 255,
+  "exposedPluginNamespaces": {
+    "GitHub": 89,
+    "Metricool": 9,
+    "vidIQ": 65,
+    "Runway": 31,
+    "Descript": 8,
+    "Remote_Desktop_Commander": 30,
+    "Plugin_Creator": 7,
+    "Plugin_Management": 6
+  },
+  "otherCallableTools": {
+    "files": 6,
+    "skills": 2,
+    "user_settings": 2
+  },
+  "nativeMcp": {
+    "status": "TOOL_EXPOSURE_BLOCKED",
+    "namespace": null,
+    "advertisedToolNames": [],
+    "callableDiscoveryTools": [],
+    "blocker": "NATIVE_PC_MCP_NOT_EXPOSED",
+    "actualNativeCallsAttempted": 0,
+    "capabilityDiscovery": {
+      "status": "not_tested_absent_tool",
+      "version": null,
+      "registryDigest": null
+    },
+    "deviceList": {
+      "status": "not_tested_absent_tool",
+      "outcome": null
+    },
+    "ping": {
+      "status": "not_tested_absent_tool",
+      "outcome": null
+    },
+    "configurationMetadata": {
+      "status": "not_tested_absent_tool",
+      "outcome": null
+    },
+    "isolatedKnownTempFixture": {
+      "status": "not_tested_absent_tool",
+      "outcome": null
+    },
+    "failureModesObserved": [
+      "NO_NATIVE_MCP_CALLABLE_SCHEMA_ADVERTISED"
+    ],
+    "reason": "No genuine native MCP namespace was present among the 255 callable tool names. Absence is a tool-exposure blocker, not an endpoint/device failure."
+  },
+  "distinctAlternatives": {
+    "desktopCommander": {
+      "exposed": true,
+      "namespace": "mcp__Remote_Desktop_Commander__",
+      "toolCount": 30,
+      "nativePcMcp": false,
+      "probedForThisAudit": false
+    },
+    "olderPcControl": {
+      "visibleSkillUri": "skills://plugins/pc-control/pc-control",
+      "transport": "private GitHub-backed pc_relay.request.v1 / pc_relay.result.v1",
+      "repository": "foto6/help-pc-1",
+      "nativePcMcp": false,
+      "usedForThisAudit": false
+    }
+  },
+  "safety": {
+    "noDesktopCommanderSubstitution": true,
+    "noLegacyRelaySubstitution": true,
+    "noProtectedDirectoryAccess": true,
+    "noSecretAccess": true,
+    "noWindowsServiceMutation": true
+  },
+  "exposureDecision": "BLOCKED_UNTIL_NATIVE_PC_MCP_TOOLS_APPEAR_IN_THIS_CHAT_SESSION"
+}
