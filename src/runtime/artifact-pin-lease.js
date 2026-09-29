@@ -896,6 +896,12 @@ export class PersistentArtifactPinLeaseStore {
         this.#journalRequestId = null;
       }
 
+      // A real process crash can occur after the lease/event atomic snapshot
+      // but before the companion owner binding snapshot. Restart recovery
+      // reconstructs the binding from the durable prepared request + event.
+      if (fault === "after_lease_effect_before_binding_commit") {
+        fail("pin_outcome_unknown", "injected crash after lease effect before Creator binding commit");
+      }
       this.#refresh();
       if (action !== "release") {
         this.state.ownerBindings[ownerKey] = {
@@ -969,6 +975,15 @@ export class PersistentArtifactPinLeaseStore {
         response = row.action === "acquire"
           ? { lease: clone(lease), duplicate: false }
           : clone(lease);
+      }
+      if (row.action === "release") {
+        delete this.state.ownerBindings[row.ownerKey];
+      } else {
+        this.state.ownerBindings[row.ownerKey] = {
+          binding: row.binding,
+          bindingDigest: row.bindingDigest,
+          generation: lease.generation
+        };
       }
       this.state.requestJournal[requestId] = {
         ...row,

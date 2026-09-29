@@ -79,3 +79,7 @@ Focused evidence: `reports/R9_PIN_GC_CHAOS.json`; fixture SHA-256 list: `conform
 ## Fail-closed production configuration
 
 `ArtifactGcExecutor.execute(plan,{dryRun:false})` now returns `failed_closed / authoritative_pin_store_required` when an authoritative pin store is absent. The only compatibility exception is an explicit `syntheticUnleasedFixtureMode:true` restricted to isolated `media-wave8-*` OS TEMP fixtures in pre-existing tests; do not use it in production. The pin-journal file is atomically replaced after fsync of the temporary snapshot (and directory fsync where supported). Missing primary state alongside an abandoned temporary snapshot, corrupt JSON or an orphan coordination barrier **never** initializes a fresh empty store.
+
+## Additional atomicity evidence
+
+The `after_lease_effect_before_binding_commit` fault injects the narrow crash window between a persisted lease/event snapshot and the companion Creator owner-binding snapshot. `reconcileJournaledRequest` repairs the binding from the original request and matching durable event in the same atomic commit as its replay response, without any second lease side effect.

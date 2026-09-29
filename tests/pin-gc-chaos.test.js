@@ -338,6 +338,35 @@ test("unknown outcome after persisted pin side effect blocks GC even after expir
   } finally { dispose(c); }
 });
 
+test("restart reconstructs Creator binding when lease side effect committed before binding snapshot", () => {
+  const c = makeContext(makeRecord("binding-crash-window"));
+  try {
+    assert.throws(() => c.acquire("binding-crash", {
+      fault: "after_lease_effect_before_binding_commit"
+    }), (error) => error.code === "pin_outcome_unknown");
+    assert.equal(c.store.events().length, 1);
+    assert.equal(c.plan().summary.eligible, 0);
+
+    const restarted = new PersistentArtifactPinLeaseStore({
+      filePath: c.storePath, clock: () => c.clock.value
+    });
+    const applied = restarted.reconcileJournaledRequest({ requestId: "binding-crash" });
+    assert.equal(applied.lease.generation, 1);
+    assert.equal(restarted.events().length, 1);
+    const released = restarted.journaledLeaseOperation({
+      requestId: "release-after-binding-recovery",
+      action: "release",
+      args: {
+        ownerKind: c.args.ownerKind, ownerId: c.args.ownerId,
+        expectedGeneration: 1
+      },
+      binding: c.binding, expectedOwnerEpoch: null
+    });
+    assert.equal(released.released, true);
+    assert.equal(restarted.events().length, 2);
+  } finally { dispose(c); }
+});
+
 test("prepared-before-effect request requires explicit, epoch-bound no-effect reconciliation", () => {
   const c = makeContext(makeRecord("prepared-only"));
   try {
