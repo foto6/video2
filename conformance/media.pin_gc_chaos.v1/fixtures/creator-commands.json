@@ -1,0 +1,41 @@
+{
+  "fixtureVersion": "media.pin_gc_chaos.creator_commands.v1",
+  "acquire": {
+    "contractVersion": "media.artifact_pin_request.v1",
+    "requestId": "creator-r9-pin-acquire-001",
+    "action": "acquire",
+    "args": {
+      "artifactDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "manifestDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "ownerKind": "creator_checkpoint",
+      "ownerId": "checkpoint-r9-001",
+      "pinReason": "creator_checkpoint_active",
+      "expiresAtMs": 1790600000000
+    },
+    "binding": {
+      "creatorJobId": "creator-r9-001",
+      "logicalMediaJobId": "media-r9-001",
+      "checkpointId": "checkpoint-r9-001",
+      "releaseCandidateId": null,
+      "artifactDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "manifestDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "expectedOwnerEpoch": 0
+  },
+  "renew": {
+    "requestId": "creator-r9-pin-renew-001",
+    "action": "renew",
+    "expectedGeneration": 1
+  },
+  "release": {
+    "requestId": "creator-r9-pin-release-001",
+    "action": "release",
+    "expectedGeneration": 2
+  },
+  "retryOwnership": {
+    "afterAcceptedOrUnknown": "inspect journal and reconcile same requestId; never blind resend with new requestId",
+    "leaseGenerationCAS": true,
+    "ownerReplacementRequiresPersistedGenerationWatermark": true,
+    "humanApprovalIsAdditionalGateNotLeaseRelease": true
+  }
+}

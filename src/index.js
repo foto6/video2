@@ -132,3 +132,16 @@ export {
   buildPinLeaseStressCorpus,
   runPinLeaseStress
 } from "./runtime/pin-lease-soak.js";
+
+export {
+  MEDIA_ARTIFACT_PIN_REQUEST_VERSION,
+  MEDIA_ARTIFACT_GC_APPROVAL_VERSION,
+  artifactPinScope,
+  createScopedGcApproval,
+  validateCreatorArtifactPinRequest
+} from "./runtime/artifact-pin-lease.js";
+export {
+  planArtifactGcWithPinStore,
+  prepareScopedGcApproval,
+  simulateScopedArtifactGc
+} from "./runtime/artifact-gc-chaos-simulation.js";

@@ -1,0 +1,39 @@
+{
+  "manifestVersion": "media.pin_gc_chaos.v1.fixture-manifest.1",
+  "producerBaseline": "ab3be066308f47c1bb07d1836e2d2f72faffe0ff",
+  "companionContracts": [
+    "media.artifact_pin_request.v1",
+    "media.artifact_gc_approval.v1",
+    "media.artifact_gc_simulation.v1"
+  ],
+  "files": [
+    {
+      "path": "fixtures/synthetic-render.request.json",
+      "sha256": "fc8c66e2bb327d406f732a8d9a0374d7c56bbfd36463fe8a896226a342847132",
+      "purpose": "planning-only synthetic FFmpeg-compatible render request"
+    },
+    {
+      "path": "fixtures/creator-commands.json",
+      "sha256": "cfcb0b277d72734e76a3dff5f18cfeb31474971b5b8a9e6f7c524ae543bd07d7",
+      "purpose": "self-contained Creator checkpoint request and CAS mapping"
+    },
+    {
+      "path": "fixtures/scoped-chaos.json",
+      "sha256": "46460945e67c89638688794ce1706062ff06bf40f4d5934e012ad8f22909dcdd",
+      "purpose": "fixed-seed synthetic GC failure/reconciliation scenarios"
+    }
+  ],
+  "preservedContractEvidence": {
+    "wave9PinLeaseManifestSha256": "1431f9feed07b29832281cb3e14542b03bea369ca5e2c98a91b695f2e1a915d4",
+    "wave9CanonicalPinLeaseSha256": "8c4059ff6cd42095b1aa867f1b2b9c79b7f60fc353ed590f67b2ca43b4150ee6",
+    "wave9TenThousandLeasePlanDigest": "c868608856674c50e5cf2cfa8ac27d2df7bf82d4e2e0ade11cac43d50fd1a703"
+  },
+  "consumerRules": {
+    "directMediaSourceImportRequired": false,
+    "idempotency": "persist requestId before dispatch; re-issue same ID only to inspect committed journal, never blind replay prepared effect",
+    "acquireProof": "producer-validated succeeded live artifact and manifest before mutation",
+    "approval": "external human authorization plus epoch/manifest/plan-scoped assertion",
+    "protectedPathsExposed": false,
+    "liveGcInSyntheticSuite": false
+  }
+}

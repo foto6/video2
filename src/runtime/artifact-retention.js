@@ -309,6 +309,15 @@ function classifyRecord(record, context) {
   }
 
   const leaseKey = `${metadata.artifactDigest}:${metadata.manifestDigest}`;
+  for (const unknown of context.unknownScopeIndex.get(leaseKey) ?? []) {
+    reasons.add(unknown.reason);
+    const ref = {
+      kind: "outcome_unknown",
+      id: unknown.requestId,
+      digest: metadata.manifestDigest
+    };
+    references.set(stableStringify(ref), ref);
+  }
   for (const lease of context.pinLeaseIndex.get(leaseKey) ?? []) {
     reasons.add("external_pin_lease");
     const ref = {
@@ -342,15 +351,17 @@ function normalizeContext({
   checkpointPins = [],
   releasePins = [],
   pinLeases = [],
+  unknownScopes = [],
   nowMs = Date.now()
 } = {}) {
   if (
     !Array.isArray(jobs) ||
     !Array.isArray(checkpointPins) ||
     !Array.isArray(releasePins) ||
-    !Array.isArray(pinLeases)
+    !Array.isArray(pinLeases) ||
+    !Array.isArray(unknownScopes)
   ) {
-    fail("retention_invalid", "jobs/checkpointPins/releasePins/pinLeases must be arrays");
+    fail("retention_invalid", "jobs/checkpointPins/releasePins/pinLeases/unknownScopes must be arrays");
   }
   assertTimestamp(nowMs, "nowMs");
 
@@ -373,12 +384,26 @@ function normalizeContext({
     );
   }
 
+  const unknownScopeIndex = new Map();
+  for (const row of unknownScopes) {
+    if (!row || typeof row !== "object" ||
+        !/^[a-f0-9]{64}$/.test(row.artifactDigest) ||
+        !/^[a-f0-9]{64}$/.test(row.manifestDigest) ||
+        !["pin_outcome_unknown", "cleanup_outcome_unknown"].includes(row.reason) ||
+        typeof row.requestId !== "string" || row.requestId.length === 0) {
+      fail("retention_invalid", "invalid unresolved pin/cleanup outcome");
+    }
+    const key = `${row.artifactDigest}:${row.manifestDigest}`;
+    unknownScopeIndex.set(key, [...(unknownScopeIndex.get(key) ?? []), row]);
+  }
   return {
     jobs,
     checkpointPins,
     releasePins,
     pinLeases: activePinLeases,
     pinLeaseIndex,
+    unknownScopeIndex,
+    unknownScopes,
     nowMs
   };
 }
@@ -453,10 +478,11 @@ export function planArtifactGc({
   checkpointPins = [],
   releasePins = [],
   pinLeases = [],
+  unknownScopes = [],
   nowMs = Date.now()
 } = {}) {
   if (!Array.isArray(records)) fail("retention_invalid", "records must be an array");
-  const context = normalizeContext({ jobs, checkpointPins, releasePins, pinLeases, nowMs });
+  const context = normalizeContext({ jobs, checkpointPins, releasePins, pinLeases, unknownScopes, nowMs });
   const entries = [];
   let eligibleCount = 0;
   let blockedCount = 0;
@@ -489,7 +515,7 @@ export function planArtifactGc({
       records: records.length,
       eligible: eligibleCount,
       blocked: blockedCount,
-      workUnits: records.length + jobs.length + checkpointPins.length + releasePins.length + pinLeases.length
+      workUnits: records.length + jobs.length + checkpointPins.length + releasePins.length + pinLeases.length + unknownScopes.length
     }
   };
   return {
@@ -665,14 +691,15 @@ export class ArtifactGcExecutor {
   #currentContext() {
     const nowMs = this.clock();
     const value = this.referenceProvider() ?? {};
-    const storeLeases = this.pinLeaseStore
-      ? this.pinLeaseStore.listActive({ nowMs })
-      : [];
+    const snapshot = this.pinLeaseStore
+      ? this.pinLeaseStore.snapshotForGc({ nowMs })
+      : { pinLeases: [], unknownScopes: [] };
     return normalizeContext({
       jobs: value.jobs ?? [],
       checkpointPins: value.checkpointPins ?? [],
       releasePins: value.releasePins ?? [],
-      pinLeases: [...(value.pinLeases ?? []), ...storeLeases],
+      pinLeases: [...(value.pinLeases ?? []), ...snapshot.pinLeases],
+      unknownScopes: [...(value.unknownScopes ?? []), ...snapshot.unknownScopes],
       nowMs
     });
   }
@@ -692,9 +719,10 @@ export class ArtifactGcExecutor {
     return value;
   }
 
-  execute(inputPlan, { dryRun = true } = {}) {
+  execute(inputPlan, { dryRun = true, approvals = [], fault = null } = {}) {
     const plan = validateArtifactGcPlan(inputPlan);
     if (typeof dryRun !== "boolean") throw new TypeError("dryRun must be boolean");
+    if (!Array.isArray(approvals)) throw new TypeError("approvals must be an array");
     const outcomes = [];
 
     try {
@@ -714,12 +742,15 @@ export class ArtifactGcExecutor {
     }
 
     for (const entry of plan.entries.filter((value) => value.eligible)) {
+      const runEntry = () => {
+      let cleanupRequestId = null;
+      let cleanupStarted = false;
       try {
         this.store.refresh();
         const record = this.store.get(entry.recordId);
         if (!record) {
           outcomes.push(this.#outcome(plan, entry, "stale_record_missing"));
-          continue;
+          return;
         }
 
         if (
@@ -730,7 +761,7 @@ export class ArtifactGcExecutor {
           outcomes.push(this.#outcome(plan, entry, "stale_plan_rejected", {
             reason: "record_identity_changed"
           }));
-          continue;
+          return;
         }
 
         const manifest = validateArtifactManifest(record.manifest);
@@ -742,7 +773,7 @@ export class ArtifactGcExecutor {
           outcomes.push(this.#outcome(plan, entry, "stale_plan_rejected", {
             reason: "manifest_digest_changed"
           }));
-          continue;
+          return;
         }
 
         const context = this.#currentContext();
@@ -752,19 +783,20 @@ export class ArtifactGcExecutor {
           checkpointPins: context.checkpointPins,
           releasePins: context.releasePins,
           pinLeases: context.pinLeases,
+          unknownScopes: context.unknownScopes,
           nowMs: context.nowMs
         });
         if (!fresh.entries[0].eligible) {
           outcomes.push(this.#outcome(plan, entry, "stale_plan_rejected", {
             reason: fresh.entries[0].reasons.join(",")
           }));
-          continue;
+          return;
         }
 
         const safe = this.#safePath(record);
         if (safe.missing) {
           outcomes.push(this.#outcome(plan, entry, "already_missing"));
-          continue;
+          return;
         }
 
         const digest = outputDigestSync(safe.resolved);
@@ -776,7 +808,7 @@ export class ArtifactGcExecutor {
           outcomes.push(this.#outcome(plan, entry, "integrity_failure", {
             reason: "artifact_bytes_changed"
           }));
-          continue;
+          return;
         }
 
         const beforeMutation = lstatSync(safe.resolved);
@@ -784,29 +816,91 @@ export class ArtifactGcExecutor {
           outcomes.push(this.#outcome(plan, entry, "stale_plan_rejected", {
             reason: "file_identity_changed"
           }));
-          continue;
+          return;
         }
 
         if (dryRun) {
           outcomes.push(this.#outcome(plan, entry, "would_delete"));
-          continue;
+          return;
+        }
+
+        if (this.pinLeaseStore) {
+          const approval = approvals.find((item) =>
+            item?.artifactDigest === entry.artifactDigest &&
+            item?.manifestDigest === entry.manifestDigest &&
+            item?.planDigest === plan.planDigest
+          );
+          if (!approval) {
+            outcomes.push(this.#outcome(plan, entry, "stale_plan_rejected", {
+              reason: "human_release_approval_required"
+            }));
+            return;
+          }
+          cleanupRequestId = approval.approvalId;
+          const begin = this.pinLeaseStore.beginCleanup({
+            requestId: cleanupRequestId,
+            recordId: entry.recordId,
+            artifactDigest: entry.artifactDigest,
+            manifestDigest: entry.manifestDigest,
+            planDigest: plan.planDigest,
+            approval
+          });
+          if (begin.duplicate) {
+            outcomes.push(this.#outcome(plan, entry, "already_completed"));
+            return;
+          }
+          cleanupStarted = true;
         }
 
         unlinkSync(safe.resolved);
+        if (fault === "after_unlink_before_journal_commit") {
+          throw runtimeError("gc_outcome_unknown", "injected lost outcome after retention side effect");
+        }
         const deletion = {
           status: "deleted",
           atMs: this.clock(),
           planDigest: plan.planDigest
         };
         this.store.markDeletion(entry.recordId, deletion);
+        if (cleanupStarted) {
+          this.pinLeaseStore.commitCleanup({
+            requestId: cleanupRequestId,
+            outcome: { status: "deleted", recordId: entry.recordId }
+          });
+        }
         outcomes.push(this.#outcome(plan, entry, "deleted"));
       } catch (error) {
+        if (cleanupStarted) {
+          try {
+            this.pinLeaseStore.markCleanupUnknown({
+              requestId: cleanupRequestId,
+              reason: error?.code ?? "gc_delete_failed"
+            });
+          } catch {
+            // The durable prepared cleanup already blocks future attempts.
+          }
+        }
         outcomes.push(this.#outcome(plan, entry, "failed", {
           error: {
             code: error?.code ?? "gc_delete_failed",
             message: error?.message ?? String(error)
           }
         }));
+      }
+      };
+      if (this.pinLeaseStore && !dryRun) {
+        try {
+          this.pinLeaseStore.withCoordination(runEntry);
+        } catch (error) {
+          outcomes.push(this.#outcome(plan, entry, "failed", {
+            error: {
+              code: error?.code ?? "pin_gc_coordination_unknown",
+              message: error?.message ?? String(error)
+            }
+          }));
+        }
+      } else {
+        runEntry();
       }
     }
 

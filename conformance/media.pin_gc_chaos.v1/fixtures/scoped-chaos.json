@@ -1,0 +1,32 @@
+{
+  "fixtureVersion": "media.pin_gc_chaos.synthetic.v1",
+  "seeds": [
+    20260928,
+    271828,
+    314159
+  ],
+  "logicalRecordsPerSeed": 12,
+  "failureModes": [
+    "duplicate_acquire",
+    "lost_ack_after_lease_commit",
+    "prepared_unknown",
+    "effect_unknown",
+    "lease_expiry",
+    "stale_owner_epoch",
+    "pin_after_gc_plan",
+    "approval_epoch_drift",
+    "simultaneous_acquire_cleanup",
+    "lost_gc_ack_after_virtual_delete",
+    "restart_reconciliation"
+  ],
+  "expected": {
+    "records": 36,
+    "pinnedBeforeRelease": 12,
+    "dryRunPlans": 36,
+    "virtualDeletes": 36,
+    "lostCleanupOutcomes": 9,
+    "reconciledDeletes": 9,
+    "realArtifactFilesReadOrDeleted": 0
+  },
+  "ffmpegSmoke": "optional; synthetic media.render.v1 validation never invokes executor"
+}

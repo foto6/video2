@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - agent/media-engine
+      - agent/media-r9-pin-gc-chaos-20260928
   pull_request:
 
 permissions:
@@ -17,6 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm run test:pin-chaos
       - run: npm run test:pin
       - run: npm run test:retention
       - run: npm run test:artifact

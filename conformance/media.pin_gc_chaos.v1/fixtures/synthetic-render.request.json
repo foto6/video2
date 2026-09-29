@@ -1,0 +1,24 @@
+{
+  "contractVersion": "media.render.v1",
+  "jobId": "pin-gc-chaos-synthetic-render",
+  "timeline": {
+    "id": "pin-gc-chaos-synthetic",
+    "version": 1,
+    "canvas": {
+      "width": 64,
+      "height": 64,
+      "fps": 10,
+      "durationMs": 300
+    },
+    "tracks": []
+  },
+  "exportSpec": {
+    "videoCodec": "libx264",
+    "audioCodec": "aac",
+    "videoBitrate": "250k",
+    "audioBitrate": "64k",
+    "pixelFormat": "yuv420p"
+  },
+  "outputPath": "synthetic-fixtures/pin-gc-chaos.mp4",
+  "dryRun": true
+}

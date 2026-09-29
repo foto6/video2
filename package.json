@@ -14,6 +14,7 @@
     "test:artifact": "node --test tests/artifact-manifest.test.js",
     "test:retention": "node --test tests/artifact-retention.test.js",
     "test:pin": "node --test tests/artifact-pin-lease.test.js",
-    "test:stress": "node --test tests/media-soak.test.js tests/resource-scheduler.test.js"
+    "test:stress": "node --test tests/media-soak.test.js tests/resource-scheduler.test.js",
+    "test:pin-chaos": "node --test tests/pin-gc-chaos.test.js"
   }
 }

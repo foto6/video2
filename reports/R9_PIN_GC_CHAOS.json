@@ -1,0 +1,53 @@
+{
+  "reportVersion": "media.r9.pin_gc_chaos.v1",
+  "baselineSha": "ab3be066308f47c1bb07d1836e2d2f72faffe0ff",
+  "scope": "isolated external Creator artifact pin and retention GC chaos",
+  "contracts": {
+    "preserved": [
+      "media.render.v1",
+      "media.job.v1",
+      "media.artifact_manifest.v1",
+      "media.artifact_retention.v1",
+      "media.artifact_pin_lease.v1"
+    ],
+    "companion": [
+      "media.artifact_pin_request.v1",
+      "media.artifact_gc_approval.v1",
+      "media.artifact_gc_simulation.v1"
+    ]
+  },
+  "fixtureManifest": "conformance/media.pin_gc_chaos.v1/manifest.json",
+  "stress": {
+    "seeds": [
+      20260928,
+      271828,
+      314159
+    ],
+    "scopedRecords": 36,
+    "virtualDeletes": 36,
+    "lostCleanupOutcomes": 9,
+    "recoveredDeletedOutcomes": 9,
+    "baselineLeaseStress": {
+      "leases": 10000,
+      "active": 8571,
+      "expired": 1429,
+      "reachableViolations": 0
+    }
+  },
+  "safety": {
+    "requestJournal": "prepared -> committed/rejected or explicit evidence reconciliation",
+    "cleanupJournal": "prepared -> committed/outcome_unknown; no blind replay",
+    "coordination": "cross-instance exclusive mkdir lock; orphan locks fail closed",
+    "releaseApproval": "signed-by-canonical-digest scoped human assertion bound to artifact/manifest/plan/epoch/time; external authentication required",
+    "authoritativeAcquireProof": true,
+    "noRealVideoInspection": true,
+    "noProductionDeletion": true,
+    "noPaidProviders": true,
+    "noPublishing": true
+  },
+  "noRealVideoInspection": true,
+  "noProductionDeletion": true,
+  "noPaidProviders": true,
+  "noPublishing": true,
+  "fixtureManifestSha256": "53713da7a64997dbeebc161623fd32eb6bdb745f83777797d85cef0bfd6d9d13"
+}
