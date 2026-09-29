@@ -264,7 +264,7 @@ test("GC executor defaults to dry-run and a pin added after plan blocks explicit
     assert.doesNotMatch(JSON.stringify(plan),/([A-Za-z]:[\\/]|file:\/\/|\.partial)/i);
 
     let checkpointPins=[];
-    const executor=new ArtifactGcExecutor({
+    const executor=new ArtifactGcExecutor({syntheticUnleasedFixtureMode:true,
       store,sandboxRoot:root,
       referenceProvider:()=>({jobs:[],checkpointPins,releasePins:[]}),
       clock:()=>7100
@@ -301,7 +301,7 @@ test("GC fails closed for manifest tamper, traversal, protected path and symlink
       const raw=JSON.parse(readFileSync(filePath,"utf8"));
       raw.records[record.recordId].manifest.renderFingerprint="f".repeat(64);
       writeFileSync(filePath,JSON.stringify(raw,null,2)+"\n","utf8");
-      const executor=new ArtifactGcExecutor({store,sandboxRoot:root,clock:()=>8100});
+      const executor=new ArtifactGcExecutor({syntheticUnleasedFixtureMode:true,store,sandboxRoot:root,clock:()=>8100});
       const result=executor.execute(plan,{dryRun:false});
       assert.equal(result.status,"failed_closed");
       assert.equal(result.error.code,"retention_state_corrupt");
@@ -318,7 +318,7 @@ test("GC fails closed for manifest tamper, traversal, protected path and symlink
       const store=new PersistentArtifactRetentionStore({filePath:path.join(root,"retention.json")});
       store.put(record);
       const plan=planArtifactGc({records:store.list(),nowMs:8200});
-      const executor=new ArtifactGcExecutor({store,sandboxRoot:root,clock:()=>8300});
+      const executor=new ArtifactGcExecutor({syntheticUnleasedFixtureMode:true,store,sandboxRoot:root,clock:()=>8300});
       const result=executor.execute(plan,{dryRun:false});
       assert.equal(result.outcomes[0].status,"failed");
       assert.equal(result.outcomes[0].error.code,"path_outside_sandbox");
@@ -368,7 +368,7 @@ test("GC fails closed for manifest tamper, traversal, protected path and symlink
       const store=new PersistentArtifactRetentionStore({filePath:path.join(root,"retention.json")});
       store.put(record);
       const plan=planArtifactGc({records:store.list(),nowMs:8400});
-      const executor=new ArtifactGcExecutor({store,sandboxRoot:root,clock:()=>8500});
+      const executor=new ArtifactGcExecutor({syntheticUnleasedFixtureMode:true,store,sandboxRoot:root,clock:()=>8500});
       const result=executor.execute(plan,{dryRun:false});
       assert.equal(result.outcomes[0].status,"failed");
       assert.equal(result.outcomes[0].error.code,"path_symlink_rejected");
@@ -396,7 +396,7 @@ test("partial cleanup records per-artifact outcomes and retry never broadens del
     const plan=planArtifactGc({records:store.list(),nowMs:9000});
     assert.equal(plan.summary.eligible,3);
 
-    const executor=new ArtifactGcExecutor({store,sandboxRoot:root,clock:()=>9100});
+    const executor=new ArtifactGcExecutor({syntheticUnleasedFixtureMode:true,store,sandboxRoot:root,clock:()=>9100});
     const first=executor.execute(plan,{dryRun:false});
     assert.equal(first.status,"partial_failure");
     const statuses=new Set(first.outcomes.map((value)=>value.status));
@@ -433,7 +433,7 @@ test("concurrent status reads and cancel/reconciliation race cannot make reachab
     const reads=Promise.all(Array.from({length:24},()=>harness.exchange({
       contractVersion:MEDIA_JOB_CONTRACT_VERSION,action:"status",jobId:live.job.id
     })));
-    const executor=new ArtifactGcExecutor({
+    const executor=new ArtifactGcExecutor({syntheticUnleasedFixtureMode:true,
       store:retentionStore,sandboxRoot:root,
       referenceProvider:()=>({jobs,checkpointPins:[],releasePins:[]}),
       clock:()=>10100
@@ -467,7 +467,7 @@ test("already missing eligible artifact is an idempotent no-op",()=>{
     const store=new PersistentArtifactRetentionStore({filePath:path.join(root,"retention.json")});
     store.put(record);
     const plan=planArtifactGc({records:store.list(),nowMs:11000});
-    const executor=new ArtifactGcExecutor({store,sandboxRoot:root,clock:()=>11100});
+    const executor=new ArtifactGcExecutor({syntheticUnleasedFixtureMode:true,store,sandboxRoot:root,clock:()=>11100});
     const result=executor.execute(plan,{dryRun:false});
     assert.equal(result.outcomes[0].status,"already_missing");
   } finally { rmSync(root,{recursive:true,force:true}); }

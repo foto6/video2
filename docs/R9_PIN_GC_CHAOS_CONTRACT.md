@@ -75,3 +75,7 @@ npm test
 Focused evidence: `reports/R9_PIN_GC_CHAOS.json`; fixture SHA-256 list: `conformance/media.pin_gc_chaos.v1/manifest.json`. No integration merge/release is performed.
 
 **Boundary note:** older direct `PersistentArtifactPinLeaseStore.acquire/renew/release` calls are retained for Wave9 ABI compatibility. Downstream Creator must use the journaled bound method for externally referenced artifacts. Old unbound/offline GC planning or a GC executor without an authoritative pin store is not an acceptable production cutover configuration.
+
+## Fail-closed production configuration
+
+`ArtifactGcExecutor.execute(plan,{dryRun:false})` now returns `failed_closed / authoritative_pin_store_required` when an authoritative pin store is absent. The only compatibility exception is an explicit `syntheticUnleasedFixtureMode:true` restricted to isolated `media-wave8-*` OS TEMP fixtures in pre-existing tests; do not use it in production. The pin-journal file is atomically replaced after fsync of the temporary snapshot (and directory fsync where supported). Missing primary state alongside an abandoned temporary snapshot, corrupt JSON or an orphan coordination barrier **never** initializes a fresh empty store.

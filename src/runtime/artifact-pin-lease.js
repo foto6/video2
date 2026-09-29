@@ -4,7 +4,10 @@ import {
   readFileSync,
   renameSync,
   rmSync,
-  writeFileSync
+  writeFileSync,
+  openSync,
+  closeSync,
+  fsyncSync
 } from "node:fs";
 import path from "node:path";
 
@@ -405,9 +408,28 @@ export class PersistentArtifactPinLeaseStore {
 
   #load() {
     if (!existsSync(this.filePath)) {
-      const state = emptyState();
-      this.#persist(state);
-      return state;
+      if (this.#barrierDepth > 0 || existsSync(this.tmpPath)) {
+        fail("pin_lease_state_corrupt", "primary pin journal missing or ambiguous temporary snapshot; refusing implicit reset");
+      }
+      try {
+        mkdirSync(this.coordinationPath, { mode: 0o700 });
+      } catch (error) {
+        if (error?.code === "EEXIST") {
+          fail("pin_gc_coordination_unknown", "initialization conflicts with an active/unknown pin-GC writer");
+        }
+        throw error;
+      }
+      try {
+        if (existsSync(this.filePath)) return this.#load();
+        if (existsSync(this.tmpPath)) {
+          fail("pin_lease_state_corrupt", "missing primary with abandoned temporary snapshot");
+        }
+        const state = emptyState();
+        this.#persist(state);
+        return state;
+      } finally {
+        rmSync(this.coordinationPath, { recursive: true, force: true });
+      }
     }
     try {
       return sanitizeState(JSON.parse(readFileSync(this.filePath, "utf8")));
@@ -420,8 +442,25 @@ export class PersistentArtifactPinLeaseStore {
   }
 
   #persist(state = this.state) {
-    writeFileSync(this.tmpPath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+    const data = `${JSON.stringify(state, null, 2)}\n`;
+    const fd = openSync(this.tmpPath, "w", 0o600);
+    try {
+      writeFileSync(fd, data, "utf8");
+      fsyncSync(fd);
+    } finally {
+      closeSync(fd);
+    }
     renameSync(this.tmpPath, this.filePath);
+    // The directory fsync ensures rename provenance survives an ordinary
+    // POSIX process/host crash. Windows does not generally allow directory fd.
+    if (process.platform !== "win32") {
+      const dirFd = openSync(path.dirname(this.filePath), "r");
+      try {
+        fsyncSync(dirFd);
+      } finally {
+        closeSync(dirFd);
+      }
+    }
   }
 
   #refresh() {

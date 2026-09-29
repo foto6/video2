@@ -11,6 +11,8 @@ import {
   MEDIA_ARTIFACT_PIN_REQUEST_VERSION,
   MEDIA_ARTIFACT_PIN_LEASE_VERSION,
   PersistentArtifactPinLeaseStore,
+  PersistentArtifactRetentionStore,
+  ArtifactGcExecutor,
   artifactManifestDigest,
   artifactPinScope,
   buildArtifactManifest,
@@ -615,6 +617,34 @@ test("prior Wave9 ten-thousand lease and Wave8 retention parity remains exact", 
   assert.equal(summary.reachableEligibilityViolations, 0);
   assert.equal(summary.planDigest,
     "c868608856674c50e5cf2cfa8ac27d2df7bf82d4e2e0ade11cac43d50fd1a703");
+});
+
+test("torn initialization never resets a lost primary journal or adopts a temporary snapshot", () => {
+  const c = makeContext(makeRecord("torn-store"));
+  try {
+    writeFileSync(c.store.tmpPath, '{"version":1,"unknown":"torn"}\\n', "utf8");
+    rmSync(c.storePath, { force: true });
+    assert.throws(() => new PersistentArtifactPinLeaseStore({
+      filePath: c.storePath, clock: () => c.clock.value
+    }), (error) => error.code === "pin_lease_state_corrupt");
+    assert.equal(existsSync(c.store.tmpPath), true);
+  } finally { dispose(c); }
+});
+
+test("production deletion without authoritative pin store fails closed before filesystem access", () => {
+  const c = makeContext(makeRecord("missing-pin-authority"));
+  try {
+    const store = new PersistentArtifactRetentionStore({
+      filePath: path.join(c.root, "retention.json")
+    });
+    store.put(c.record);
+    const planner = c.plan();
+    const executor = new ArtifactGcExecutor({ store, sandboxRoot: c.root });
+    const result = executor.execute(planner, { dryRun: false });
+    assert.equal(result.status, "failed_closed");
+    assert.equal(result.error.code, "authoritative_pin_store_required");
+    assert.equal(c.virtual.has(c.record.recordId), true);
+  } finally { dispose(c); }
 });
 
 test("machine-readable report identifies no paid provider/publication/live GC actions", () => {

@@ -10,6 +10,7 @@ import {
   writeFileSync
 } from "node:fs";
 import path from "node:path";
+import os from "node:os";
 
 import { fingerprint, stableStringify } from "../stable.js";
 import {
@@ -654,6 +655,7 @@ export class ArtifactGcExecutor {
     sandboxRoot,
     referenceProvider = () => ({ jobs: [], checkpointPins: [], releasePins: [], pinLeases: [] }),
     pinLeaseStore = null,
+    syntheticUnleasedFixtureMode = false,
     clock = () => Date.now()
   } = {}) {
     if (!store) throw new TypeError("store is required");
@@ -666,6 +668,13 @@ export class ArtifactGcExecutor {
     this.sandboxRoot = path.resolve(sandboxRoot);
     this.referenceProvider = referenceProvider;
     this.pinLeaseStore = pinLeaseStore;
+    if (syntheticUnleasedFixtureMode && (
+      !this.sandboxRoot.startsWith(`${path.resolve(os.tmpdir())}${path.sep}`) ||
+      !path.basename(this.sandboxRoot).startsWith("media-wave8-")
+    )) {
+      throw new TypeError("synthetic unleased deletion is limited to explicit Wave8 OS TEMP fixtures");
+    }
+    this.syntheticUnleasedFixtureMode = syntheticUnleasedFixtureMode === true;
     this.clock = clock;
   }
 
@@ -723,6 +732,19 @@ export class ArtifactGcExecutor {
     const plan = validateArtifactGcPlan(inputPlan);
     if (typeof dryRun !== "boolean") throw new TypeError("dryRun must be boolean");
     if (!Array.isArray(approvals)) throw new TypeError("approvals must be an array");
+    if (!dryRun && !this.pinLeaseStore && !this.syntheticUnleasedFixtureMode) {
+      return {
+        contractVersion: MEDIA_ARTIFACT_GC_EXECUTION_VERSION,
+        planDigest: plan.planDigest,
+        dryRun: false,
+        status: "failed_closed",
+        outcomes: [],
+        error: {
+          code: "authoritative_pin_store_required",
+          message: "live GC requires authoritative durable pin store and scoped approval"
+        }
+      };
+    }
     const outcomes = [];
 
     try {
