@@ -15,6 +15,24 @@ import { runtimeError } from "./runtime/errors.js";
 export const MEDIA_CANDIDATE_BATCH_VERSION = "media.candidate_batch.v1";
 export const MEDIA_CANDIDATE_BATCH_STATE_VERSION = 1;
 export const MEDIA_CANDIDATE_BATCH_CACHE_VERSION = 1;
+export const R16_RENDERER_RESOURCE_PROFILE = Object.freeze({
+  runtimeMaxConcurrency: 2,
+  renderSlots: 1,
+  probeSlots: 1
+});
+
+export function candidateRendererConfigDigest({ maxParallel = 2 } = {}) {
+  if (!Number.isInteger(maxParallel) || maxParallel < 1 || maxParallel > 2) {
+    throw new TypeError("maxParallel must be 1 or 2");
+  }
+  return fingerprint({
+    contractVersion: MEDIA_CANDIDATE_BATCH_VERSION,
+    renderContractVersion: "media.render.v1",
+    renderExportContractVersion: "media.render_export.v1",
+    maxParallel,
+    ...R16_RENDERER_RESOURCE_PROFILE
+  });
+}
 
 const TERMINAL = new Set(["succeeded", "failed"]);
 const BATCH_MANIFEST_FIELDS = new Set([
