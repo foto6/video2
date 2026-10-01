@@ -80,8 +80,9 @@ for (const finalPath of finals) {
   ];
   const missing = required.filter((name) => !existsSync(path.join(dir, name)));
   const contactSheet = existsSync(path.join(dir, "contact-sheet.jpg"));
-  const preview = findFiles(dir, "final.mp4").length >= 1 &&
-    readdirSync(path.join(dir, "bundle"), { withFileTypes: true })
+  const bundleDir = path.join(dir, "bundle");
+  const preview = existsSync(bundleDir) &&
+    readdirSync(bundleDir, { withFileTypes: true })
       .some((entry) => entry.isFile() && /^preview\.sha256-[a-f0-9]{64}\.mp4$/.test(entry.name));
   if (missing.length || (!contactSheet && !preview)) {
     throw new Error(`boss benchmark bundle incomplete for ${finalPath}: ${missing.join(",")}`);
