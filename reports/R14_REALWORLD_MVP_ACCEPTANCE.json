@@ -1,0 +1,50 @@
+{
+  "reportVersion": "media.r14.realworld_mvp_acceptance.v1",
+  "baselineSha": "5c675c232cad4f8a004385042e6c3ab63a90fe00",
+  "branch": "agent/media-r14-realworld-acceptance-20261001",
+  "acceptanceVersion": "media.realworld_mvp_acceptance.r14.v1",
+  "fixtureCorpus": "tests/fixtures/r14-acceptance/corpus.json",
+  "fixtureGenerator": "tools/generate-r14-corpus.mjs",
+  "acceptanceRunner": "tools/run-r14-acceptance.mjs",
+  "aggregator": "tools/aggregate-r14-acceptance.mjs",
+  "reproduction": {
+    "fixture": "npm run verify:r14",
+    "arbitraryFolder": "npm run accept:r14:folder -- --input-dir <folder> --output-dir <review-folder>"
+  },
+  "requiredCases": [
+    "talking-head-pauses",
+    "landscape-reframe",
+    "fast-motion",
+    "low-motion",
+    "speech-music",
+    "subtitle-heavy",
+    "broll-insert"
+  ],
+  "styles": ["clean_podcast", "aggressive_shortform"],
+  "ciShardCount": 14,
+  "failWarnPolicy": {
+    "objectiveDefect": "FAIL",
+    "humanAestheticJudgment": "WARN"
+  },
+  "preservedContracts": [
+    "media.job.v1",
+    "media.artifact_manifest.v1",
+    "media.shortform_profile.r11.v1",
+    "media.creative_edit_plan.r12.v1",
+    "media.creator_consumer_compat.r13.v1"
+  ],
+  "observedFixes": [
+    "one-case-one-style CI sharding plus 5-second progress heartbeat",
+    "explicit 48kHz resampling after loudnorm to avoid AAC peak overshoot"
+  ],
+  "producerShaRule": "The generated MVP acceptance summary must bind git rev-parse HEAD and CI requires GITHUB_SHA equality.",
+  "safety": {
+    "sourceMutation": false,
+    "publishing": false,
+    "credentials": false,
+    "creatorGrowthMutation": false,
+    "desktopCommander": false,
+    "protectedPathAccess": false,
+    "mergeRelease": false
+  }
+}
