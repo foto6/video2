@@ -14,7 +14,7 @@
     },
     "runner": {
       "path": "tools/run-r16-candidate-batch.mjs",
-      "gitBlobSha": "cbfa5495f865cb5401c9114486759bea09ae4b8d"
+      "gitBlobSha": "00e259df28ba564ed1f12b678d99a2ece50d4a00"
     },
     "demo": {
       "path": "tools/demo-r16-candidate-batch.mjs",
