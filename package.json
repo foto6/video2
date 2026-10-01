@@ -16,6 +16,9 @@
     "test:pin": "node --test tests/artifact-pin-lease.test.js",
     "test:stress": "node --test tests/media-soak.test.js tests/resource-scheduler.test.js",
     "test:pin-chaos": "node --test tests/pin-gc-chaos.test.js",
-    "test:r10": "node --test tests/native-mcp-exposure-r10.test.js tests/creator-pin-recovery-r10.test.js"
+    "test:r10": "node --test tests/native-mcp-exposure-r10.test.js tests/creator-pin-recovery-r10.test.js",
+    "test:r11": "node --test tests/shortform-r11.test.js",
+    "demo:r11": "node tools/render-r11-demo.mjs",
+    "verify:r11": "npm run test:r11 && npm run demo:r11"
   }
 }
