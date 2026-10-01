@@ -1,8 +1,17 @@
 {
   "contractVersion": "media.web_chat_review_bundle.v1",
-  "authority": "Media technical packaging/provenance only; no semantic or editorial model judgment.",
-  "sourceBinding": "Bundle source ID/SHA-256/size must match media.candidate_batch.v1 and each candidate media.render_export.v1 source evidence.",
-  "candidateBinding": "Each candidate final.mp4 is re-hashed and revalidated against media.render_export.v1 before attachment packaging.",
+  "authority": {
+    "review_bundle_producer": "Exact R17 git SHA that performs packaging only.",
+    "upstream_media_authority": {
+      "producerSha": "231a0680c8939cfec77aaa283e507e93f383ad73",
+      "ciRunId": 36865890506,
+      "artifactId": 11163920921,
+      "artifactName": "media-r16-candidate-batch-demo",
+      "archiveDigest": "sha256:d929b592c76ec93e41b54701376f4b02366a3bdbd127d3472d73ae277d450d0f"
+    }
+  },
+  "sourceBinding": "R17 must consume exact accepted R16 artifact bytes. Regenerating R16 under R17 HEAD is not upstream evidence.",
+  "candidateBinding": "Every candidate must preserve accepted R16 final.mp4 SHA/size, exact accepted R16 media.render_export.v1 file SHA and semantic digest, exact R16 producer SHA, and technical QA evidence SHA.",
   "attachmentLimit": {
     "bytes": 500000000,
     "perFile": true,
@@ -18,13 +27,18 @@
     "originalBytesPreserved": true
   },
   "failClosed": [
+    "wrong_upstream_producer_sha",
+    "wrong_upstream_ci_run",
+    "wrong_upstream_artifact_id_or_name_or_archive_digest",
+    "wrong_candidate_batch_manifest_hash_or_digest",
     "missing_file",
     "changed_final_hash_or_size",
     "wrong_source",
-    "stale_render_export",
-    "stale_producer_sha",
+    "stale_or_regenerated_render_export",
+    "wrong_render_export_digest",
     "duplicate_candidate",
     "oversize_attachment",
     "derivative_provenance_mismatch"
-  ]
+  ],
+  "modelJudgment": false
 }
