@@ -25,6 +25,6 @@
     "verify:r12": "npm run test:r12 && npm run demo:r12",
     "test:r13": "node --test tests/creator-compat-r13.test.js",
     "emit:r13": "npm run demo:r12 && node tools/render-r13-compat.mjs",
-    "verify:r13": "npm run test:r13 && npm run emit:r13"
+    "verify:r13": "npm run test:r13 && node tools/verify-r13-determinism.mjs"
   }
 }
