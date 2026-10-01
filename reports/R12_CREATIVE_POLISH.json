@@ -1,0 +1,43 @@
+{
+  "reportVersion": "media.r12.creative_polish.v1",
+  "baselineSha": "57110dc92a8d30dd3e931d1dd810a0597834d184",
+  "branch": "agent/media-r12-creative-polish-20261001",
+  "creativePlanVersion": "media.creative_edit_plan.r12.v1",
+  "qualityReportVersion": "media.creative_quality_report.r12.v1",
+  "styles": [
+    "clean_podcast",
+    "aggressive_shortform",
+    "cinematic_minimal"
+  ],
+  "preservedContracts": [
+    "media.job.v1",
+    "media.render.v1",
+    "media.shortform_profile.r11.v1",
+    "media.shortform_editor.r11.v1",
+    "media.artifact_manifest.v1",
+    "media.artifact_pin_lease.v1",
+    "media.artifact_retention.v1"
+  ],
+  "verification": {
+    "command": "npm run verify:r12",
+    "beforeAfterEvidence": ".artifacts/r12-demo/creative-quality-report.json",
+    "conformanceManifest": "conformance/media.creative_edit_plan.r12.v1/manifest.json"
+  },
+  "hardGuardrails": {
+    "maxCutRatePerSecond": 1.25,
+    "maxZoomRatePerSecond": 0.3,
+    "maxTransitionDensityPerSecond": 0.2,
+    "maxTextCharsPerSecond": 22,
+    "maxMusicGainDb": -10,
+    "maxConcurrentTextItems": 2,
+    "maxMotionZoom": 1.18
+  },
+  "safety": {
+    "publishing": false,
+    "credentials": false,
+    "creatorGrowthMutation": false,
+    "desktopCommander": false,
+    "protectedPathAccess": false,
+    "mergeRelease": false
+  }
+}
