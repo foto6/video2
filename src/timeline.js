@@ -1,9 +1,11 @@
 import { MEDIA_SHORTFORM_PROFILE_VERSION, SHORTFORM_R11_PROFILE } from "./shortform-profile.js";
 
 const TRACK_KINDS = new Set(["video", "audio", "caption", "overlay"]);
-const VIDEO_ROLES = new Set(["intro", "body", "outro"]);
+const VIDEO_ROLES = new Set(["intro", "body", "outro", "broll", "loop_bridge"]);
 const AUDIO_ROLES = new Set(["voiceover", "music", "sfx", "ambient"]);
 const OVERLAY_ROLES = new Set(["intro", "cta", "outro", "label"]);
+const MOTION_TYPES = new Set(["punch_in", "slow_push", "pan_left", "pan_right"]);
+const KINETIC_TYPES = new Set(["none", "bounce", "slide"]);
 
 function invariant(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -44,10 +46,31 @@ function validateStyle(style, path) {
   for (const key of ["fontSize", "maxWidth", "marginX", "marginBottom", "lineHeight"]) {
     if (style[key] !== undefined) positiveInteger(style[key], `${path}.${key}`);
   }
+  if (style.motionAmplitudePx !== undefined) nonNegativeInteger(style.motionAmplitudePx, `${path}.motionAmplitudePx`);
   for (const key of ["x", "y"]) {
     if (style[key] !== undefined) {
       invariant(typeof style[key] === "string" || Number.isFinite(style[key]), `${path}.${key} must be numeric or an FFmpeg expression`);
     }
+  }
+  for (const key of ["fontColor", "boxColor"]) {
+    if (style[key] !== undefined) invariant(typeof style[key] === "string" && style[key].length > 0, `${path}.${key} must be non-empty`);
+  }
+  if (style.kinetic !== undefined) invariant(KINETIC_TYPES.has(style.kinetic), `${path}.kinetic is unsupported`);
+  if (style.box !== undefined) invariant(typeof style.box === "boolean", `${path}.box must be boolean`);
+}
+
+function validateMotion(motion, path, trackKind) {
+  if (motion === undefined) return;
+  invariant(trackKind === "video", `${path} is only valid on video items`);
+  invariant(motion && typeof motion === "object" && !Array.isArray(motion), `${path} must be an object`);
+  invariant(MOTION_TYPES.has(motion.type), `${path}.type is unsupported`);
+  if (motion.zoom !== undefined) {
+    finiteNumber(motion.zoom, `${path}.zoom`);
+    invariant(motion.zoom >= 1 && motion.zoom <= 1.25, `${path}.zoom must be between 1 and 1.25`);
+  }
+  if (motion.amplitudePx !== undefined) {
+    nonNegativeInteger(motion.amplitudePx, `${path}.amplitudePx`);
+    invariant(motion.amplitudePx <= 120, `${path}.amplitudePx must be <=120`);
   }
 }
 
@@ -72,6 +95,11 @@ export function validateTimeline(input) {
       input.canvas.durationMs <= SHORTFORM_R11_PROFILE.targetDurationMs.max,
       `R11 short-form duration must be ${SHORTFORM_R11_PROFILE.targetDurationMs.min}-${SHORTFORM_R11_PROFILE.targetDurationMs.max}ms`
     );
+  }
+  if (input.creativePlan !== undefined) {
+    invariant(input.creativePlan && typeof input.creativePlan === "object" && !Array.isArray(input.creativePlan), "timeline.creativePlan must be an object");
+    invariant(input.creativePlan.contractVersion === "media.creative_edit_plan.r12.v1", "timeline.creativePlan contractVersion is unsupported");
+    invariant(/^[a-f0-9]{64}$/.test(input.creativePlan.planDigest), "timeline.creativePlan.planDigest must be lowercase SHA-256");
   }
 
   const trackIds = new Set();
@@ -99,6 +127,7 @@ export function validateTimeline(input) {
       if (track.kind === "overlay") {
         invariant(item.source || item.text, `${itemPath} requires source or text`);
         if (item.source) validateSource(item.source, `${itemPath}.source`);
+        validateStyle(item.style, `${itemPath}.style`);
       }
       if (track.kind === "caption") {
         invariant(typeof item.text === "string" && item.text.length > 0, `${itemPath}.text is required`);
@@ -108,6 +137,7 @@ export function validateTimeline(input) {
         finiteNumber(item.speed, `${itemPath}.speed`);
         invariant(item.speed >= 0.25 && item.speed <= 4, `${itemPath}.speed must be between 0.25 and 4`);
       }
+      validateMotion(item.motion, `${itemPath}.motion`, track.kind);
       for (const fadeKey of ["fadeInMs", "fadeOutMs"]) {
         if (item[fadeKey] !== undefined) {
           positiveInteger(item[fadeKey], `${itemPath}.${fadeKey}`);
