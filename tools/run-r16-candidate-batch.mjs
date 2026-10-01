@@ -298,7 +298,7 @@ const evidence = {
     order: entry.order,
     candidateId: entry.candidateId,
     status: entry.status,
-    reused: entry.reused
+    reused: result.state.candidates[entry.candidateId]?.reused === true
   }))
 };
 writeFileSync(
