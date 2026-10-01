@@ -253,6 +253,18 @@ if (args["case-id"]) {
   if (missing.length) throw new Error(`unknown acceptance case id(s): ${missing.join(", ")}`);
   cases = cases.filter((entry) => requested.has(entry.id));
 }
+if (args.style) {
+  const style = String(args.style);
+  if (!["clean_podcast", "aggressive_shortform"].includes(style)) {
+    throw new Error(`unsupported acceptance style: ${style}`);
+  }
+  cases = cases.map((entry) => {
+    if (!(entry.styles ?? []).includes(style)) {
+      throw new Error(`case ${entry.id} does not declare style ${style}`);
+    }
+    return { ...entry, styles: [style] };
+  });
+}
 if (cases.length === 0) throw new Error("no input video cases found");
 
 const results = [];
