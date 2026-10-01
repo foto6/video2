@@ -51,6 +51,9 @@ jobs:
           - speech-music
           - subtitle-heavy
           - broll-insert
+        style:
+          - clean_podcast
+          - aggressive_shortform
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,18 +61,19 @@ jobs:
           node-version: "22"
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
       - run: npm run generate:r14
-      - name: Run R14 acceptance case
+      - name: Run R14 acceptance case/style
         run: >-
           node tools/run-r14-acceptance.mjs
           --input-dir .artifacts/r14-corpus
-          --output-dir .artifacts/r14-acceptance/${{ matrix.case }}
+          --output-dir .artifacts/r14-acceptance/${{ matrix.case }}/${{ matrix.style }}
           --manifest tests/fixtures/r14-acceptance/corpus.json
           --case-id ${{ matrix.case }}
+          --style ${{ matrix.style }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: media-r14-case-${{ matrix.case }}
-          path: .artifacts/r14-acceptance/${{ matrix.case }}
+          name: media-r14-case-${{ matrix.case }}-${{ matrix.style }}
+          path: .artifacts/r14-acceptance/${{ matrix.case }}/${{ matrix.style }}
           if-no-files-found: error
 
   r14-aggregate:
