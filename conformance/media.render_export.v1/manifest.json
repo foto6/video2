@@ -1,0 +1,36 @@
+{
+  "manifestVersion": "media.render_export.v1.manifest.1",
+  "contractVersion": "media.render_export.v1",
+  "producerRepository": "foto6/video2",
+  "producerShaBinding": {
+    "source": "git rev-parse HEAD",
+    "ciAssertion": "GITHUB_SHA must equal git rev-parse HEAD when present"
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/render-export-r15.js",
+      "gitBlobSha": "2aee865404d78eeb64e17e9aeae8f44a0c1a746e"
+    },
+    "schema": {
+      "path": "conformance/media.render_export.v1/schema.json",
+      "gitBlobSha": "6353d32d785a2a1f1441bac4cfd0271b46b41d4a"
+    },
+    "bossBenchmarkBinding": {
+      "path": "conformance/media.render_export.v1/boss-benchmark-binding.json",
+      "gitBlobSha": "3e11c028806c22e9a2b910b72c70858ee4c021fc"
+    },
+    "canonicalSuccessFixture": {
+      "path": "conformance/media.render_export.v1/fixtures/canonical-success.json",
+      "gitBlobSha": "f7f4deae0f03ed77ffc87e3a86644506e99d5f0a"
+    },
+    "canonicalFailureFixture": {
+      "path": "conformance/media.render_export.v1/fixtures/canonical-failure.json",
+      "gitBlobSha": "86f6f9aa2aa826a11be34cc7de7606b7c8493878"
+    }
+  },
+  "successRule": "A success export exists only when exact final.mp4 bytes match both media.artifact_manifest.v1 and QA-passed probe evidence, technical QA passes, creative QA/guardrails pass, and independent ffprobe matches.",
+  "failureRule": "A failed render export has status=failed, artifact=null, a machine-readable failure object, and benchmark technicalDq=true.",
+  "sidecarFileName": "media.render_export.v1.json",
+  "batchCommand": "npm run export:r15:batch -- --jobs-file <jobs.json>",
+  "failClosed": true
+}
