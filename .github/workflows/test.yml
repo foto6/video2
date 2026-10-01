@@ -11,6 +11,7 @@ on:
       - agent/media-r13-creator-compat-20261001
       - agent/media-r14-realworld-acceptance-20261001
       - agent/media-r15-benchmark-render-export-20261001
+      - agent/media-r16-candidate-batch-runtime-20261001
   pull_request:
 
 permissions:
@@ -26,6 +27,13 @@ jobs:
           node-version: "22"
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: ffmpeg -version && ffprobe -version
+      - run: npm run verify:r16
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-r16-candidate-batch-demo
+          path: .artifacts/r16-demo
+          if-no-files-found: warn
       - run: npm run test:r15
       - run: npm run test:r14
       - run: npm run verify:r13
