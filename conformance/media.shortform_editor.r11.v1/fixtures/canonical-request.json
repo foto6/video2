@@ -1,0 +1,68 @@
+{
+  "contractVersion": "media.render.v1",
+  "jobId": "creator-r11-canonical-shortform",
+  "timeline": {
+    "id": "creator-r11-canonical-shortform",
+    "version": 1,
+    "profileVersion": "media.shortform_profile.r11.v1",
+    "canvas": { "width": 1080, "height": 1920, "fps": 30, "durationMs": 8000 },
+    "tracks": [
+      {
+        "id": "video",
+        "kind": "video",
+        "items": [
+          {
+            "id": "cut-a",
+            "startMs": 0,
+            "endMs": 4000,
+            "role": "intro",
+            "speed": 1.25,
+            "source": { "id": "clip-a", "uri": "inputs/clip-a.mp4", "inMs": 0, "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1000 },
+            "fadeInMs": 180
+          },
+          {
+            "id": "cut-b",
+            "startMs": 4000,
+            "endMs": 8000,
+            "role": "outro",
+            "source": { "id": "clip-b", "uri": "inputs/clip-b.mp4", "inMs": 0, "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "size": 1000 },
+            "fadeOutMs": 180
+          }
+        ]
+      },
+      {
+        "id": "captions",
+        "kind": "caption",
+        "items": [
+          { "id": "caption", "startMs": 500, "endMs": 3500, "text": "CUT. MIX. CAPTION.", "style": { "fontSize": 64, "y": 1450, "maxWidth": 900 } }
+        ]
+      },
+      {
+        "id": "overlays",
+        "kind": "overlay",
+        "items": [
+          { "id": "cta", "startMs": 6500, "endMs": 7900, "role": "cta", "text": "SAVE + SHARE", "position": { "x": 90, "y": 300 }, "style": { "fontSize": 64 } }
+        ]
+      },
+      {
+        "id": "audio",
+        "kind": "audio",
+        "items": [
+          { "id": "voice", "startMs": 0, "endMs": 8000, "role": "voiceover", "source": { "id": "voice", "uri": "inputs/voice.wav", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "size": 1000 }, "gainDb": -3 },
+          { "id": "music", "startMs": 0, "endMs": 8000, "role": "music", "source": { "id": "music", "uri": "inputs/music.wav", "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "size": 1000 }, "gainDb": -18, "duckUnderVoice": true }
+        ]
+      }
+    ]
+  },
+  "exportSpec": {
+    "format": "mp4",
+    "videoCodec": "libx264",
+    "audioCodec": "aac",
+    "videoBitrate": "8M",
+    "audioBitrate": "192k",
+    "pixelFormat": "yuv420p",
+    "loudness": { "integratedLufs": -16, "truePeakDb": -1.5, "lra": 11 }
+  },
+  "outputPath": "outputs/creator-r11-canonical-shortform.mp4",
+  "dryRun": false
+}
