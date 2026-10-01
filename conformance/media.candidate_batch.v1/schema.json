@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.candidate_batch.v1",
+  "title": "Media candidate batch manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","batchId","source","producer","renderer",
+    "requestDigest","status","candidates"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.candidate_batch.v1" },
+    "batchId": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId","sha256","size"],
+      "properties": {
+        "sourceId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository","sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "renderer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configDigest"],
+      "properties": {
+        "configDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "requestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "enum": ["succeeded","partial_failure"] },
+    "candidates": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "order","candidateId","planDigest","cacheIdentityDigest",
+          "status","final","failure"
+        ],
+        "properties": {
+          "order": { "type": "integer", "minimum": 0, "maximum": 3 },
+          "candidateId": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+          "planDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "cacheIdentityDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "status": { "enum": ["succeeded","failed"] },
+          "final": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "fileName","relativePath","sha256","size",
+                  "renderExportFileName","renderExportRelativePath","renderExportSha256"
+                ],
+                "properties": {
+                  "fileName": { "const": "final.mp4" },
+                  "relativePath": { "type": "string" },
+                  "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                  "size": { "type": "integer", "minimum": 1 },
+                  "renderExportFileName": { "const": "media.render_export.v1.json" },
+                  "renderExportRelativePath": { "type": "string" },
+                  "renderExportSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+                }
+              },
+              { "type": "null" }
+            ]
+          },
+          "failure": { "type": ["object","null"] }
+        }
+      }
+    }
+  }
+}
