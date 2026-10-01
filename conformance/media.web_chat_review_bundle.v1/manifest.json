@@ -55,7 +55,7 @@
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "bdc15769f5b4a0b3fd6b546f0554c44b38ad5d8f"
+      "gitBlobSha": "9648d443d04cab7f9810c48587a898610df6b22d"
     },
     "package": {
       "path": "package.json",
