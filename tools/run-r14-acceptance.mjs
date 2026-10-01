@@ -77,6 +77,7 @@ if (process.env.GITHUB_SHA && process.env.GITHUB_SHA !== producerSha) {
 
 rmSync(outputRoot, { recursive: true, force: true });
 for (const dir of ["sources", "renders", "reports"]) mkdirSync(path.join(outputRoot, dir), { recursive: true });
+process.chdir(outputRoot);
 
 const processExecutor = new DeterministicProcessExecutor({
   defaultTimeoutMs: 180000,
