@@ -22,7 +22,7 @@
     },
     "tests": {
       "path": "tests/web-chat-review-r17.test.js",
-      "gitBlobSha": "5a2aee6b0685b154cef717241cec3c03eef6d1c9"
+      "gitBlobSha": "c35e1c4c1f9e666c9af3144b064cdc45f90dfa2c"
     },
     "schema": {
       "path": "conformance/media.web_chat_review_bundle.v1/schema.json",
