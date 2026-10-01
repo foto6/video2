@@ -26,6 +26,7 @@ import {
   buildSucceededRenderExport,
   candidateBatchManifestDigest,
   candidateCacheIdentity,
+  candidateRendererConfigDigest,
   requireRenderExportSidecar,
   stableStringify,
   writeRenderExportSidecar
@@ -87,6 +88,10 @@ const outputRoot = path.resolve(args["output-dir"] ?? path.join(sandboxRoot, ".r
 const maxParallel = Number(args["max-parallel"] ?? 2);
 if (!Number.isInteger(maxParallel) || maxParallel < 1 || maxParallel > 2) {
   throw new Error("--max-parallel must be 1 or 2");
+}
+const actualRendererConfigDigest = candidateRendererConfigDigest({ maxParallel });
+if (request.renderer?.configDigest !== actualRendererConfigDigest) {
+  throw new Error(`renderer config digest mismatch: request=${request.renderer?.configDigest ?? null} actual=${actualRendererConfigDigest}`);
 }
 mkdirSync(outputRoot, { recursive: true });
 
@@ -178,7 +183,8 @@ async function executeCandidate({ candidate, request: batchRequest, cacheIdentit
     qaCalls: job.telemetry?.sideEffects?.qaEvaluations ?? 0,
     processCalls: resultProcessCount(job),
     renderExecutorCalls: job.telemetry?.sideEffects?.executorInvocations ?? 0,
-    sourcePreflightProbeCalls: (job.telemetry?.sideEffects?.executorInvocations ?? 0) * sourceCount
+    sourcePreflightProbeCalls: (job.telemetry?.sideEffects?.executorInvocations ?? 0) * sourceCount,
+    renderExportProbeCalls: 0
   };
 
   if (job.status !== "succeeded") {
@@ -202,6 +208,8 @@ async function executeCandidate({ candidate, request: batchRequest, cacheIdentit
   const sidecarPath = path.join(candidateDir, "media.render_export.v1.json");
   const sidecar = writeRenderExportSidecar(renderExport, sidecarPath);
   requireRenderExportSidecar(job.resolvedOutputPath);
+  metrics.renderExportProbeCalls = 2;
+  metrics.processCalls += 2;
 
   return {
     status: "succeeded",
