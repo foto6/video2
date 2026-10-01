@@ -8,6 +8,22 @@ export { evaluateRenderQa } from "./qa.js";
 export { fingerprint, stableStringify } from "./stable.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_SHORTFORM_PROFILE_VERSION,
+  MEDIA_SHORTFORM_BUNDLE_VERSION,
+  MEDIA_SHORTFORM_TIMELINE_SPEC_VERSION,
+  SHORTFORM_R11_PROFILE,
+  isShortformR11Timeline
+} from "./shortform-profile.js";
+export {
+  MEDIA_SHORTFORM_EDITOR_CONFORMANCE_VERSION,
+  FfmpegQaProbe,
+  ShortformFfmpegExecutor,
+  inspectShortformSources,
+  evaluateShortformSourceProvenance,
+  materializeShortformArtifacts,
+  validateShortformR11Contract
+} from "./shortform-r11.js";
+export {
   MEDIA_RENDER_CONTRACT_VERSION,
   handleMediaRenderRequest,
   parseMediaRenderRequest
