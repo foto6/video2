@@ -8,6 +8,7 @@ on:
       - agent/media-r10-native-mcp-consumer-20260929
       - agent/media-r11-autonomous-reels-20261001
       - agent/media-r12-creative-polish-20261001
+      - agent/media-r13-creator-compat-20261001
   pull_request:
 
 permissions:
@@ -23,6 +24,7 @@ jobs:
           node-version: "22"
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: ffmpeg -version && ffprobe -version
+      - run: npm run verify:r13
       - run: npm run verify:r12
       - run: npm run verify:r11
       - run: npm run test:r10
@@ -35,6 +37,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: media-r12-demo
-          path: .artifacts/r12-demo
+          name: media-r13-compat
+          path: |
+            .artifacts/r13-compat
+            .artifacts/r12-demo
           if-no-files-found: warn
