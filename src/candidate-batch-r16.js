@@ -193,6 +193,23 @@ export class PersistentCandidateBatchStore {
       if (this.state.batchId !== request.batchId || this.state.requestDigest !== requestDigest) {
         fail("candidate_batch_conflict", "persisted batch ID is bound to different request content");
       }
+      if (this.state.producerSha !== producerSha) {
+        this.state.producerSha = producerSha;
+        for (const candidate of request.candidates) {
+          const entry = this.state.candidates[candidate.candidateId];
+          entry.cacheIdentityDigest = candidateCacheIdentity({
+            source: request.source,
+            planDigest: candidate.planDigest,
+            rendererConfigDigest: request.renderer.configDigest,
+            producerSha
+          });
+          entry.status = "pending";
+          entry.reused = false;
+          entry.result = null;
+          entry.failure = null;
+        }
+        atomicJson(this.filePath, this.state);
+      }
       return clone(this.state);
     }
     const candidates = {};
