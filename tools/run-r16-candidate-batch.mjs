@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -229,7 +230,7 @@ async function executeCandidate({ candidate, request: batchRequest, cacheIdentit
   };
 }
 
-async function validateCachedCandidate(result, { candidate, request: batchRequest }) {
+async function validateCachedCandidate(result, { candidate, request: batchRequest, localState }) {
   if (!result || result.status !== "succeeded") throw new Error("cache entry is not successful");
   const expectedIdentity = candidateCacheIdentity({
     source: batchRequest.source,
@@ -246,19 +247,30 @@ async function validateCachedCandidate(result, { candidate, request: batchReques
   ) throw new Error("cache identity mismatch");
   if (!existsSync(result.finalPath) || !existsSync(result.sidecarPath)) throw new Error("cached artifact/sidecar missing");
 
-  const record = requireRenderExportSidecar(result.finalPath);
-  const sidecarDigest = sha256File(result.sidecarPath);
+  let materialized = { ...result };
+  if (!localState) {
+    const candidateDir = path.join(outputRoot, "candidates", candidate.candidateId);
+    mkdirSync(candidateDir, { recursive: true });
+    const finalPath = path.join(candidateDir, "final.mp4");
+    const sidecarPath = path.join(candidateDir, "media.render_export.v1.json");
+    if (path.resolve(result.finalPath) !== path.resolve(finalPath)) copyFileSync(result.finalPath, finalPath);
+    if (path.resolve(result.sidecarPath) !== path.resolve(sidecarPath)) copyFileSync(result.sidecarPath, sidecarPath);
+    materialized = { ...result, finalPath, sidecarPath };
+  }
+
+  const record = requireRenderExportSidecar(materialized.finalPath);
+  const sidecarDigest = sha256File(materialized.sidecarPath);
   if (
     record.producer.sha !== producerSha ||
-    record.artifact.sha256 !== result.final.sha256 ||
-    record.artifact.size !== result.final.size ||
-    sidecarDigest.sha256 !== result.final.renderExportSha256
+    record.artifact.sha256 !== materialized.final.sha256 ||
+    record.artifact.size !== materialized.final.size ||
+    sidecarDigest.sha256 !== materialized.final.renderExportSha256
   ) throw new Error("cached artifact or render export hash mismatch");
   const source = record.evidence?.sources?.items?.find((entry) =>
     entry.sha256 === batchRequest.source.sha256 && entry.size === batchRequest.source.size
   );
   if (!source) throw new Error("cached render export does not bind exact batch source");
-  return result;
+  return materialized;
 }
 
 const batchRuntime = new CandidateBatchRuntime({
