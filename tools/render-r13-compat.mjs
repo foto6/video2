@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   MEDIA_CREATOR_CONSUMER_COMPAT_VERSION,
@@ -11,7 +12,7 @@ import {
   validateCreatorConsumerEnvelope
 } from "../src/index.js";
 
-const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const r12Root = path.join(repoRoot, ".artifacts", "r12-demo");
 const outDir = path.join(repoRoot, ".artifacts", "r13-compat");
 mkdirSync(outDir, { recursive: true });
