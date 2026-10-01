@@ -8,6 +8,17 @@ export { evaluateRenderQa } from "./qa.js";
 export { fingerprint, stableStringify } from "./stable.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_CREATIVE_EDIT_PLAN_VERSION,
+  MEDIA_CREATIVE_QUALITY_REPORT_VERSION,
+  R12_GUARDRAILS,
+  CREATIVE_STYLES,
+  compileCreativeEditPlan,
+  createCreativeHintAdapters,
+  creativeMetrics,
+  evaluateCreativeQuality,
+  evaluateCreativeVisualQa
+} from "./creative-plan.js";
+export {
   MEDIA_SHORTFORM_PROFILE_VERSION,
   MEDIA_SHORTFORM_BUNDLE_VERSION,
   MEDIA_SHORTFORM_TIMELINE_SPEC_VERSION,
