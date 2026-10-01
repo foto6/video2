@@ -351,3 +351,55 @@ test("R14 CI corpus bounds non-pause aggressive fixture complexity at the R11 mi
   assert.equal(videoItems.filter((item) => item.motion).length <= 1, true);
   assert.equal(result.timeline.canvas.durationMs, 5000);
 });
+
+
+test("R14 regression: aggressive static punch-in avoids full-frame zoompan while preserving motion semantics", () => {
+  const timeline = {
+    id: "r14-aggressive-punchin-cost",
+    version: 1,
+    profileVersion: MEDIA_SHORTFORM_PROFILE_VERSION,
+    canvas: { width: 1080, height: 1920, fps: 30, durationMs: 5000 },
+    tracks: [{
+      id: "video",
+      kind: "video",
+      items: [{
+        id: "main",
+        startMs: 0,
+        endMs: 5000,
+        role: "body",
+        source: {
+          id: "source",
+          uri: "input.mp4",
+          inMs: 0,
+          outMs: 5000,
+          sha256: "e".repeat(64),
+          size: 100
+        }
+      }]
+    }]
+  };
+  const creative = compileCreativeEditPlan({
+    style: "aggressive_shortform",
+    timeline,
+    cta: false,
+    hints: {}
+  });
+  const motionItems = creative.timeline.tracks
+    .find((track) => track.kind === "video")
+    .items
+    .filter((item) => item.motion);
+  assert.equal(motionItems.length, 1);
+  assert.equal(motionItems[0].motion.type, "punch_in");
+  assert.equal(motionItems[0].motion.zoom, 1.14);
+
+  const command = compileFfmpegCommand(creative.timeline, {
+    format: "mp4",
+    videoCodec: "libx264",
+    pixelFormat: "yuv420p",
+    preset: "ultrafast",
+    loudness: false
+  }, "out.mp4");
+  const graph = command.args[command.args.indexOf("-filter_complex") + 1];
+  assert.doesNotMatch(graph, /zoompan=z='1\.14'/);
+  assert.match(graph, /scale=w='ceil\(iw\*1\.14\/2\)\*2':h='ceil\(ih\*1\.14\/2\)\*2',crop=1080:1920:\(in_w-out_w\)\/2:\(in_h-out_h\)\/2/);
+});
