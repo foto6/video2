@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.web_chat_review_bundle.v1",
+  "title": "Media web-chat review bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","source","producer","candidateBatch",
+    "attachmentPolicy","candidates"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.web_chat_review_bundle.v1" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId","sha256","size"],
+      "properties": {
+        "sourceId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository","sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "candidateBatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifestDigest","producerSha"],
+      "properties": {
+        "manifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "producerSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "attachmentPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxBytesPerFile","oversizeBehavior"],
+      "properties": {
+        "maxBytesPerFile": { "const": 500000000 },
+        "oversizeBehavior": { "const": "ineligible_without_explicit_derivative" }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "order","candidateId","final","renderExport","technicalQa",
+          "attachmentEligibility","reviewAttachment"
+        ],
+        "properties": {
+          "order": { "type": "integer", "minimum": 0 },
+          "candidateId": { "type": "string", "minLength": 1 },
+          "final": {
+            "type": "object",
+            "required": ["path","name","sha256","size"]
+          },
+          "renderExport": {
+            "type": "object",
+            "required": ["path","digest","fileSha256"]
+          },
+          "technicalQa": {
+            "type": "object",
+            "required": ["passed","evidenceSha256","checkCount","failedChecks"]
+          },
+          "attachmentEligibility": {
+            "type": "object",
+            "required": ["eligible","maxBytes","reason"]
+          },
+          "reviewAttachment": {
+            "anyOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "required": ["file","derivative"]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
