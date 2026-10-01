@@ -263,7 +263,7 @@ export function compileFfmpegCommand(timelineInput, exportSpec = {}, outputPath 
 
   const loudness = normalizedLoudness(timeline, exportSpec);
   if (audioOut && loudness) {
-    filters.push(`${audioOut}loudnorm=I=${loudness.integratedLufs}:TP=${loudness.truePeakDb}:LRA=${loudness.lra}[anorm]`);
+    filters.push(`${audioOut}loudnorm=I=${loudness.integratedLufs}:TP=${loudness.truePeakDb}:LRA=${loudness.lra},aresample=48000[anorm]`);
     audioOut = "[anorm]";
   }
 
