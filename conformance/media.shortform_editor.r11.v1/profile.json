@@ -1,0 +1,11 @@
+{
+  "contractVersion": "media.shortform_profile.r11.v1",
+  "width": 1080,
+  "height": 1920,
+  "aspectRatio": "9:16",
+  "fps": 30,
+  "targetDurationMs": { "min": 5000, "max": 90000 },
+  "hookWindowMs": 3000,
+  "safeArea": { "left": 72, "right": 72, "top": 180, "bottom": 260 },
+  "loudness": { "integratedLufs": -16, "truePeakDb": -1.5, "lra": 11 }
+}
