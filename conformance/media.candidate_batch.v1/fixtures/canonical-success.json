@@ -1,0 +1,54 @@
+{
+  "contractVersion": "media.candidate_batch.v1",
+  "batchId": "canonical-success",
+  "source": {
+    "sourceId": "source",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "size": 1000
+  },
+  "producer": {
+    "repository": "foto6/video2",
+    "sha": "1111111111111111111111111111111111111111"
+  },
+  "renderer": {
+    "configDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "requestDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "status": "succeeded",
+  "candidates": [
+    {
+      "order": 0,
+      "candidateId": "candidate-a",
+      "planDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "cacheIdentityDigest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "status": "succeeded",
+      "final": {
+        "fileName": "final.mp4",
+        "relativePath": "candidates/candidate-a/final.mp4",
+        "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "size": 2000,
+        "renderExportFileName": "media.render_export.v1.json",
+        "renderExportRelativePath": "candidates/candidate-a/media.render_export.v1.json",
+        "renderExportSha256": "abababababababababababababababababababababababababababababababab"
+      },
+      "failure": null
+    },
+    {
+      "order": 1,
+      "candidateId": "candidate-b",
+      "planDigest": "1212121212121212121212121212121212121212121212121212121212121212",
+      "cacheIdentityDigest": "3434343434343434343434343434343434343434343434343434343434343434",
+      "status": "succeeded",
+      "final": {
+        "fileName": "final.mp4",
+        "relativePath": "candidates/candidate-b/final.mp4",
+        "sha256": "5656565656565656565656565656565656565656565656565656565656565656",
+        "size": 2100,
+        "renderExportFileName": "media.render_export.v1.json",
+        "renderExportRelativePath": "candidates/candidate-b/media.render_export.v1.json",
+        "renderExportSha256": "7878787878787878787878787878787878787878787878787878787878787878"
+      },
+      "failure": null
+    }
+  ]
+}
