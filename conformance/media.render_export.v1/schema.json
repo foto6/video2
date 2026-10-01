@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.render_export.v1",
+  "title": "Canonical Media render export",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","status","producer","job","artifact","probe","qa",
+    "evidence","provenance","failure","benchmark"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.render_export.v1" },
+    "status": { "enum": ["succeeded","failed"] },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository","sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logicalJobId","idempotencyKey","renderFingerprint","status"],
+      "properties": {
+        "logicalJobId": { "type": ["string","null"] },
+        "idempotencyKey": { "type": ["string","null"] },
+        "renderFingerprint": {
+          "anyOf": [
+            { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            { "type": "null" }
+          ]
+        },
+        "status": { "type": "string" }
+      }
+    },
+    "artifact": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fileName","algorithm","sha256","size","contentId","artifactManifestDigest"],
+          "properties": {
+            "fileName": { "const": "final.mp4" },
+            "algorithm": { "const": "sha256" },
+            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "size": { "type": "integer", "minimum": 1 },
+            "contentId": { "type": "string" },
+            "artifactManifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "probe": { "type": ["object","null"] },
+    "qa": {
+      "type": "object",
+      "required": ["technical","creative"],
+      "properties": {
+        "technical": { "type": ["object","null"] },
+        "creative": { "type": ["object","null"] }
+      }
+    },
+    "evidence": { "type": "object" },
+    "provenance": { "type": "object" },
+    "failure": { "type": ["object","null"] },
+    "benchmark": {
+      "type": "object",
+      "required": ["binding","technicalDq","technicalDqReasons"],
+      "properties": {
+        "binding": { "type": "object" },
+        "technicalDq": { "type": "boolean" },
+        "technicalDqReasons": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "succeeded" } } },
+      "then": {
+        "properties": {
+          "artifact": { "type": "object" },
+          "failure": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "failed" } } },
+      "then": {
+        "properties": {
+          "artifact": { "type": "null" },
+          "failure": { "type": "object" }
+        }
+      }
+    }
+  ]
+}
