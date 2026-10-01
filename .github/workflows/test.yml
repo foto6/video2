@@ -88,6 +88,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: ffprobe -version
       - uses: actions/download-artifact@v4
         with:
           pattern: media-r14-case-*
