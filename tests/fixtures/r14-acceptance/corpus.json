@@ -5,15 +5,37 @@
     {
       "id": "talking-head-pauses",
       "file": "talking-head-pauses.mp4",
-      "styles": ["clean_podcast", "aggressive_shortform"],
+      "styles": [
+        "clean_podcast",
+        "aggressive_shortform"
+      ],
       "hints": {
         "silenceRanges": [
-          { "startMs": 1450, "endMs": 2050 },
-          { "startMs": 3350, "endMs": 4050 }
+          {
+            "startMs": 1450,
+            "endMs": 2050
+          },
+          {
+            "startMs": 3350,
+            "endMs": 4050
+          }
         ],
-        "sentenceBoundariesMs": [0, 1400, 2100, 3300, 4100, 6000],
+        "sentenceBoundariesMs": [
+          0,
+          1400,
+          2100,
+          3300,
+          4100,
+          6000
+        ],
         "saliency": [
-          { "startMs": 0, "endMs": 6000, "centerX": 0.5, "centerY": 0.42, "confidence": 0.98 }
+          {
+            "startMs": 0,
+            "endMs": 6000,
+            "centerX": 0.5,
+            "centerY": 0.42,
+            "confidence": 0.98
+          }
         ]
       },
       "humanReview": [
@@ -24,11 +46,26 @@
     {
       "id": "landscape-reframe",
       "file": "landscape-reframe.mp4",
-      "styles": ["clean_podcast", "aggressive_shortform"],
+      "styles": [
+        "clean_podcast",
+        "aggressive_shortform"
+      ],
       "hints": {
         "saliency": [
-          { "startMs": 0, "endMs": 3000, "centerX": 0.30, "centerY": 0.50, "confidence": 0.96 },
-          { "startMs": 3000, "endMs": 6000, "centerX": 0.70, "centerY": 0.50, "confidence": 0.96 }
+          {
+            "startMs": 0,
+            "endMs": 3000,
+            "centerX": 0.3,
+            "centerY": 0.5,
+            "confidence": 0.96
+          },
+          {
+            "startMs": 3000,
+            "endMs": 6000,
+            "centerX": 0.7,
+            "centerY": 0.5,
+            "confidence": 0.96
+          }
         ]
       },
       "humanReview": [
@@ -39,9 +76,25 @@
     {
       "id": "fast-motion",
       "file": "fast-motion.mp4",
-      "styles": ["clean_podcast", "aggressive_shortform"],
+      "styles": [
+        "clean_podcast",
+        "aggressive_shortform"
+      ],
       "hints": {
-        "beatMarkersMs": [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]
+        "beatMarkersMs": [
+          0,
+          500,
+          1000,
+          1500,
+          2000,
+          2500,
+          3000,
+          3500,
+          4000,
+          4500,
+          5000,
+          5500
+        ]
       },
       "humanReview": [
         "Check whether added motion effects compound source motion excessively.",
@@ -51,7 +104,10 @@
     {
       "id": "low-motion",
       "file": "low-motion.mp4",
-      "styles": ["clean_podcast", "aggressive_shortform"],
+      "styles": [
+        "clean_podcast",
+        "aggressive_shortform"
+      ],
       "hints": {},
       "humanReview": [
         "Check that low-motion footage does not feel artificially over-edited.",
@@ -62,9 +118,25 @@
       "id": "speech-music",
       "file": "speech-music.mp4",
       "musicFile": "music-bed.wav",
-      "styles": ["clean_podcast", "aggressive_shortform"],
+      "styles": [
+        "clean_podcast",
+        "aggressive_shortform"
+      ],
       "hints": {
-        "beatMarkersMs": [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]
+        "beatMarkersMs": [
+          0,
+          500,
+          1000,
+          1500,
+          2000,
+          2500,
+          3000,
+          3500,
+          4000,
+          4500,
+          5000,
+          5500
+        ]
       },
       "humanReview": [
         "Check subjective speech intelligibility against the music bed.",
@@ -74,15 +146,56 @@
     {
       "id": "subtitle-heavy",
       "file": "subtitle-heavy.mp4",
-      "styles": ["clean_podcast", "aggressive_shortform"],
+      "styles": [
+        "clean_podcast",
+        "aggressive_shortform"
+      ],
       "hints": {
         "captionTokens": [
-          { "id": "s1", "text": "START WITH THE RESULT", "startMs": 200, "endMs": 850, "emphasis": true },
-          { "id": "s2", "text": "show the evidence", "startMs": 900, "endMs": 1500 },
-          { "id": "s3", "text": "KEEP IT READABLE", "startMs": 1600, "endMs": 2250, "emphasis": true },
-          { "id": "s4", "text": "even on a small screen", "startMs": 2300, "endMs": 3000 },
-          { "id": "s5", "text": "avoid text collisions", "startMs": 3150, "endMs": 3850 },
-          { "id": "s6", "text": "FINISH WITH ONE IDEA", "startMs": 4000, "endMs": 4750, "emphasis": true }
+          {
+            "id": "s1",
+            "text": "START WITH THE RESULT",
+            "startMs": 200,
+            "endMs": 850,
+            "emphasis": true
+          },
+          {
+            "id": "s2",
+            "text": "show the evidence",
+            "startMs": 900,
+            "endMs": 1500
+          },
+          {
+            "id": "s3",
+            "text": "KEEP IT READABLE",
+            "startMs": 1600,
+            "endMs": 2250,
+            "emphasis": true
+          },
+          {
+            "id": "s4",
+            "text": "even on a small screen",
+            "startMs": 2300,
+            "endMs": 3000
+          },
+          {
+            "id": "s5",
+            "text": "avoid text collisions",
+            "startMs": 3150,
+            "endMs": 3850
+          },
+          {
+            "id": "s6",
+            "text": "FINISH WITH ONE IDEA",
+            "startMs": 4000,
+            "endMs": 4750,
+            "emphasis": true
+          }
+        ],
+        "silenceRanges": [],
+        "sentenceBoundariesMs": [
+          0,
+          6000
         ]
       },
       "humanReview": [
@@ -94,9 +207,18 @@
       "id": "broll-insert",
       "file": "broll-main.mp4",
       "brollFile": "broll-insert.mp4",
-      "styles": ["clean_podcast", "aggressive_shortform"],
+      "styles": [
+        "clean_podcast",
+        "aggressive_shortform"
+      ],
       "hints": {
-        "sentenceBoundariesMs": [0, 1500, 3000, 4500, 6000]
+        "sentenceBoundariesMs": [
+          0,
+          1500,
+          3000,
+          4500,
+          6000
+        ]
       },
       "humanReview": [
         "Check whether the B-roll insertion feels contextually appropriate.",
