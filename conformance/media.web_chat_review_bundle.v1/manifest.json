@@ -1,0 +1,47 @@
+{
+  "manifestVersion": "media.web_chat_review_bundle.v1.manifest.1",
+  "contractVersion": "media.web_chat_review_bundle.v1",
+  "producerRepository": "foto6/video2",
+  "producerShaBinding": {
+    "source": "git rev-parse HEAD",
+    "ciAssertion": "GITHUB_SHA must equal git rev-parse HEAD when present"
+  },
+  "attachmentPolicy": {
+    "maxBytesPerFile": 500000000,
+    "oversizeBehavior": "ineligible_without_explicit_derivative",
+    "derivativeLabel": "derivative_for_model_review=true"
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/web-chat-review-r17.js",
+      "gitBlobSha": "30533ad488da2586795460ba0c5f07e445e69435"
+    },
+    "builder": {
+      "path": "tools/build-r17-web-chat-review.mjs",
+      "gitBlobSha": "e22e8c2fc081293ac32d9874d2b66b8d4315c5d7"
+    },
+    "tests": {
+      "path": "tests/web-chat-review-r17.test.js",
+      "gitBlobSha": "5a2aee6b0685b154cef717241cec3c03eef6d1c9"
+    },
+    "schema": {
+      "path": "conformance/media.web_chat_review_bundle.v1/schema.json",
+      "gitBlobSha": "f66fd4b51fe1823f08cbfadf808989d642d2a3bf"
+    },
+    "contract": {
+      "path": "conformance/media.web_chat_review_bundle.v1/contract.json",
+      "gitBlobSha": "f30e59ce7bf16977a8519e6cd3e481d81fbad73e"
+    },
+    "candidateBatchV1": {
+      "path": "conformance/media.candidate_batch.v1/manifest.json",
+      "gitBlobSha": "4f68a5a8b145b14344240c45153ccd2baa479f48"
+    },
+    "renderExportV1": {
+      "path": "conformance/media.render_export.v1/manifest.json",
+      "gitBlobSha": "945acb01ff0269d89b91463aa8d862f500e055b2"
+    }
+  },
+  "reproductionCommand": "npm run verify:r17",
+  "failClosed": true,
+  "modelJudgment": false
+}
