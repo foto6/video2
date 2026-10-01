@@ -22,6 +22,9 @@
     "verify:r11": "npm run test:r11 && npm run demo:r11",
     "test:r12": "node --test tests/creative-polish-r12.test.js",
     "demo:r12": "node tools/render-r12-demo.mjs",
-    "verify:r12": "npm run test:r12 && npm run demo:r12"
+    "verify:r12": "npm run test:r12 && npm run demo:r12",
+    "test:r13": "node --test tests/creator-compat-r13.test.js",
+    "emit:r13": "npm run demo:r12 && node tools/render-r13-compat.mjs",
+    "verify:r13": "npm run test:r13 && npm run emit:r13"
   }
 }
