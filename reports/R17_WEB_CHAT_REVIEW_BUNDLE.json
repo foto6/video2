@@ -1,0 +1,34 @@
+{
+  "reportVersion": "media.r17.web_chat_review_bundle.v1",
+  "baselineSha": "231a0680c8939cfec77aaa283e507e93f383ad73",
+  "branch": "agent/media-r17-web-chat-review-bundle-20261001",
+  "contractVersion": "media.web_chat_review_bundle.v1",
+  "attachmentLimitBytes": 500000000,
+  "sourceBound": true,
+  "preservesOriginalBytes": true,
+  "modelJudgment": false,
+  "checks": [
+    "missing file",
+    "changed final hash/size",
+    "wrong source",
+    "stale render export",
+    "stale producer",
+    "oversize",
+    "duplicate candidate",
+    "derivative provenance mismatch"
+  ],
+  "derivative": {
+    "explicitOnly": true,
+    "label": "derivative_for_model_review=true",
+    "bindsOriginalSha": true,
+    "bindsDerivativeSha": true,
+    "bindsTransformSettings": true
+  },
+  "reproduction": {
+    "focused": "npm run test:r17",
+    "build": "npm run build:r17",
+    "verify": "npm run verify:r17",
+    "artifactRoot": ".artifacts/r17-web-chat-review"
+  },
+  "preserved": ["R11","R12","R13","R14","R15","R16","media.render_export.v1"]
+}
