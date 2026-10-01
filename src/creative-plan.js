@@ -241,18 +241,17 @@ function remapPoints(points, removals, durationMs) {
     .map((point) => compressedTime(point, removals));
 }
 
-function desiredCutPoints(durationMs, style, sentencePoints, beatPoints) {
+function desiredCutPoints(durationMs, style, sentencePoints, beatPoints, maxAdditionalCuts = Infinity) {
   const cuts = [];
   let cursor = style.hookCadenceMs;
-  while (cursor < durationMs - 350) {
+  while (cursor < durationMs - 350 && cuts.length < maxAdditionalCuts) {
     let target = cursor;
     target = nearestPoint(target, sentencePoints, style.sentenceSnapMs);
     target = nearestPoint(target, beatPoints, style.beatSnapMs);
     if (target > 300 && target < durationMs - 300 && (cuts.length === 0 || target - cuts.at(-1) >= 350)) cuts.push(target);
     cursor += cursor < SHORTFORM_R11_PROFILE.hookWindowMs ? style.hookCadenceMs : style.regularCadenceMs;
   }
-  const maxCuts = Math.floor((durationMs / 1000) * R12_GUARDRAILS.maxCutRatePerSecond);
-  return cuts.slice(0, Math.max(0, maxCuts));
+  return cuts;
 }
 
 function splitVideoAtCuts(timeline, cuts) {
@@ -637,7 +636,20 @@ export function compileCreativeEditPlan(request) {
   let timeline = remapTimelineForDeadAir(base, removals);
   const sentencePoints = remapPoints(hints.sentenceBoundariesMs, removals, base.canvas.durationMs);
   const beatPoints = remapPoints(hints.beatMarkersMs, removals, base.canvas.durationMs);
-  const cuts = desiredCutPoints(timeline.canvas.durationMs, style, sentencePoints, beatPoints);
+  const existingVideoItems = timeline.tracks
+    .filter((track) => track.kind === "video")
+    .reduce((sum, track) => sum + track.items.length, 0);
+  const existingCuts = Math.max(0, existingVideoItems - 1);
+  const loopReserve = request.loopFriendly === true ? 1 : 0;
+  const hardCutBudget = Math.floor((timeline.canvas.durationMs / 1000) * R12_GUARDRAILS.maxCutRatePerSecond);
+  const additionalCutBudget = Math.max(0, hardCutBudget - existingCuts - loopReserve);
+  const cuts = desiredCutPoints(
+    timeline.canvas.durationMs,
+    style,
+    sentencePoints,
+    beatPoints,
+    additionalCutBudget
+  );
   timeline = splitVideoAtCuts(timeline, cuts);
   timeline = applyCreativeVideoDecisions(timeline, hints, style);
   timeline = styleCaptions(timeline, hints, style);
@@ -653,6 +665,12 @@ export function compileCreativeEditPlan(request) {
     hintDigest: fingerprint(hints),
     removedDeadAir: removals,
     alignedCutPointsMs: cuts,
+    cutBudget: {
+      hardCutBudget,
+      existingCuts,
+      loopReserve,
+      additionalCutBudget
+    },
     beatHintsUsed: beatPoints.length,
     sentenceHintsUsed: sentencePoints.length,
     saliencyHintsUsed: Array.isArray(hints.saliency) ? hints.saliency.length : 0,
