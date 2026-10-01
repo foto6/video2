@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.creator_consumer_compat.r13.v1",
+  "title": "Creator tournament candidate Media result envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion", "logicalJobId", "idempotencyKey", "renderFingerprint",
+    "profileDigest", "creativePlanDigest", "finalContent", "artifactManifestDigest",
+    "probeEvidence", "technicalQa", "creativeQuality", "timelineDigest",
+    "producer", "contractDigests"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.creator_consumer_compat.r13.v1" },
+    "logicalJobId": { "type": "string", "minLength": 1 },
+    "idempotencyKey": {
+      "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    },
+    "renderFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "profileDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "creativePlanDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "finalContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "artifactManifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "probeEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "value"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "value": { "type": "object" }
+      }
+    },
+    "technicalQa": { "$ref": "./technical-qa.schema.json" },
+    "creativeQuality": { "$ref": "./creative-quality-report.schema.json" },
+    "timelineDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "contractDigests": {
+      "type": "object",
+      "minProperties": 8,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "gitBlobSha"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "gitBlobSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+        }
+      }
+    }
+  }
+}
