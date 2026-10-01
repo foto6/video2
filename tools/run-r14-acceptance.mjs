@@ -245,7 +245,14 @@ function writeJson(filePath, value) {
   writeFileSync(filePath, `${stableStringify(value)}\n`);
 }
 
-const cases = loadCases();
+let cases = loadCases();
+if (args["case-id"]) {
+  const requested = new Set(String(args["case-id"]).split(",").map((value) => value.trim()).filter(Boolean));
+  const available = new Set(cases.map((entry) => entry.id));
+  const missing = [...requested].filter((id) => !available.has(id));
+  if (missing.length) throw new Error(`unknown acceptance case id(s): ${missing.join(", ")}`);
+  cases = cases.filter((entry) => requested.has(entry.id));
+}
 if (cases.length === 0) throw new Error("no input video cases found");
 
 const results = [];
