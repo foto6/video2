@@ -280,6 +280,61 @@ function sourceMatchesRenderExport(renderExport, source) {
   );
 }
 
+export function verifyReviewSourceFile(sourcePath, expectedSource) {
+  const sourceBytes = hashFile(sourcePath);
+  if (
+    sourceBytes.sha256 !== expectedSource.sha256 ||
+    sourceBytes.size !== expectedSource.size
+  ) {
+    fail("web_chat_review_wrong_source", "exact source bytes do not match expected upstream source");
+  }
+  return sourceBytes;
+}
+
+export function verifyReviewCandidateAgainstPin({
+  finalPath,
+  sidecarPath,
+  expectedCandidate,
+  expectedSource,
+  upstreamProducerSha
+} = {}) {
+  const finalBytes = hashFile(finalPath);
+  if (
+    finalBytes.sha256 !== expectedCandidate.finalSha256 ||
+    finalBytes.size !== expectedCandidate.finalSize
+  ) {
+    fail("web_chat_review_hash_mismatch", "candidate final.mp4 differs from pinned upstream bytes");
+  }
+
+  const sidecarBytes = hashFile(sidecarPath);
+  if (sidecarBytes.sha256 !== expectedCandidate.renderExportFileSha256) {
+    fail("web_chat_review_stale_render_export", "candidate render-export sidecar bytes differ from pinned upstream evidence");
+  }
+
+  const renderExport = JSON.parse(readFileSync(sidecarPath, "utf8"));
+  validateRenderExportAgainstFinal(renderExport, finalPath);
+  const semanticDigest = renderExportDigest(renderExport);
+  if (
+    renderExport.producer.sha !== upstreamProducerSha ||
+    semanticDigest !== expectedCandidate.renderExportDigest ||
+    renderExport.artifact.sha256 !== expectedCandidate.finalSha256 ||
+    renderExport.artifact.size !== expectedCandidate.finalSize
+  ) {
+    fail("web_chat_review_upstream_provenance_mismatch", "candidate render-export provenance differs from pinned upstream evidence");
+  }
+  if (!sourceMatchesRenderExport(renderExport, expectedSource)) {
+    fail("web_chat_review_wrong_source", "candidate render export does not bind expected upstream source");
+  }
+
+  return {
+    finalBytes,
+    sidecarBytes,
+    renderExport,
+    semanticDigest,
+    technicalQa: summarizeTechnicalQa(renderExport, expectedCandidate.technicalQaEvidenceSha256)
+  };
+}
+
 export function validateWebChatReviewBundle(input) {
   const bundle = clone(input);
   exactKeys(bundle, TOP_FIELDS, "review bundle");
@@ -308,11 +363,11 @@ export function validateWebChatReviewBundle(input) {
       "order", "candidateId", "final", "renderExport", "technicalQa",
       "attachmentEligibility", "reviewAttachment"
     ], `candidates[${index}]`);
+    if (seen.has(candidate.candidateId)) fail("web_chat_review_duplicate_candidate", "duplicate candidate ID");
+    seen.add(candidate.candidateId);
     if (candidate.order !== accepted.order || candidate.candidateId !== accepted.candidateId) {
       fail("web_chat_review_upstream_provenance_mismatch", "candidate ID/order differs from accepted R16");
     }
-    if (seen.has(candidate.candidateId)) fail("web_chat_review_duplicate_candidate", "duplicate candidate ID");
-    seen.add(candidate.candidateId);
     if (candidate.final.sha256 !== accepted.finalSha256 || candidate.final.size !== accepted.finalSize) {
       fail("web_chat_review_upstream_provenance_mismatch", "candidate final identity differs from accepted R16");
     }
@@ -378,10 +433,7 @@ export function buildWebChatReviewBundle({
     fail("web_chat_review_upstream_provenance_mismatch", "candidate batch source differs from accepted R16");
   }
 
-  const sourceBytes = hashFile(sourcePath);
-  if (sourceBytes.sha256 !== authority.source.sha256 || sourceBytes.size !== authority.source.size) {
-    fail("web_chat_review_wrong_source", "exact source bytes do not match accepted R16 source");
-  }
+  verifyReviewSourceFile(sourcePath, authority.source);
   const outputRoot = attachmentRoot ? path.resolve(attachmentRoot) : null;
   if (outputRoot) mkdirSync(outputRoot, { recursive: true });
 
@@ -408,26 +460,14 @@ export function buildWebChatReviewBundle({
 
     const finalPath = safeRelative(batchRoot, entry.final.relativePath, "candidate final path");
     const sidecarPath = safeRelative(batchRoot, entry.final.renderExportRelativePath, "render export path");
-    const finalBytes = hashFile(finalPath);
-    if (finalBytes.sha256 !== accepted.finalSha256 || finalBytes.size !== accepted.finalSize) {
-      fail("web_chat_review_hash_mismatch", `candidate ${entry.candidateId} final.mp4 differs from accepted R16 bytes`);
-    }
-    const sidecarBytes = hashFile(sidecarPath);
-    if (sidecarBytes.sha256 !== accepted.renderExportFileSha256) {
-      fail("web_chat_review_stale_render_export", `candidate ${entry.candidateId} sidecar bytes differ from accepted R16`);
-    }
-    const renderExport = JSON.parse(readFileSync(sidecarPath, "utf8"));
-    validateRenderExportAgainstFinal(renderExport, finalPath);
-    const semanticDigest = renderExportDigest(renderExport);
-    if (
-      renderExport.producer.sha !== authority.producerSha ||
-      semanticDigest !== accepted.renderExportDigest ||
-      renderExport.artifact.sha256 !== accepted.finalSha256 ||
-      renderExport.artifact.size !== accepted.finalSize
-    ) fail("web_chat_review_upstream_provenance_mismatch", `candidate ${entry.candidateId} render export provenance differs from accepted R16`);
-    if (!sourceMatchesRenderExport(renderExport, authority.source)) {
-      fail("web_chat_review_wrong_source", `candidate ${entry.candidateId} render export does not bind accepted R16 source`);
-    }
+    const verified = verifyReviewCandidateAgainstPin({
+      finalPath,
+      sidecarPath,
+      expectedCandidate: accepted,
+      expectedSource: authority.source,
+      upstreamProducerSha: authority.producerSha
+    });
+    const { finalBytes, sidecarBytes, renderExport, semanticDigest, technicalQa } = verified;
 
     const eligibility = attachmentEligibility(finalBytes.size);
     let reviewAttachment = null;
@@ -476,7 +516,7 @@ export function buildWebChatReviewBundle({
         fileSha256: sidecarBytes.sha256,
         producerSha: renderExport.producer.sha
       },
-      technicalQa: summarizeTechnicalQa(renderExport, accepted.technicalQaEvidenceSha256),
+      technicalQa,
       attachmentEligibility: eligibility,
       reviewAttachment
     };
