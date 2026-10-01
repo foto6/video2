@@ -1,0 +1,30 @@
+{
+  "fixtureVersion": "media.creative_edit_plan.r12.v1.fixture.1",
+  "contractVersion": "media.creative_edit_plan.r12.v1",
+  "producerRepository": "foto6/video2",
+  "producerBranch": "agent/media-r12-creative-polish-20261001",
+  "producerShaRule": "Pin the exact Git commit containing this manifest; do not use a moving branch ref.",
+  "files": [
+    { "path": "contract.json", "sha256": "754cffa1661a363e2483df0b0a4066628c76edc43dc051c49ead270cfeca1946" },
+    { "path": "fixtures/clean-podcast.json", "sha256": "d574a580e5e3202df6c9c765bc796f75d4e34d2bea1a1d16d88ba15217a6cadf" },
+    { "path": "fixtures/aggressive-shortform.json", "sha256": "c5b0c658fdd7ae5b66cd74273c0719ad1df571628054b79b45e440d121472fdf" },
+    { "path": "fixtures/cinematic-minimal.json", "sha256": "408d5ed1f7b5f7b074aa6eafd88ffbffc79c4b02ff636a53e73f6f1cd1d1b57f" }
+  ],
+  "preservedContracts": [
+    "media.job.v1",
+    "media.render.v1",
+    "media.shortform_profile.r11.v1",
+    "media.artifact_manifest.v1",
+    "media.artifact_pin_lease.v1",
+    "media.artifact_retention.v1"
+  ],
+  "qualityReport": "media.creative_quality_report.r12.v1",
+  "safety": {
+    "publishing": false,
+    "credentials": false,
+    "creatorGrowthMutation": false,
+    "desktopCommander": false,
+    "protectedPathAccess": false,
+    "mergeRelease": false
+  }
+}
