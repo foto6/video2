@@ -1,10 +1,19 @@
 {
-  "manifestVersion": "media.web_chat_review_bundle.v1.manifest.1",
+  "manifestVersion": "media.web_chat_review_bundle.v1.manifest.2",
   "contractVersion": "media.web_chat_review_bundle.v1",
   "producerRepository": "foto6/video2",
-  "producerShaBinding": {
+  "reviewBundleProducerShaBinding": {
     "source": "git rev-parse HEAD",
     "ciAssertion": "GITHUB_SHA must equal git rev-parse HEAD when present"
+  },
+  "upstreamMediaAuthority": {
+    "producerSha": "231a0680c8939cfec77aaa283e507e93f383ad73",
+    "ciRunId": 36865890506,
+    "artifactId": 11163920921,
+    "artifactName": "media-r16-candidate-batch-demo",
+    "archiveDigest": "sha256:d929b592c76ec93e41b54701376f4b02366a3bdbd127d3472d73ae277d450d0f",
+    "candidateBatchManifestFileSha256": "44ab0a7dd761bbc79e554a21003b7e67b65b6e80b6c1b3830179caedab509872",
+    "candidateBatchManifestDigest": "ec75baee68bc73b8c8e1812dddbf6dbe5cc0dfdc4d0a66938a16c6db87536dbf"
   },
   "attachmentPolicy": {
     "maxBytesPerFile": 500000000,
@@ -14,23 +23,27 @@
   "pins": {
     "implementation": {
       "path": "src/web-chat-review-r17.js",
-      "gitBlobSha": "30533ad488da2586795460ba0c5f07e445e69435"
+      "gitBlobSha": "a4a3575c8ddf9a0e2cf39de30e0b7ac4d8e1ca4b"
     },
     "builder": {
       "path": "tools/build-r17-web-chat-review.mjs",
-      "gitBlobSha": "e22e8c2fc081293ac32d9874d2b66b8d4315c5d7"
+      "gitBlobSha": "21b788adef41e9bf65d54e66c2b6f25fcfe92999"
+    },
+    "upstreamVerifier": {
+      "path": "tools/verify-r17-upstream-artifact.mjs",
+      "gitBlobSha": "59bc855a4bc7d8afbb0e99f9fbbaef34869fa992"
     },
     "tests": {
       "path": "tests/web-chat-review-r17.test.js",
-      "gitBlobSha": "c35e1c4c1f9e666c9af3144b064cdc45f90dfa2c"
+      "gitBlobSha": "dfd512651f41521d4ba86d16163b38170815f746"
     },
     "schema": {
       "path": "conformance/media.web_chat_review_bundle.v1/schema.json",
-      "gitBlobSha": "f66fd4b51fe1823f08cbfadf808989d642d2a3bf"
+      "gitBlobSha": "2b50bc169f76688d546497eca7ce96a58909347e"
     },
     "contract": {
       "path": "conformance/media.web_chat_review_bundle.v1/contract.json",
-      "gitBlobSha": "f30e59ce7bf16977a8519e6cd3e481d81fbad73e"
+      "gitBlobSha": "37499d3e7ab4631f2080060e43341c804278a838"
     },
     "candidateBatchV1": {
       "path": "conformance/media.candidate_batch.v1/manifest.json",
@@ -39,9 +52,22 @@
     "renderExportV1": {
       "path": "conformance/media.render_export.v1/manifest.json",
       "gitBlobSha": "945acb01ff0269d89b91463aa8d862f500e055b2"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "ae0524f7d26bf37722d66a5b21197e215fac3d9d"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "0a7d9d23fde2a849799b007006be205b16d667be"
     }
   },
   "reproductionCommand": "npm run verify:r17",
+  "ciUpstreamSequence": [
+    "verify exact accepted R16 run/artifact metadata",
+    "download artifact 11163920921 from run 36865890506",
+    "run npm run verify:r17 against extracted bytes"
+  ],
   "failClosed": true,
   "modelJudgment": false
 }
