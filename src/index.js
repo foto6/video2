@@ -13,6 +13,21 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_CANDIDATE_BATCH_VERSION,
+  MEDIA_CANDIDATE_BATCH_STATE_VERSION,
+  MEDIA_CANDIDATE_BATCH_CACHE_VERSION,
+  PersistentCandidateBatchStore,
+  PersistentCandidateCache,
+  CandidateBatchRuntime,
+  candidatePlanDigest,
+  candidateCacheIdentity,
+  candidateBatchRequestDigest,
+  buildCandidateBatchManifest,
+  validateCandidateBatchRequest,
+  validateCandidateBatchManifest,
+  candidateBatchManifestDigest
+} from "./candidate-batch-r16.js";
+export {
   MEDIA_RENDER_EXPORT_VERSION,
   MEDIA_RENDER_EXPORT_FILENAME,
   R15_BOSS_BENCHMARK_BINDING,
