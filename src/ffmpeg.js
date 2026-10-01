@@ -49,6 +49,24 @@ function atempoFilters(speed) {
   return filters;
 }
 
+function motionFilter(item, canvas, durationMs) {
+  if (!item.motion) return null;
+  const zoom = item.motion.zoom ?? 1.08;
+  const frames = Math.max(2, Math.round((durationMs / 1000) * canvas.fps));
+  const last = Math.max(1, frames - 1);
+  if (item.motion.type === "slow_push") {
+    const delta = Math.max(0, zoom - 1);
+    return `zoompan=z='min(1+on/${last}*${delta.toFixed(5)},${zoom})':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
+  }
+  if (item.motion.type === "pan_left") {
+    return `zoompan=z='${zoom}':x='(iw-iw/zoom)*(1-on/${last})':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
+  }
+  if (item.motion.type === "pan_right") {
+    return `zoompan=z='${zoom}':x='(iw-iw/zoom)*on/${last}':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
+  }
+  return `zoompan=z='${zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
+}
+
 function videoFilter(item, index, inputIndex, canvas) {
   const durationMs = item.endMs - item.startMs;
   const sourceInMs = item.source.inMs ?? 0;
@@ -66,6 +84,8 @@ function videoFilter(item, index, inputIndex, canvas) {
     const y = item.reframe?.y ?? "(in_h-out_h)/2";
     parts.push(`crop=${canvas.width}:${canvas.height}:${x}:${y}`);
   }
+  const motion = motionFilter(item, canvas, durationMs);
+  if (motion) parts.push(motion);
   parts.push(`fps=${canvas.fps}`, "setsar=1", "settb=AVTB");
   if (item.fadeInMs) parts.push(`fade=t=in:st=0:d=${seconds(item.fadeInMs)}`);
   if (item.fadeOutMs) parts.push(`fade=t=out:st=${seconds(durationMs - item.fadeOutMs)}:d=${seconds(item.fadeOutMs)}`);
@@ -105,6 +125,20 @@ function mixLabels(filters, labels, name) {
   const output = `[${name}]`;
   filters.push(`${labels.join("")}amix=inputs=${labels.length}:normalize=0:dropout_transition=0${output}`);
   return output;
+}
+
+function kineticPosition(item, axis, fallback) {
+  const raw = item.position?.[axis] ?? item.style?.[axis] ?? fallback;
+  const kinetic = item.style?.kinetic ?? "none";
+  const amplitude = item.style?.motionAmplitudePx ?? 0;
+  if (kinetic === "none" || amplitude === 0 || !Number.isFinite(raw)) return raw;
+  if (kinetic === "bounce" && axis === "y") {
+    return `'${raw}+${amplitude}*sin(8*(t-${seconds(item.startMs)}))'`;
+  }
+  if (kinetic === "slide" && axis === "x") {
+    return `'${raw}+${amplitude}*max(0,1-(t-${seconds(item.startMs)})/0.18)'`;
+  }
+  return raw;
 }
 
 function normalizedLoudness(timeline, exportSpec) {
@@ -166,10 +200,12 @@ export function compileFfmpegCommand(timelineInput, exportSpec = {}, outputPath 
       filters.push(`${videoOut}[${idx}:v]overlay=x=${x}:y=${y}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
     } else {
       const size = item.style?.fontSize ?? 56;
-      const x = item.position?.x ?? "(w-text_w)/2";
-      const y = item.position?.y ?? 180;
-      const box = item.style?.box === false ? "" : ":box=1:boxcolor=black@0.55:boxborderw=20";
-      filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=white${box}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
+      const x = kineticPosition(item, "x", "(w-text_w)/2");
+      const y = kineticPosition(item, "y", 180);
+      const color = item.style?.fontColor ?? "white";
+      const boxColor = item.style?.boxColor ?? "black@0.55";
+      const box = item.style?.box === false ? "" : `:box=1:boxcolor=${boxColor}:boxborderw=20`;
+      filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=${color}${box}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
     }
     videoOut = next;
   });
@@ -178,11 +214,13 @@ export function compileFfmpegCommand(timelineInput, exportSpec = {}, outputPath 
   captions.forEach((item, index) => {
     if (!videoOut) return;
     const next = `[vsub${index}]`;
-    const x = item.style?.x ?? "(w-text_w)/2";
-    const y = item.style?.y ?? "h-text_h-300";
+    const x = kineticPosition(item, "x", "(w-text_w)/2");
+    const y = kineticPosition(item, "y", "h-text_h-300");
     const size = item.style?.fontSize ?? 64;
-    const box = item.style?.box === false ? "" : ":box=1:boxcolor=black@0.62:boxborderw=18";
-    filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=white${box}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
+    const color = item.style?.fontColor ?? "white";
+    const boxColor = item.style?.boxColor ?? "black@0.62";
+    const box = item.style?.box === false ? "" : `:box=1:boxcolor=${boxColor}:boxborderw=18`;
+    filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=${color}${box}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
     videoOut = next;
   });
 
