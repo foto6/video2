@@ -683,7 +683,7 @@ export function compileCreativeEditPlan(request) {
     planDigest,
     style: request.style,
     timeline,
-    qualityReport: quality
+    qualityReport: { ...quality, creativePlanDigest: planDigest }
   };
 }
 
