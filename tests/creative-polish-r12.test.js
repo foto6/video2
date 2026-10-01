@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 
 import {
   CREATIVE_STYLES,
@@ -204,4 +206,22 @@ test("model-assisted hints remain optional adapter boundaries", async () => {
   await adapters.saliency.provide({ id: "y" });
   assert.deepEqual(calls, [["beat", "x"], ["saliency", "y"]]);
   assert.equal(createCreativeHintAdapters().beat, null);
+});
+
+
+test("R12 conformance manifest hashes all three creative style fixtures", () => {
+  const root = new URL("../conformance/media.creative_edit_plan.r12.v1/", import.meta.url);
+  const manifest = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8"));
+  assert.equal(manifest.contractVersion, MEDIA_CREATIVE_EDIT_PLAN_VERSION);
+  assert.equal(manifest.files.length, 4);
+  for (const entry of manifest.files) {
+    const bytes = readFileSync(new URL(entry.path, root));
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    assert.equal(sha256, entry.sha256, entry.path);
+  }
+  const fixtureStyles = manifest.files
+    .filter((entry) => entry.path.startsWith("fixtures/"))
+    .map((entry) => JSON.parse(readFileSync(new URL(entry.path, root), "utf8")).style)
+    .sort();
+  assert.deepEqual(fixtureStyles, ["aggressive_shortform", "cinematic_minimal", "clean_podcast"]);
 });
