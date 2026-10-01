@@ -63,6 +63,9 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
       if (track.kind === "video" && (item.crop || item.reframe)) {
         operations.push({ type: "video.reframe", itemId: item.id, crop: item.crop ?? null, reframe: item.reframe ?? null });
       }
+      if (track.kind === "video" && item.motion) {
+        operations.push({ type: "video.motion", itemId: item.id, motion: item.motion });
+      }
       if (track.kind === "caption") {
         operations.push({ type: "caption.render", itemId: item.id, text: item.text, style: item.style ?? {} });
       }
