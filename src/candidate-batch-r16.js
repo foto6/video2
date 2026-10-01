@@ -342,7 +342,6 @@ export function buildCandidateBatchManifest({ request: requestInput, state, prod
       planDigest: candidate.planDigest,
       cacheIdentityDigest: persisted.cacheIdentityDigest,
       status: persisted.status,
-      reused: persisted.reused === true,
       final: null,
       failure: persisted.failure ? clone(persisted.failure) : null
     };
@@ -393,14 +392,13 @@ export function validateCandidateBatchManifest(input) {
   manifest.candidates.forEach((entry, order) => {
     exactKeys(entry, [
       "order", "candidateId", "planDigest", "cacheIdentityDigest",
-      "status", "reused", "final", "failure"
+      "status", "final", "failure"
     ], `manifest.candidates[${order}]`);
     if (entry.order !== order) fail("candidate_batch_invalid", "candidate order must be stable and contiguous");
     nonEmpty(entry.candidateId, "candidateId");
     sha256(entry.planDigest, "planDigest");
     sha256(entry.cacheIdentityDigest, "cacheIdentityDigest");
     if (!TERMINAL.has(entry.status)) fail("candidate_batch_invalid", "candidate status must be terminal");
-    if (typeof entry.reused !== "boolean") fail("candidate_batch_invalid", "candidate reused must be boolean");
     if (entry.status === "succeeded") {
       if (!plain(entry.final) || entry.failure !== null) fail("candidate_batch_invalid", "succeeded candidate requires final and no failure");
       exactKeys(entry.final, [
