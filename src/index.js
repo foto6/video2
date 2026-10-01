@@ -6,6 +6,11 @@ export { buildExportMetadata, createRenderJob, transitionRenderJob } from "./job
 export { buildRenderPlan } from "./plan.js";
 export { evaluateRenderQa } from "./qa.js";
 export { fingerprint, stableStringify } from "./stable.js";
+export {
+  MEDIA_CREATOR_CONSUMER_COMPAT_VERSION,
+  buildCreatorConsumerEnvelope,
+  validateCreatorConsumerEnvelope
+} from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
   MEDIA_CREATIVE_EDIT_PLAN_VERSION,
