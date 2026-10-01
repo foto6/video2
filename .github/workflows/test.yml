@@ -28,6 +28,19 @@ jobs:
           node-version: "22"
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: ffmpeg -version && ffprobe -version
+      - name: Verify accepted R16 Actions authority
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/verify-r17-upstream-artifact.mjs
+      - name: Download exact accepted R16 artifact
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: 11163920921
+          github-token: ${{ github.token }}
+          repository: foto6/video2
+          run-id: 36865890506
+          path: .artifacts/r16-accepted
+          merge-multiple: true
       - run: npm run verify:r17
       - uses: actions/upload-artifact@v4
         if: always()
