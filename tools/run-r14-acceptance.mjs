@@ -583,5 +583,13 @@ console.log("R14_ACCEPTANCE", stableStringify({
   warnings: summary.warnings.length,
   summaryPath: path.join(outputRoot, "mvp-acceptance-summary.json")
 }));
+if (summary.failures.length > 0) {
+  console.log("R14_ACCEPTANCE_FAILURES", stableStringify(summary.failures));
+}
+console.log("R14_ACCEPTANCE_WARNINGS", stableStringify(summary.warnings.map((entry) => ({
+  caseId: entry.caseId,
+  style: entry.style,
+  code: entry.code
+}))));
 
 if (summary.counts.fail > 0) process.exitCode = 1;
