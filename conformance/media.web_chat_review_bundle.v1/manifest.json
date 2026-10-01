@@ -39,7 +39,7 @@
     },
     "schema": {
       "path": "conformance/media.web_chat_review_bundle.v1/schema.json",
-      "gitBlobSha": "2b50bc169f76688d546497eca7ce96a58909347e"
+      "gitBlobSha": "0dfae0dc6f56b58891b513bdcd802bd76d1b2e9f"
     },
     "contract": {
       "path": "conformance/media.web_chat_review_bundle.v1/contract.json",
