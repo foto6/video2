@@ -95,6 +95,7 @@ if (request.renderer?.configDigest !== actualRendererConfigDigest) {
   throw new Error(`renderer config digest mismatch: request=${request.renderer?.configDigest ?? null} actual=${actualRendererConfigDigest}`);
 }
 mkdirSync(outputRoot, { recursive: true });
+process.chdir(sandboxRoot);
 
 const producerSha = execFileSync("git", ["rev-parse", "HEAD"], {
   cwd: repoRoot,
