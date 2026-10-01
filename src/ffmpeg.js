@@ -52,6 +52,12 @@ function atempoFilters(speed) {
 function motionFilter(item, canvas, durationMs) {
   if (!item.motion) return null;
   const zoom = item.motion.zoom ?? 1.08;
+  if (item.motion.type === "punch_in") {
+    return [
+      `scale=w='ceil(iw*${zoom}/2)*2':h='ceil(ih*${zoom}/2)*2'`,
+      `crop=${canvas.width}:${canvas.height}:(in_w-out_w)/2:(in_h-out_h)/2`
+    ].join(",");
+  }
   const frames = Math.max(2, Math.round((durationMs / 1000) * canvas.fps));
   const last = Math.max(1, frames - 1);
   if (item.motion.type === "slow_push") {
