@@ -52,6 +52,8 @@ await run({ binary: "ffmpeg", args: [
   "-map_metadata", "-1", "-c:a", "pcm_s16le", music
 ]}, "music generation");
 
+process.chdir(root);
+
 function source(id, uri) {
   return { id, uri, inMs: 0 };
 }
@@ -64,8 +66,8 @@ let timeline = {
   tracks: [
     {
       id: "video", kind: "video", items: [
-        { id: "cut-a", startMs: 0, endMs: 4000, role: "intro", speed: 1.25, source: source("clip-a", clipA), fadeInMs: 180 },
-        { id: "cut-b", startMs: 4000, endMs: 8000, role: "outro", source: source("clip-b", clipB), fadeOutMs: 180 }
+        { id: "cut-a", startMs: 0, endMs: 4000, role: "intro", speed: 1.25, source: source("clip-a", "inputs/clip-a.mp4"), fadeInMs: 180 },
+        { id: "cut-b", startMs: 4000, endMs: 8000, role: "outro", source: source("clip-b", "inputs/clip-b.mp4"), fadeOutMs: 180 }
       ]
     },
     {
@@ -81,8 +83,8 @@ let timeline = {
     },
     {
       id: "audio", kind: "audio", items: [
-        { id: "voice", startMs: 0, endMs: 8000, role: "voiceover", source: source("voice", voice), gainDb: -3, fadeInMs: 120, fadeOutMs: 120 },
-        { id: "music", startMs: 0, endMs: 8000, role: "music", source: source("music", music), gainDb: -18, duckUnderVoice: true }
+        { id: "voice", startMs: 0, endMs: 8000, role: "voiceover", source: source("voice", "inputs/voice.wav"), gainDb: -3, fadeInMs: 120, fadeOutMs: 120 },
+        { id: "music", startMs: 0, endMs: 8000, role: "music", source: source("music", "inputs/music.wav"), gainDb: -18, duckUnderVoice: true }
       ]
     }
   ]
