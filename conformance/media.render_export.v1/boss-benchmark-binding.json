@@ -1,0 +1,31 @@
+{
+  "bindingVersion": "media.render_export.v1.boss_binding.1",
+  "protocol": "human.editorial_benchmark.v1",
+  "repository": "foto6/boss",
+  "producerSha": "912fb4b937ec3bd0c1752fe198a41d60236a20dc",
+  "path": "GATES/EDITORIAL_PARITY_BENCHMARK_V1.md",
+  "gitBlobSha": "af509b79ff8dce6cb621f8ac1c88db1bba6e5219",
+  "hardTechnicalDqMapped": [
+    "decode_probe_failure",
+    "required_stream_missing",
+    "wrong_1080x1920_30fps_profile",
+    "corrupt_or_truncated_output",
+    "black_or_frozen_output",
+    "caption_or_overlay_clipping",
+    "artifact_or_provenance_mismatch",
+    "source_mutation",
+    "undeclared_asset_use",
+    "rated_bytes_differ_from_qa_passed_bytes"
+  ],
+  "requiredMediaBundleFiles": [
+    "final.mp4",
+    "media.render_export.v1.json",
+    "render-manifest.json",
+    "probe-report.json",
+    "qa-report.json",
+    "creative-quality-report.json",
+    "acceptance.json",
+    "human-review-targets.json"
+  ],
+  "generatedMediaCountsForParitySamples": false
+}
