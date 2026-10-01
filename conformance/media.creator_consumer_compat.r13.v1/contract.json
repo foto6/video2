@@ -1,0 +1,40 @@
+{
+  "contractVersion": "media.creator_consumer_compat.r13.v1",
+  "producerRepository": "foto6/video2",
+  "consumer": "Creator tournament candidates",
+  "resultEnvelopeSchema": "schemas/result-envelope.schema.json",
+  "technicalQaSchema": "schemas/technical-qa.schema.json",
+  "creativeQualitySchema": "schemas/creative-quality-report.schema.json",
+  "requiredContracts": [
+    "media.job.v1",
+    "media.artifact_manifest.v1",
+    "media.creative_edit_plan.r12.v1",
+    "media.shortform_profile.r11.v1",
+    "media.shortform_editor.r11.v1",
+    "media.creative_quality_report.r12.v1"
+  ],
+  "compatibilityGuarantees": {
+    "readOnlyExport": true,
+    "r11JobSemanticsPreserved": true,
+    "r11ArtifactManifestPreserved": true,
+    "r11TechnicalQaMustPass": true,
+    "r12CreativeGuardrailsMustPass": true,
+    "sourceProvenanceMustAlreadyPass": true,
+    "creativePlanDigestMustMatchTimeline": true,
+    "artifactDigestMustMatchManifest": true,
+    "timelineDigestMustMatchCanonicalTimeline": true,
+    "contractPinsMustMatchExactly": true,
+    "producerShaMustMatchPinnedExactHead": true
+  },
+  "futureChangePolicy": {
+    "unknownContractVersion": "reject",
+    "unknownEnvelopeField": "reject",
+    "missingField": "reject",
+    "changedPinnedBlob": "reject",
+    "changedProducerSha": "reject",
+    "failedTechnicalQa": "reject",
+    "failedCreativeQaOrGuardrail": "reject",
+    "digestMismatch": "reject",
+    "newMediaSchemaRequiresNewCompatVersion": true
+  }
+}
