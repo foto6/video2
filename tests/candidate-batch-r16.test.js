@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -405,4 +406,89 @@ test("R16 rejects unbounded parallelism", () => {
     validateCachedCandidate: async () => ({}),
     maxParallel: 3
   }), /maxParallel must be 1 or 2/);
+});
+
+
+test("R16 rejects duplicate candidate IDs and preserves declared order", async () => {
+  const duplicate = request({ count: 2 });
+  duplicate.candidates[1].candidateId = duplicate.candidates[0].candidateId;
+  assert.throws(() => validateCandidateBatchRequest(duplicate), /candidate IDs must be unique/);
+
+  const d = dirs();
+  const ordered = request({ count: 4 });
+  const runtime = runtimeHarness({
+    requestInput: ordered,
+    storePath: d.storePath,
+    cachePath: d.cachePath
+  });
+  const result = await runtime.run(ordered);
+  assert.deepEqual(
+    result.manifest.candidates.map((entry) => [entry.order, entry.candidateId]),
+    [[0, "candidate-1"], [1, "candidate-2"], [2, "candidate-3"], [3, "candidate-4"]]
+  );
+});
+
+test("R16 changed plan digest cannot reuse prior cache", async () => {
+  const d = dirs();
+  const firstReq = request({ batchId: "plan-first", count: 2 });
+  let renders = 0;
+  const first = runtimeHarness({
+    requestInput: firstReq,
+    storePath: path.join(d.root, "plan-first-state.json"),
+    cachePath: d.cachePath,
+    execute: async ({ candidate, request: runRequest }) => {
+      renders += 1;
+      return successResult(candidate, runRequest, PRODUCER_A);
+    }
+  });
+  await first.run(firstReq);
+  assert.equal(renders, 2);
+
+  const changed = request({ batchId: "plan-changed", count: 2 });
+  changed.candidates[0].plan.timeline.tracks[0].items[0].motion = { type: "punch_in", zoom: 1.12 };
+  const second = runtimeHarness({
+    requestInput: changed,
+    storePath: path.join(d.root, "plan-second-state.json"),
+    cachePath: d.cachePath,
+    execute: async ({ candidate, request: runRequest }) => {
+      renders += 1;
+      return successResult(candidate, runRequest, PRODUCER_A, candidate.candidateId === "candidate-1" ? "9" : "c");
+    }
+  });
+  const result = await second.run(changed);
+  assert.equal(result.metrics.renderCalls, 1);
+  assert.equal(result.metrics.cacheHits, 1);
+  assert.equal(renders, 3);
+  assert.notEqual(
+    result.manifest.candidates[0].planDigest,
+    candidatePlanDigest(firstReq.candidates[0].plan)
+  );
+});
+
+test("R16 conformance manifest pins exact blobs and canonical fixtures validate", () => {
+  const root = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.candidate_batch.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_CANDIDATE_BATCH_VERSION);
+  assert.deepEqual(manifest.bounds, {
+    minCandidates: 2,
+    maxCandidates: 4,
+    maxCandidateParallelism: 2,
+    renderSlots: 1,
+    probeSlots: 1,
+    runtimeMaxConcurrency: 2
+  });
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    const actual = execFileSync("git", ["hash-object", pin.path], { cwd: root, encoding: "utf8" }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
+  for (const fileName of ["canonical-success.json", "canonical-partial-failure.json"]) {
+    const fixture = JSON.parse(readFileSync(
+      new URL(`../conformance/media.candidate_batch.v1/fixtures/${fileName}`, import.meta.url),
+      "utf8"
+    ));
+    assert.doesNotThrow(() => validateCandidateBatchManifest(fixture));
+  }
 });
