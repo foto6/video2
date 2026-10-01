@@ -1,0 +1,11 @@
+{
+  "fixtureVersion": "media.creative_edit_plan.r12.v1.fixture.clean_podcast",
+  "style": "clean_podcast",
+  "intent": "conversation-first pacing with sparse punch-ins and restrained captions",
+  "expected": {
+    "hookCadenceMs": 1800,
+    "regularCadenceMs": 3600,
+    "captionPreset": "clean",
+    "loopFriendly": false
+  }
+}
