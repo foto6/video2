@@ -31,9 +31,9 @@ function ffmpeg(args) {
   ]);
 }
 
-function deterministicMp4Args(outputPath, { audio = true } = {}) {
+function deterministicMp4Args(outputPath, { audio = true, durationSeconds = 6 } = {}) {
   return [
-    "-t", "6",
+    "-t", String(durationSeconds),
     "-map_metadata", "-1",
     "-metadata", "creation_time=1970-01-01T00:00:00Z",
     "-fflags", "+bitexact",
@@ -48,6 +48,15 @@ function deterministicMp4Args(outputPath, { audio = true } = {}) {
     "-f", "mp4",
     outputPath
   ];
+}
+
+function caseDurationSeconds(id) {
+  const entry = spec.cases.find((candidate) => candidate.id === id);
+  const durationMs = entry?.durationMs ?? spec.durationMs;
+  if (!Number.isInteger(durationMs) || durationMs < 5000) {
+    throw new Error(`invalid acceptance duration for ${id}: ${durationMs}`);
+  }
+  return durationMs / 1000;
 }
 
 const work = path.join(outputRoot, "_work");
@@ -97,60 +106,66 @@ ffmpeg([
   ...deterministicMp4Args(talking)
 ]);
 
+const landscapeDuration = caseDurationSeconds("landscape-reframe");
 const landscape = path.join(outputRoot, "landscape-reframe.mp4");
 ffmpeg([
-  "-f", "lavfi", "-i", "testsrc2=s=640x360:r=30:d=6",
-  "-vf", "drawbox=x='40+420*t/6':y=90:w=120:h=180:color=yellow@0.75:t=fill",
-  ...deterministicMp4Args(landscape, { audio: false })
+  "-f", "lavfi", "-i",  `testsrc2=s=640x360:r=30:d=${landscapeDuration}`,
+  "-vf", `drawbox=x='40+420*t/${landscapeDuration}':y=90:w=120:h=180:color=yellow@0.75:t=fill`,
+  ...deterministicMp4Args(landscape, { audio: false, durationSeconds: landscapeDuration })
 ]);
 
+const fastDuration = caseDurationSeconds("fast-motion");
 const fast = path.join(outputRoot, "fast-motion.mp4");
 ffmpeg([
-  "-f", "lavfi", "-i", "testsrc2=s=360x640:r=30:d=6",
+  "-f", "lavfi", "-i", `testsrc2=s=360x640:r=30:d=${fastDuration}`,
   "-vf", "hue=h=4*PI*t:s=1.4,rotate='0.04*sin(6*t)':fillcolor=black",
-  ...deterministicMp4Args(fast, { audio: false })
+  ...deterministicMp4Args(fast, { audio: false, durationSeconds: fastDuration })
 ]);
 
+const lowDuration = caseDurationSeconds("low-motion");
 const low = path.join(outputRoot, "low-motion.mp4");
 ffmpeg([
   "-f", "lavfi", "-i",
-  "testsrc2=s=360x640:r=2:d=6,fps=30," +
+  `testsrc2=s=360x640:r=2:d=${lowDuration},fps=30,` +
   "eq=saturation=0.18:brightness=-0.22," +
   "drawbox=x='75+12*sin(t/2)':y=170:w=210:h=280:color=0x6b7c8a@0.72:t=fill",
-  ...deterministicMp4Args(low, { audio: false })
+  ...deterministicMp4Args(low, { audio: false, durationSeconds: lowDuration })
 ]);
 
+const speechMusicDuration = caseDurationSeconds("speech-music");
 const speechMusic = path.join(outputRoot, "speech-music.mp4");
 ffmpeg([
   "-f", "lavfi", "-i",
-  "testsrc2=s=360x640:r=30:d=6," +
+  `testsrc2=s=360x640:r=30:d=${speechMusicDuration},` +
   "eq=saturation=0.22:brightness=-0.20," +
   "drawbox=x='120+14*sin(t)':y=150:w=120:h=185:color=0xd3a273:t=fill",
   "-i", speech,
   "-map", "0:v:0", "-map", "1:a:0",
-  ...deterministicMp4Args(speechMusic)
+  ...deterministicMp4Args(speechMusic, { durationSeconds: speechMusicDuration })
 ]);
 
+const subtitleHeavyDuration = caseDurationSeconds("subtitle-heavy");
 const subtitleHeavy = path.join(outputRoot, "subtitle-heavy.mp4");
 ffmpeg([
-  "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=6",
+  "-f", "lavfi", "-i", `testsrc=s=360x640:r=30:d=${subtitleHeavyDuration}`,
   "-i", speech,
   "-map", "0:v:0", "-map", "1:a:0",
-  ...deterministicMp4Args(subtitleHeavy)
+  ...deterministicMp4Args(subtitleHeavy, { durationSeconds: subtitleHeavyDuration })
 ]);
 
+const brollDuration = caseDurationSeconds("broll-insert");
 const brollMain = path.join(outputRoot, "broll-main.mp4");
 ffmpeg([
-  "-f", "lavfi", "-i", "testsrc2=s=360x640:r=30:d=6",
+  "-f", "lavfi", "-i", `testsrc2=s=360x640:r=30:d=${brollDuration}`,
   "-vf", "eq=saturation=0.7:contrast=1.05",
-  ...deterministicMp4Args(brollMain, { audio: false })
+  ...deterministicMp4Args(brollMain, { audio: false, durationSeconds: brollDuration })
 ]);
 
 const brollInsert = path.join(outputRoot, "broll-insert.mp4");
 ffmpeg([
-  "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=6",
+  "-f", "lavfi", "-i", `testsrc=s=360x640:r=30:d=${brollDuration}`,
   "-vf", "hue=h=PI/2+2*PI*t:s=1.3",
-  "-t", "6",
+  "-t", String(brollDuration),
   "-map_metadata", "-1",
   "-metadata", "creation_time=1970-01-01T00:00:00Z",
   "-fflags", "+bitexact",

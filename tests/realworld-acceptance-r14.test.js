@@ -306,3 +306,48 @@ test("R14 audio regression: loudness normalization explicitly resamples before A
   const graph = command.args[command.args.indexOf("-filter_complex") + 1];
   assert.match(graph, /loudnorm=I=-16:TP=-1\.5:LRA=11,aresample=48000\[anorm\]/);
 });
+
+
+test("R14 CI corpus bounds non-pause aggressive fixture complexity at the R11 minimum duration", () => {
+  const corpus = JSON.parse(readFileSync(
+    new URL("./fixtures/r14-acceptance/corpus.json", import.meta.url),
+    "utf8"
+  ));
+  for (const entry of corpus.cases) {
+    assert.equal(entry.durationMs, entry.id === "talking-head-pauses" ? 6000 : 5000, entry.id);
+  }
+
+  const timeline = {
+    id: "r14-five-second-aggressive-complexity",
+    version: 1,
+    profileVersion: MEDIA_SHORTFORM_PROFILE_VERSION,
+    canvas: { width: 1080, height: 1920, fps: 30, durationMs: 5000 },
+    tracks: [{
+      id: "video",
+      kind: "video",
+      items: [{
+        id: "main",
+        startMs: 0,
+        endMs: 5000,
+        role: "body",
+        source: {
+          id: "source",
+          uri: "input.mp4",
+          inMs: 0,
+          outMs: 5000,
+          sha256: "f".repeat(64),
+          size: 100
+        }
+      }]
+    }]
+  };
+  const result = compileCreativeEditPlan({
+    style: "aggressive_shortform",
+    timeline,
+    cta: false,
+    hints: { beatMarkersMs: [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500] }
+  });
+  const videoItems = result.timeline.tracks.find((track) => track.kind === "video").items;
+  assert.equal(videoItems.filter((item) => item.motion).length <= 1, true);
+  assert.equal(result.timeline.canvas.durationMs, 5000);
+});

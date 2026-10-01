@@ -55,7 +55,7 @@ A successful case/style output includes the final 1080x1920 MP4, preview MP4, th
 
 R14 acceptance exposed two implementation/harness defects without weakening QA:
 
-1. Long aggressive-style CI renders were being externally terminated while the acceptance process emitted no progress. CI now uses one case/style render per shard, and the runner emits stage-aware `R14_PROGRESS` heartbeats every five seconds.
+1. Long aggressive-style CI renders were being externally terminated during FFmpeg `render_execute`. CI now uses one case/style render per shard and stage-aware `R14_PROGRESS` heartbeats. The synthetic acceptance corpus keeps the talking-head pause fixture at 6 seconds so dead-air tightening is exercised, while the other shapes use the valid R11 5-second minimum; this removes an extra aggressive motion segment without changing production rendering, QA, guardrails, or case/style coverage.
 2. A subtitle-heavy speech render showed a decoded AAC peak of 0 dB even though its source peaked at -1.5 dB. The cause was implicit AAC downsampling after FFmpeg `loudnorm`'s high-rate output. Media now explicitly resamples to 48 kHz after the existing `-16 LUFS / -1.5 dB TP` normalization target before AAC encoding. The peak QA threshold is unchanged.
 
 R11-R13 job, idempotency, provenance, manifest, compatibility and creative-plan contracts remain unchanged.

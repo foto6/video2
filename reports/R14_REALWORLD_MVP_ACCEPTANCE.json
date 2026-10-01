@@ -20,7 +20,10 @@
     "subtitle-heavy",
     "broll-insert"
   ],
-  "styles": ["clean_podcast", "aggressive_shortform"],
+  "styles": [
+    "clean_podcast",
+    "aggressive_shortform"
+  ],
   "ciShardCount": 14,
   "failWarnPolicy": {
     "objectiveDefect": "FAIL",
@@ -35,6 +38,7 @@
   ],
   "observedFixes": [
     "one-case-one-style CI sharding plus 5-second progress heartbeat",
+    "5-second non-pause CI fixtures to bound aggressive motion cost while preserving all cases/styles",
     "explicit 48kHz resampling after loudnorm to avoid AAC peak overshoot"
   ],
   "producerShaRule": "The generated MVP acceptance summary must bind git rev-parse HEAD and CI requires GITHUB_SHA equality.",
