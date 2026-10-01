@@ -225,3 +225,16 @@ test("R14 regression: dead-air tightening cannot shrink below the R11 five-secon
     .reduce((sum, range) => sum + range.endMs - range.startMs, 0);
   assert.equal(removed <= 1000, true);
 });
+
+
+test("R14 CI shards exactly one case/style render to avoid long silent two-render jobs", () => {
+  const workflow = readFileSync(
+    new URL("../.github/workflows/test.yml", import.meta.url),
+    "utf8"
+  );
+  assert.match(workflow, /matrix:\n\s+case:[\s\S]*style:\n\s+- clean_podcast\n\s+- aggressive_shortform/);
+  assert.match(workflow, /--case-id \$\{\{ matrix\.case \}\}/);
+  assert.match(workflow, /--style \$\{\{ matrix\.style \}\}/);
+  assert.match(workflow, /media-r14-case-\$\{\{ matrix\.case \}\}-\$\{\{ matrix\.style \}\}/);
+  assert.match(workflow, /r14-acceptance\/\$\{\{ matrix\.case \}\}\/\$\{\{ matrix\.style \}\}/);
+});
