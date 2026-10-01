@@ -1,0 +1,36 @@
+{
+  "reportVersion": "media.r11.autonomous_shortform_editor.v1",
+  "baselineSha": "2366b3820c2cbf429aa734f2e623689699e73003",
+  "branch": "agent/media-r11-autonomous-reels-20261001",
+  "profileVersion": "media.shortform_profile.r11.v1",
+  "conformanceVersion": "media.shortform_editor.r11.v1",
+  "preservedContracts": [
+    "media.job.v1",
+    "media.render.v1",
+    "media.artifact_manifest.v1",
+    "media.artifact_pin_lease.v1",
+    "media.artifact_retention.v1"
+  ],
+  "renderEvidenceCommand": "npm run verify:r11",
+  "demoEvidencePath": ".artifacts/r11-demo/evidence.json",
+  "expectedDemoInvariants": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duplicateSubmits": 1,
+    "executorInvocations": 1,
+    "qaPassed": true,
+    "contentAddressedBundle": true,
+    "preview": true,
+    "thumbnail": true,
+    "sourceHashes": true
+  },
+  "safety": {
+    "publishing": false,
+    "credentials": false,
+    "creatorGrowthMutation": false,
+    "desktopCommander": false,
+    "protectedPathAccess": false,
+    "mergeRelease": false
+  }
+}
