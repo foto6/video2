@@ -1,0 +1,33 @@
+{
+  "contractVersion": "media.creative_edit_plan.r12.v1",
+  "input": {
+    "style": ["clean_podcast", "aggressive_shortform", "cinematic_minimal"],
+    "timeline": "media.shortform_profile.r11.v1 timeline",
+    "hints": {
+      "silenceRanges": "optional",
+      "sentenceBoundariesMs": "optional",
+      "beatMarkersMs": "optional",
+      "saliency": "optional",
+      "brollCandidates": "optional source-bound assets",
+      "captionTokens": "optional timed caption tokens"
+    },
+    "loopFriendly": "optional boolean",
+    "ctaText": "optional string"
+  },
+  "output": {
+    "timeline": "R11-compatible deterministic timeline",
+    "planDigest": "sha256 stable-json decision digest",
+    "qualityReport": "media.creative_quality_report.r12.v1"
+  },
+  "hardGuardrails": {
+    "maxCutRatePerSecond": 1.25,
+    "maxZoomRatePerSecond": 0.3,
+    "maxTransitionDensityPerSecond": 0.2,
+    "maxTextCharsPerSecond": 22,
+    "maxMusicGainDb": -10,
+    "maxConcurrentTextItems": 2,
+    "maxMotionZoom": 1.18
+  },
+  "fallback": "deterministic when beat, sentence, saliency or B-roll hints are absent",
+  "modelAssistance": "adapter-only; not required for baseline"
+}
