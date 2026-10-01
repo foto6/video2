@@ -75,6 +75,17 @@ if (process.env.GITHUB_SHA && process.env.GITHUB_SHA !== producerSha) {
   throw new Error(`GITHUB_SHA ${process.env.GITHUB_SHA} does not match checked-out HEAD ${producerSha}`);
 }
 
+let progressState = { stage: "startup", caseId: null, style: null };
+function progress(stage, fields = {}) {
+  progressState = { ...progressState, ...fields, stage };
+  console.log("R14_PROGRESS", stableStringify(progressState));
+}
+const progressHeartbeat = setInterval(() => {
+  console.log("R14_PROGRESS", stableStringify({ ...progressState, heartbeat: true }));
+}, 5000);
+progressHeartbeat.unref();
+process.once("exit", () => clearInterval(progressHeartbeat));
+
 rmSync(outputRoot, { recursive: true, force: true });
 for (const dir of ["sources", "renders", "reports"]) mkdirSync(path.join(outputRoot, dir), { recursive: true });
 process.chdir(outputRoot);
@@ -283,6 +294,7 @@ for (const caseSpec of cases) {
   const staged = [];
   let main;
   try {
+    progress("case_start", { caseId: caseSpec.id, style: null });
     main = await stageSource(caseSpec.id, caseSpec.file, "main");
     staged.push(main);
     if (!main.media.hasVideo) throw new Error("main source has no video stream");
@@ -330,6 +342,7 @@ for (const caseSpec of cases) {
 
     const baseHints = structuredClone(caseSpec.hints ?? {});
     if (main.media.hasAudio && !Array.isArray(baseHints.silenceRanges)) {
+      progress("silence_detect", { caseId: caseSpec.id, style: null });
       baseHints.silenceRanges = detectSilence(main.staged, durationMs);
       if (!Array.isArray(baseHints.sentenceBoundariesMs)) {
         baseHints.sentenceBoundariesMs = [
@@ -349,6 +362,7 @@ for (const caseSpec of cases) {
     }
 
     for (const style of caseSpec.styles ?? ["clean_podcast", "aggressive_shortform"]) {
+      progress("style_start", { caseId: caseSpec.id, style });
       const baseTimeline = {
         id: `r14-${caseSpec.id}-base`,
         version: 1,
@@ -394,6 +408,7 @@ for (const caseSpec of cases) {
         baseTimeline.tracks.push({ id: "audio", kind: "audio", items: audioItems });
       }
 
+      progress("creative_compile", { caseId: caseSpec.id, style });
       const creative = compileCreativeEditPlan({
         style,
         timeline: baseTimeline,
@@ -425,13 +440,16 @@ for (const caseSpec of cases) {
       let job;
       let renderError = null;
       try {
+        progress("render_submit", { caseId: caseSpec.id, style, jobId });
         await protocol.handle(submit);
+        progress("render_execute", { caseId: caseSpec.id, style, jobId });
         renderResult = await protocol.handle({
           contractVersion: MEDIA_JOB_CONTRACT_VERSION,
           action: "resume_or_poll",
           jobId
         });
         job = store.get(jobId);
+        progress("render_complete", { caseId: caseSpec.id, style, jobId, renderStatus: renderResult?.status ?? null });
       } catch (error) {
         renderError = error;
         job = store.get(jobId);
@@ -463,6 +481,7 @@ for (const caseSpec of cases) {
 
       const artifactManifest = runtime.exportArtifactManifest(jobId);
       const quality = evaluateCreativeQuality(job.timeline, job.probe);
+      progress("derivatives", { caseId: caseSpec.id, style, jobId });
       const bundle = await materializeShortformArtifacts({
         finalPath: job.resolvedOutputPath,
         timeline: job.timeline,
@@ -476,6 +495,7 @@ for (const caseSpec of cases) {
       });
 
       const contactSheet = path.join(renderDir, "contact-sheet.jpg");
+      progress("contact_sheet", { caseId: caseSpec.id, style, jobId });
       createContactSheet(job.resolvedOutputPath, contactSheet);
 
       const probeReport = {
@@ -538,6 +558,7 @@ for (const caseSpec of cases) {
       };
       writeJson(path.join(renderDir, "acceptance.json"), resultEntry);
       results.push(resultEntry);
+      progress("style_complete", { caseId: caseSpec.id, style, jobId, acceptanceStatus: acceptance.status });
     }
   } catch (error) {
     const preservation = staged.length ? await sourcePreserved(staged) : { passed: true, checks: [] };
@@ -559,6 +580,7 @@ for (const caseSpec of cases) {
   }
 }
 
+progress("summarize", { caseId: null, style: null });
 const summary = summarizeMvpAcceptance({
   producerSha,
   sourceRoot: inputRoot,
@@ -612,4 +634,6 @@ console.log("R14_ACCEPTANCE_WARNINGS", stableStringify(summary.warnings.map((ent
   code: entry.code
 }))));
 
+progress("complete", { caseId: null, style: null, acceptanceStatus: summary.status });
+clearInterval(progressHeartbeat);
 if (summary.counts.fail > 0) process.exitCode = 1;
