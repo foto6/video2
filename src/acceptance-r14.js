@@ -4,8 +4,10 @@ function add(list, code, message, details = null) {
   list.push({ code, message, ...(details === null ? {} : { details }) });
 }
 
-export function acceptanceMetrics({ probe = {}, creativeQuality = null } = {}) {
+export function acceptanceMetrics({ probe = {}, technicalQa = null, creativeQuality = null } = {}) {
   const metrics = creativeQuality?.metrics ?? {};
+  const technicalByName = new Map((technicalQa?.checks ?? []).map((entry) => [entry.name, entry]));
+  const visualByName = new Map((creativeQuality?.visualQa?.checks ?? []).map((entry) => [entry.name, entry]));
   return {
     durationMs: probe.durationMs ?? metrics.durationMs ?? null,
     cutRatePerSecond: metrics.cutRatePerSecond ?? null,
@@ -14,7 +16,11 @@ export function acceptanceMetrics({ probe = {}, creativeQuality = null } = {}) {
     blackFrameRatio: probe.blackFrameRatio ?? null,
     maxFreezeDurationMs: probe.maxFreezeDurationMs ?? null,
     silenceRatio: probe.silenceRatio ?? null,
+    meanDb: Number.isFinite(probe.meanDb) ? probe.meanDb : null,
     peakDb: Number.isFinite(probe.peakDb) ? probe.peakDb : null,
+    subtitleSafeAreaPassed: technicalByName.get("subtitle-safe-area")?.pass ?? null,
+    unsafeCropPassed: visualByName.get("creative-unsafe-crop")?.pass ?? null,
+    textCollisionPassed: visualByName.get("creative-text-collision")?.pass ?? null,
     width: probe.width ?? null,
     height: probe.height ?? null,
     fps: probe.fps ?? null
@@ -31,7 +37,7 @@ export function classifyMvpAcceptance({
 } = {}) {
   const failures = [];
   const warnings = [];
-  const metrics = acceptanceMetrics({ probe, creativeQuality });
+  const metrics = acceptanceMetrics({ probe, technicalQa, creativeQuality });
 
   if (renderSucceeded !== true) add(failures, "render_failed", "Render did not complete successfully.");
   if (sourcePreserved !== true) add(failures, "source_mutated", "One or more source files changed during acceptance.");
