@@ -15,9 +15,11 @@ export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./ti
 export {
   MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION,
   WEB_CHAT_REVIEW_MAX_FILE_BYTES,
+  R17_ACCEPTED_R16_UPSTREAM_AUTHORITY,
   WEB_CHAT_REVIEW_DERIVATIVE_SETTINGS,
   attachmentEligibility,
   reviewDerivativeSettingsDigest,
+  validateAcceptedR16UpstreamAuthority,
   createBoundedReviewDerivative,
   validateReviewDerivativeProvenance,
   validateWebChatReviewBundle,
