@@ -1,0 +1,18 @@
+{
+  "contractVersion": "media.shortform_editor.r11.v1",
+  "submitContract": "media.job.v1",
+  "renderContract": "media.render.v1",
+  "profileVersion": "media.shortform_profile.r11.v1",
+  "artifactManifestContract": "media.artifact_manifest.v1",
+  "artifactBundleContract": "media.shortform_artifact_bundle.r11.v1",
+  "requirements": {
+    "durableIdempotencyKeyRequired": true,
+    "retryOwner": "media",
+    "sourceSha256RequiredForDeterministicLocalAssets": true,
+    "finalArtifactOnlyAfterQaPass": true,
+    "unknownOutcomeMustReconcileBeforeReplay": true,
+    "artifactPinLeaseContractUnchanged": "media.artifact_pin_lease.v1",
+    "retentionContractUnchanged": "media.artifact_retention.v1",
+    "publishingSupported": false
+  }
+}
