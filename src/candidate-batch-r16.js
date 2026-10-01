@@ -594,7 +594,7 @@ export class CandidateBatchRuntime {
     const finalState = this.store.get();
     metrics.wallTimeMs = Math.max(0, this.clock() - startedAt);
     const manifest = buildCandidateBatchManifest({
-      request,
+      request: requestInput,
       state: finalState,
       producerSha: this.producerSha
     });
