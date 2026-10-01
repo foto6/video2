@@ -13,6 +13,17 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION,
+  WEB_CHAT_REVIEW_MAX_FILE_BYTES,
+  WEB_CHAT_REVIEW_DERIVATIVE_SETTINGS,
+  attachmentEligibility,
+  reviewDerivativeSettingsDigest,
+  createBoundedReviewDerivative,
+  validateReviewDerivativeProvenance,
+  validateWebChatReviewBundle,
+  buildWebChatReviewBundle
+} from "./web-chat-review-r17.js";
+export {
   MEDIA_CANDIDATE_BATCH_VERSION,
   MEDIA_CANDIDATE_BATCH_STATE_VERSION,
   MEDIA_CANDIDATE_BATCH_CACHE_VERSION,
