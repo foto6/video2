@@ -137,6 +137,26 @@ test("R15 schema and frozen boss benchmark binding are explicit", () => {
   assert.equal(binding.generatedMediaCountsForParitySamples, false);
 });
 
+test("R15 conformance manifest pins exact blobs and both canonical fixtures validate", () => {
+  const root = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.render_export.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_RENDER_EXPORT_VERSION);
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    const actual = execFileSync("git", ["hash-object", pin.path], { cwd: root, encoding: "utf8" }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
+  for (const name of ["canonical-success.json", "canonical-failure.json"]) {
+    const fixture = JSON.parse(readFileSync(
+      new URL(`../conformance/media.render_export.v1/fixtures/${name}`, import.meta.url),
+      "utf8"
+    ));
+    assert.doesNotThrow(() => validateRenderExport(fixture));
+  }
+});
+
 test("R15 success export binds exact final.mp4 bytes, ffprobe, QA, source and benchmark provenance", () => {
   const fixture = makeFixture();
   const record = buildSucceededRenderExport({
