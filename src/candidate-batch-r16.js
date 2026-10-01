@@ -123,6 +123,9 @@ export function validateCandidateBatchRequest(input) {
   const candidates = input.candidates.map((candidate, order) => {
     exactKeys(candidate, ["candidateId", "plan"], `candidates[${order}]`);
     nonEmpty(candidate.candidateId, `candidates[${order}].candidateId`);
+    if (!/^[A-Za-z0-9._-]+$/.test(candidate.candidateId) || candidate.candidateId === "." || candidate.candidateId === "..") {
+      fail("candidate_batch_invalid", `candidates[${order}].candidateId must be path-safe`);
+    }
     if (ids.has(candidate.candidateId)) fail("candidate_batch_invalid", "candidate IDs must be unique");
     ids.add(candidate.candidateId);
     const planDigest = candidatePlanDigest(candidate.plan);
@@ -349,9 +352,11 @@ export function buildCandidateBatchManifest({ request: requestInput, state, prod
       const validated = validateTerminalResult(result, candidate.candidateId);
       terminal.final = {
         fileName: "final.mp4",
+        relativePath: `candidates/${candidate.candidateId}/final.mp4`,
         sha256: validated.final.sha256,
         size: validated.final.size,
         renderExportFileName: "media.render_export.v1.json",
+        renderExportRelativePath: `candidates/${candidate.candidateId}/media.render_export.v1.json`,
         renderExportSha256: validated.final.renderExportSha256
       };
       terminal.failure = null;
@@ -402,10 +407,15 @@ export function validateCandidateBatchManifest(input) {
     if (entry.status === "succeeded") {
       if (!plain(entry.final) || entry.failure !== null) fail("candidate_batch_invalid", "succeeded candidate requires final and no failure");
       exactKeys(entry.final, [
-        "fileName", "sha256", "size", "renderExportFileName", "renderExportSha256"
+        "fileName", "relativePath", "sha256", "size", "renderExportFileName", "renderExportRelativePath", "renderExportSha256"
       ], "candidate final");
-      if (entry.final.fileName !== "final.mp4" || entry.final.renderExportFileName !== "media.render_export.v1.json") {
-        fail("candidate_batch_invalid", "candidate final filenames are not canonical");
+      if (
+        entry.final.fileName !== "final.mp4" ||
+        entry.final.renderExportFileName !== "media.render_export.v1.json" ||
+        entry.final.relativePath !== `candidates/${entry.candidateId}/final.mp4` ||
+        entry.final.renderExportRelativePath !== `candidates/${entry.candidateId}/media.render_export.v1.json`
+      ) {
+        fail("candidate_batch_invalid", "candidate final paths are not canonical");
       }
       sha256(entry.final.sha256, "candidate final.sha256");
       positiveInt(entry.final.size, "candidate final.size");
