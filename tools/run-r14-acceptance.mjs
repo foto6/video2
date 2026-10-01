@@ -24,10 +24,14 @@ import {
   RenderRuntimeV2,
   ShortformFfmpegExecutor,
   artifactManifestDigest,
+  buildFailedRenderExport,
+  buildSucceededRenderExport,
   compileCreativeEditPlan,
   evaluateCreativeQuality,
   materializeShortformArtifacts,
-  stableStringify
+  stableStringify,
+  validateRenderExportAgainstFinal,
+  writeRenderExportSidecar
 } from "../src/index.js";
 import {
   classifyMvpAcceptance,
@@ -457,6 +461,21 @@ for (const caseSpec of cases) {
 
       const preservation = await sourcePreserved(staged);
       if (!job || renderResult?.status !== "succeeded") {
+        const failureExport = buildFailedRenderExport({
+          job,
+          producerSha,
+          failure: renderError ?? job?.failure ?? { code: "render_failed", message: "render did not succeed" }
+        });
+        const failureSidecar = path.join(renderDir, "media.render_export.v1.json");
+        writeRenderExportSidecar(failureExport, failureSidecar);
+        writeJson(path.join(renderDir, "render-manifest.json"), failureExport);
+        writeJson(path.join(renderDir, "human-review-targets.json"), {
+          contractVersion: "media.r15.human_review_targets.v1",
+          caseId: caseSpec.id,
+          style,
+          required: true,
+          reasons: ["Render failed; keep the failed case visible and inspect failure evidence before reuse."]
+        });
         const acceptance = classifyMvpAcceptance({
           renderSucceeded: false,
           sourcePreserved: preservation.passed,
@@ -474,13 +493,28 @@ for (const caseSpec of cases) {
           source: caseSpec.file,
           acceptance,
           sourcePreservation: preservation,
-          error: renderError?.message ?? job?.failure?.message ?? "render did not succeed"
+          error: renderError?.message ?? job?.failure?.message ?? "render did not succeed",
+          outputs: {
+            renderExport: normalizeRelative(failureSidecar),
+            renderManifest: normalizeRelative(path.join(renderDir, "render-manifest.json")),
+            humanReviewTargets: normalizeRelative(path.join(renderDir, "human-review-targets.json"))
+          }
         });
         continue;
       }
 
       const artifactManifest = runtime.exportArtifactManifest(jobId);
       const quality = evaluateCreativeQuality(job.timeline, job.probe);
+      const renderExport = buildSucceededRenderExport({
+        job,
+        finalPath: job.resolvedOutputPath,
+        artifactManifest,
+        producerSha
+      });
+      const renderExportPath = path.join(renderDir, "media.render_export.v1.json");
+      writeRenderExportSidecar(renderExport, renderExportPath);
+      validateRenderExportAgainstFinal(renderExport, job.resolvedOutputPath);
+      writeJson(path.join(renderDir, "render-manifest.json"), renderExport);
       progress("derivatives", { caseId: caseSpec.id, style, jobId });
       const bundle = await materializeShortformArtifacts({
         finalPath: job.resolvedOutputPath,
@@ -533,6 +567,17 @@ for (const caseSpec of cases) {
         ]
       });
 
+      const humanReviewTargets = {
+        contractVersion: "media.r15.human_review_targets.v1",
+        caseId: caseSpec.id,
+        style,
+        required: true,
+        reasons: acceptance.warnings
+          .filter((warning) => warning.code === "human_aesthetic_review")
+          .map((warning) => warning.message)
+      };
+      writeJson(path.join(renderDir, "human-review-targets.json"), humanReviewTargets);
+
       const resultEntry = {
         caseId: caseSpec.id,
         style,
@@ -553,7 +598,10 @@ for (const caseSpec of cases) {
           contactSheetJpeg: normalizeRelative(contactSheet),
           probeReport: normalizeRelative(path.join(renderDir, "probe-report.json")),
           qaReport: normalizeRelative(path.join(renderDir, "qa-report.json")),
-          creativeQualityReport: normalizeRelative(path.join(renderDir, "creative-quality-report.json"))
+          creativeQualityReport: normalizeRelative(path.join(renderDir, "creative-quality-report.json")),
+          renderExport: normalizeRelative(renderExportPath),
+          renderManifest: normalizeRelative(path.join(renderDir, "render-manifest.json")),
+          humanReviewTargets: normalizeRelative(path.join(renderDir, "human-review-targets.json"))
         }
       };
       writeJson(path.join(renderDir, "acceptance.json"), resultEntry);
