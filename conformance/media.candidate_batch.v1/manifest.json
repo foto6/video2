@@ -1,0 +1,74 @@
+{
+  "manifestVersion": "media.candidate_batch.v1.manifest.1",
+  "contractVersion": "media.candidate_batch.v1",
+  "producerRepository": "foto6/video2",
+  "producerShaBinding": {
+    "source": "git rev-parse HEAD",
+    "ciAssertion": "GITHUB_SHA must equal git rev-parse HEAD when present",
+    "rule": "Moving branch refs are invalid for cache identity and readiness evidence."
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/candidate-batch-r16.js",
+      "gitBlobSha": "ddff38ca7786425f3e8b4761b2c2ba535fc2e9fa"
+    },
+    "runner": {
+      "path": "tools/run-r16-candidate-batch.mjs",
+      "gitBlobSha": "cbfa5495f865cb5401c9114486759bea09ae4b8d"
+    },
+    "demo": {
+      "path": "tools/demo-r16-candidate-batch.mjs",
+      "gitBlobSha": "14bd2fbaa2a53a15cfd36c8c23e7a55c3bc9cab9"
+    },
+    "schema": {
+      "path": "conformance/media.candidate_batch.v1/schema.json",
+      "gitBlobSha": "39ee52827a2653a1444696e3591d619190f36f46"
+    },
+    "contract": {
+      "path": "conformance/media.candidate_batch.v1/contract.json",
+      "gitBlobSha": "e2aa32a8ac78e43308f9ee4479fe1fc5cb51006f"
+    },
+    "canonicalSuccessFixture": {
+      "path": "conformance/media.candidate_batch.v1/fixtures/canonical-success.json",
+      "gitBlobSha": "183055043fdc52a943a153955fa819ab0fb49f70"
+    },
+    "canonicalPartialFailureFixture": {
+      "path": "conformance/media.candidate_batch.v1/fixtures/canonical-partial-failure.json",
+      "gitBlobSha": "909080bca63eef026ee900aa08f004f0c456cd00"
+    },
+    "mediaRenderExportV1": {
+      "path": "conformance/media.render_export.v1/manifest.json",
+      "gitBlobSha": "945acb01ff0269d89b91463aa8d862f500e055b2"
+    },
+    "mediaJobV1": {
+      "path": "conformance/media.job.v1/consumer-manifest.json",
+      "gitBlobSha": "96b252acae743f8fe059fd634ee320f92bd9c79c"
+    },
+    "creativePlanR12": {
+      "path": "conformance/media.creative_edit_plan.r12.v1/manifest.json",
+      "gitBlobSha": "d031a07f1d392c690942bd5f8288a1713f1af791"
+    }
+  },
+  "bounds": {
+    "minCandidates": 2,
+    "maxCandidates": 4,
+    "maxCandidateParallelism": 2,
+    "renderSlots": 1,
+    "probeSlots": 1,
+    "runtimeMaxConcurrency": 2
+  },
+  "cacheIdentity": [
+    "source.sha256",
+    "source.size",
+    "candidate.planDigest",
+    "renderer.configDigest",
+    "producer.sha"
+  ],
+  "canonicalOutputs": [
+    "media.candidate_batch.v1.json",
+    "candidates/<candidateId>/final.mp4",
+    "candidates/<candidateId>/media.render_export.v1.json"
+  ],
+  "reproductionCommand": "npm run verify:r16",
+  "failClosed": true
+}
