@@ -23,9 +23,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: ffmpeg -version && ffprobe -version
-      - run: npm run verify:r14
+      - run: npm run test:r14
       - run: npm run verify:r13
       - run: npm run verify:r12
       - run: npm run verify:r11
@@ -36,13 +36,64 @@ jobs:
       - run: npm run test:artifact
       - run: npm run test:stress
       - run: npm test
+
+  r14-acceptance:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        case:
+          - talking-head-pauses
+          - landscape-reframe
+          - fast-motion
+          - low-motion
+          - speech-music
+          - subtitle-heavy
+          - broll-insert
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+      - run: npm run generate:r14
+      - name: Run R14 acceptance case
+        run: >-
+          node tools/run-r14-acceptance.mjs
+          --input-dir .artifacts/r14-corpus
+          --output-dir .artifacts/r14-acceptance/${{ matrix.case }}
+          --manifest tests/fixtures/r14-acceptance/corpus.json
+          --case-id ${{ matrix.case }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
+          name: media-r14-case-${{ matrix.case }}
+          path: .artifacts/r14-acceptance/${{ matrix.case }}
+          if-no-files-found: error
+
+  r14-aggregate:
+    runs-on: ubuntu-latest
+    needs:
+      - node-test
+      - r14-acceptance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: media-r14-case-*
+          path: .artifacts/r14-shards
+          merge-multiple: false
+      - run: >-
+          node tools/aggregate-r14-acceptance.mjs
+          --input-dir .artifacts/r14-shards
+          --output-dir .artifacts/r14-aggregate
+      - uses: actions/upload-artifact@v4
+        with:
           name: media-r14-acceptance
           path: |
-            .artifacts/r14-corpus
-            .artifacts/r14-acceptance
-            .artifacts/r13-compat
-            .artifacts/r12-demo
-          if-no-files-found: warn
+            .artifacts/r14-shards
+            .artifacts/r14-aggregate
+          if-no-files-found: error
