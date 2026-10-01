@@ -18,7 +18,33 @@
       "size": 763377
     },
     "candidateBatchManifestFileSha256": "44ab0a7dd761bbc79e554a21003b7e67b65b6e80b6c1b3830179caedab509872",
-    "candidateBatchManifestDigest": "ec75baee68bc73b8c8e1812dddbf6dbe5cc0dfdc4d0a66938a16c6db87536dbf"
+    "candidateBatchManifestDigest": "ec75baee68bc73b8c8e1812dddbf6dbe5cc0dfdc4d0a66938a16c6db87536dbf",
+    "candidates": [
+      {
+        "candidateId": "candidate-1",
+        "finalSha256": "3bd12d999264cb932cb3ef15dfbd96e002ede517f2273795b593553b9642d864",
+        "finalSize": 575465,
+        "renderExportFileSha256": "2b5177c00bb054184a239c7eddb1383ad253922e8eb686f5aa2e56c91a1335ac",
+        "renderExportDigest": "6a005607dd463643a908a35ce24f411ae74be4100c349a212bd70b59e449a2b5",
+        "technicalQaEvidenceSha256": "7e836b809da7fe483ee140c5115e8a58b4b299109c279ccb16c0197be827ff0f"
+      },
+      {
+        "candidateId": "candidate-2",
+        "finalSha256": "cdae63d5ccce67332e607af7fd87b18c31da8dc77c2f0ce5182550321767286c",
+        "finalSize": 576763,
+        "renderExportFileSha256": "b349b897f8f86bc9257e2622f564d6430f3864ff605ae4b82ba0cb09c59298f6",
+        "renderExportDigest": "47b7d0dcaaf0277274c1990825025042e89272dd153e3752b15d29a515041d82",
+        "technicalQaEvidenceSha256": "41bce4934320d225e6a58847233702b4ae706a5bed85427272a1f309acb50d79"
+      },
+      {
+        "candidateId": "candidate-3",
+        "finalSha256": "3bd12d999264cb932cb3ef15dfbd96e002ede517f2273795b593553b9642d864",
+        "finalSize": 575465,
+        "renderExportFileSha256": "26fe61f0644e263ce047869334ba65c5973eba809ff45f76286490f573d61b8e",
+        "renderExportDigest": "d31f45e0b29b1c002e8a9b3d52f54d69838ebcb902b04cfbde963cd82e2c2233",
+        "technicalQaEvidenceSha256": "7e836b809da7fe483ee140c5115e8a58b4b299109c279ccb16c0197be827ff0f"
+      }
+    ]
   },
   "attachmentLimitBytes": 500000000,
   "sourceBound": true,
@@ -47,5 +73,17 @@
     "acceptedR16Root": ".artifacts/r16-accepted",
     "artifactRoot": ".artifacts/r17-web-chat-review"
   },
-  "preserved": ["R11","R12","R13","R14","R15","R16","media.render_export.v1"]
+  "preserved": [
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15",
+    "R16",
+    "media.render_export.v1"
+  ],
+  "conformanceManifest": {
+    "path": "conformance/media.web_chat_review_bundle.v1/manifest.json",
+    "gitBlobSha": "25692ab1fb2ae4146097aadfbaff6d7058b8041a"
+  }
 }
