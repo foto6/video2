@@ -8,6 +8,10 @@ import {
   classifyMvpAcceptance,
   summarizeMvpAcceptance
 } from "../src/acceptance-r14.js";
+import {
+  MEDIA_SHORTFORM_PROFILE_VERSION,
+  compileCreativeEditPlan
+} from "../src/index.js";
 
 test("R14 corpus covers all required real-world shapes and both creative styles", () => {
   const corpus = JSON.parse(readFileSync(
@@ -176,4 +180,48 @@ test("R14 machine summary binds exact producer SHA and preserves all failures/wa
   assert.deepEqual(summary.counts, { pass: 0, warn: 1, fail: 1 });
   assert.equal(summary.failures.length, 1);
   assert.equal(summary.warnings.length, 1);
+});
+
+
+test("R14 regression: dead-air tightening cannot shrink below the R11 five-second minimum", () => {
+  const timeline = {
+    id: "r14-dead-air-minimum",
+    version: 1,
+    profileVersion: MEDIA_SHORTFORM_PROFILE_VERSION,
+    canvas: { width: 1080, height: 1920, fps: 30, durationMs: 6000 },
+    tracks: [{
+      id: "video",
+      kind: "video",
+      items: [{
+        id: "main",
+        startMs: 0,
+        endMs: 6000,
+        role: "body",
+        source: {
+          id: "source",
+          uri: "input.mp4",
+          inMs: 0,
+          outMs: 6000,
+          sha256: "a".repeat(64),
+          size: 100
+        }
+      }]
+    }]
+  };
+  const result = compileCreativeEditPlan({
+    style: "aggressive_shortform",
+    timeline,
+    cta: false,
+    hints: {
+      silenceRanges: [
+        { startMs: 1200, endMs: 2100 },
+        { startMs: 3000, endMs: 4100 }
+      ],
+      sentenceBoundariesMs: [0, 1100, 2200, 2900, 4200, 6000]
+    }
+  });
+  assert.equal(result.timeline.canvas.durationMs >= 5000, true);
+  const removed = result.timeline.creativePlan.removedDeadAir
+    .reduce((sum, range) => sum + range.endMs - range.startMs, 0);
+  assert.equal(removed <= 1000, true);
 });
