@@ -174,8 +174,7 @@ export function candidateCacheIdentity({ source, planDigest, rendererConfigDiges
   });
 }
 
-export function candidateBatchRequestDigest(requestInput) {
-  const request = validateCandidateBatchRequest(requestInput);
+function normalizedCandidateBatchRequestDigest(request) {
   return fingerprint({
     contractVersion: request.contractVersion,
     batchId: request.batchId,
@@ -187,6 +186,10 @@ export function candidateBatchRequestDigest(requestInput) {
       planDigest: entry.planDigest
     }))
   });
+}
+
+export function candidateBatchRequestDigest(requestInput) {
+  return normalizedCandidateBatchRequestDigest(validateCandidateBatchRequest(requestInput));
 }
 
 export class PersistentCandidateBatchStore {
@@ -209,7 +212,7 @@ export class PersistentCandidateBatchStore {
   initialize(requestInput, producerSha) {
     const request = validateCandidateBatchRequest(requestInput);
     gitSha(producerSha, "producerSha");
-    const requestDigest = candidateBatchRequestDigest(request);
+    const requestDigest = normalizedCandidateBatchRequestDigest(request);
     if (this.state) {
       if (this.state.batchId !== request.batchId || this.state.requestDigest !== requestDigest) {
         fail("candidate_batch_conflict", "persisted batch ID is bound to different request content");
@@ -330,7 +333,7 @@ function validateTerminalResult(result, candidateId) {
 export function buildCandidateBatchManifest({ request: requestInput, state, producerSha }) {
   const request = validateCandidateBatchRequest(requestInput);
   gitSha(producerSha, "producerSha");
-  if (!state || state.requestDigest !== candidateBatchRequestDigest(request)) {
+  if (!state || state.requestDigest !== normalizedCandidateBatchRequestDigest(request)) {
     fail("candidate_batch_state_corrupt", "state/request digest mismatch");
   }
   const candidates = request.candidates.map((candidate) => {
@@ -464,7 +467,7 @@ export class CandidateBatchRuntime {
   async run(requestInput) {
     const request = validateCandidateBatchRequest(requestInput);
     const startedAt = this.clock();
-    this.store.initialize(request, this.producerSha);
+    this.store.initialize(requestInput, this.producerSha);
     const metrics = {
       detectorCalls: 0,
       renderCalls: 0,
