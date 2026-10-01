@@ -1,0 +1,11 @@
+{
+  "fixtureVersion": "media.creative_edit_plan.r12.v1.fixture.cinematic_minimal",
+  "style": "cinematic_minimal",
+  "intent": "longer holds, minimal text and sparse slow movement",
+  "expected": {
+    "hookCadenceMs": 2600,
+    "regularCadenceMs": 5200,
+    "captionPreset": "minimal",
+    "loopFriendly": false
+  }
+}
