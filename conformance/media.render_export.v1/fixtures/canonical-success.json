@@ -1,0 +1,70 @@
+{
+  "contractVersion": "media.render_export.v1",
+  "status": "succeeded",
+  "producer": {
+    "repository": "foto6/video2",
+    "sha": "1111111111111111111111111111111111111111"
+  },
+  "job": {
+    "logicalJobId": "fixture-success",
+    "idempotencyKey": "fixture:success:1",
+    "renderFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "status": "succeeded"
+  },
+  "artifact": {
+    "fileName": "final.mp4",
+    "algorithm": "sha256",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "size": 12345,
+    "contentId": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "artifactManifestDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "probe": {
+    "hasVideo": true,
+    "hasAudio": true,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationMs": 5000,
+    "videoCodec": "h264",
+    "audioCodec": "aac"
+  },
+  "qa": {
+    "technical": {
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "passed": true,
+      "value": { "passed": true, "checks": [] }
+    },
+    "creative": {
+      "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "passed": true,
+      "value": { "passed": true, "guardrails": [], "visualQa": { "passed": true, "checks": [] } }
+    }
+  },
+  "evidence": {
+    "sources": { "count": 1, "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "items": [] },
+    "captions": { "count": 0, "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "safeAreaPassed": true, "textCharsPerSecond": 0 },
+    "crop": { "explicitCropItems": 0, "reframeItems": 1, "motionItems": 0, "unsafeCropPassed": true },
+    "audio": { "itemCount": 1, "roles": ["voiceover"], "maxMusicGainDb": null, "hasAudio": true, "meanDb": -18, "peakDb": -2, "silenceRatio": 0.1 }
+  },
+  "provenance": {
+    "validatedRequestDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "profileDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "timelineDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "creativePlanDigest": null,
+    "sourceEvidenceDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "artifactManifestDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "failure": null,
+  "benchmark": {
+    "binding": {
+      "protocol": "human.editorial_benchmark.v1",
+      "repository": "foto6/boss",
+      "producerSha": "912fb4b937ec3bd0c1752fe198a41d60236a20dc",
+      "path": "GATES/EDITORIAL_PARITY_BENCHMARK_V1.md",
+      "gitBlobSha": "af509b79ff8dce6cb621f8ac1c88db1bba6e5219"
+    },
+    "technicalDq": false,
+    "technicalDqReasons": []
+  }
+}
