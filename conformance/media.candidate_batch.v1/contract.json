@@ -1,0 +1,35 @@
+{
+  "contractVersion": "media.candidate_batch.v1",
+  "request": {
+    "candidateCount": { "min": 2, "max": 4 },
+    "sourceBinding": "All candidates bind the same exact primary source SHA-256 and byte size.",
+    "candidatePlanDigest": "SHA-256 stable fingerprint of canonical timeline plus candidate exportSpec.",
+    "rendererConfigDigest": "SHA-256 stable fingerprint of R16 concurrency/resource profile.",
+    "producerBinding": "Exact foto6/video2 Git SHA is part of every candidate cache identity."
+  },
+  "runtime": {
+    "candidateParallelismMax": 2,
+    "renderSlots": 1,
+    "probeSlots": 1,
+    "runtimeMaxConcurrency": 2,
+    "restart": "Persisted running candidates recover to pending; terminal siblings remain intact.",
+    "duplicate": "Exact duplicate completed batches replay from validated local evidence without rerender.",
+    "failureIsolation": "A failed candidate remains failed while successful sibling final/export evidence remains valid."
+  },
+  "cache": {
+    "identityFields": [
+      "source.sha256",
+      "source.size",
+      "candidate.planDigest",
+      "renderer.configDigest",
+      "producer.sha"
+    ],
+    "reuseRule": "Cache reuse requires all identity fields plus exact final.mp4 and media.render_export.v1 byte validation.",
+    "staleRule": "Missing or mismatched artifact/sidecar invalidates the cache entry and forces normal render/QA.",
+    "changedSourceOrConfig": "Changed source bytes, plan, renderer config or producer SHA cannot reuse the prior entry."
+  },
+  "quality": {
+    "perCandidate": "Every cache miss uses preserved media.job.v1 render, R14 objective QA and R15 media.render_export.v1 success/failure semantics.",
+    "cacheHit": "A hit revalidates exact final bytes and R15 sidecar; it does not synthesize QA."
+  }
+}
