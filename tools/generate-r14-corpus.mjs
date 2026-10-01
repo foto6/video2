@@ -88,8 +88,9 @@ const talking = path.join(outputRoot, "talking-head-pauses.mp4");
 ffmpeg([
   "-f", "lavfi", "-i",
   "testsrc2=s=360x640:r=30:d=6," +
-  "eq=saturation=0.28:brightness=-0.18," +
-  "drawbox=x='118+18*sin(t*1.3)':y='145+10*cos(t)':w=124:h=190:color=0xd9aa7d:t=fill," +
+  "hue=h=0.35*sin(2.4*t):s=0.55," +
+  "eq=brightness=-0.16," +
+  "drawbox=x='112+28*sin(t*1.7)':y='140+16*cos(1.3*t)':w=136:h=205:color=0xd9aa7d:t=fill," +
   "drawbox=x='145+12*sin(t*1.3)':y='205+7*cos(t)':w=70:h=14:color=0x25150e:t=fill",
   "-i", speech,
   "-map", "0:v:0", "-map", "1:a:0",
