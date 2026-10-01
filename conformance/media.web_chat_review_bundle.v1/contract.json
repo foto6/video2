@@ -1,0 +1,30 @@
+{
+  "contractVersion": "media.web_chat_review_bundle.v1",
+  "authority": "Media technical packaging/provenance only; no semantic or editorial model judgment.",
+  "sourceBinding": "Bundle source ID/SHA-256/size must match media.candidate_batch.v1 and each candidate media.render_export.v1 source evidence.",
+  "candidateBinding": "Each candidate final.mp4 is re-hashed and revalidated against media.render_export.v1 before attachment packaging.",
+  "attachmentLimit": {
+    "bytes": 500000000,
+    "perFile": true,
+    "oversizeOriginal": "ineligible unless explicit derivative generation is requested"
+  },
+  "derivative": {
+    "explicitOnly": true,
+    "label": "derivative_for_model_review=true",
+    "mustBindOriginalSha": true,
+    "mustBindDerivativeSha": true,
+    "mustBindExactTransformSettings": true,
+    "mustRemainWithinLimit": true,
+    "originalBytesPreserved": true
+  },
+  "failClosed": [
+    "missing_file",
+    "changed_final_hash_or_size",
+    "wrong_source",
+    "stale_render_export",
+    "stale_producer_sha",
+    "duplicate_candidate",
+    "oversize_attachment",
+    "derivative_provenance_mismatch"
+  ]
+}
