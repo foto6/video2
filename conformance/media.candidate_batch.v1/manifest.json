@@ -10,7 +10,7 @@
   "pins": {
     "implementation": {
       "path": "src/candidate-batch-r16.js",
-      "gitBlobSha": "3c1cd13505e7908a6ce130a3a71b2a6279b506ab"
+      "gitBlobSha": "47b4950d85cfcd15a1c0eaf952bdd57ea99505fb"
     },
     "runner": {
       "path": "tools/run-r16-candidate-batch.mjs",
