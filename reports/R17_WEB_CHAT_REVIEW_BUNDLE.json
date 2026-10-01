@@ -1,46 +1,51 @@
 {
-  "reportVersion": "media.r17.web_chat_review_bundle.v1",
+  "reportVersion": "media.r17.web_chat_review_bundle.v2",
   "baselineSha": "231a0680c8939cfec77aaa283e507e93f383ad73",
   "branch": "agent/media-r17-web-chat-review-bundle-20261001",
   "contractVersion": "media.web_chat_review_bundle.v1",
+  "reviewBundleProducer": {
+    "binding": "exact git rev-parse HEAD at CI/runtime"
+  },
+  "upstreamMediaAuthority": {
+    "producerSha": "231a0680c8939cfec77aaa283e507e93f383ad73",
+    "ciRunId": 36865890506,
+    "artifactId": 11163920921,
+    "artifactName": "media-r16-candidate-batch-demo",
+    "archiveDigest": "sha256:d929b592c76ec93e41b54701376f4b02366a3bdbd127d3472d73ae277d450d0f",
+    "source": {
+      "sourceId": "r16-demo-source",
+      "sha256": "7b484abef5de1569e1b7f91a5d780f17c6d687ef68b3c42c9e54375f4e5e434b",
+      "size": 763377
+    },
+    "candidateBatchManifestFileSha256": "44ab0a7dd761bbc79e554a21003b7e67b65b6e80b6c1b3830179caedab509872",
+    "candidateBatchManifestDigest": "ec75baee68bc73b8c8e1812dddbf6dbe5cc0dfdc4d0a66938a16c6db87536dbf"
+  },
   "attachmentLimitBytes": 500000000,
   "sourceBound": true,
   "preservesOriginalBytes": true,
+  "regeneratedR16AcceptedAsAuthority": false,
   "modelJudgment": false,
   "checks": [
+    "wrong upstream producer SHA",
+    "wrong upstream CI run",
+    "wrong artifact ID/name/archive digest",
+    "wrong candidate batch manifest hash/digest",
     "missing file",
     "changed final hash/size",
     "wrong source",
-    "stale render export",
-    "stale producer",
-    "oversize",
+    "stale or regenerated render export",
+    "wrong render export digest",
     "duplicate candidate",
+    "oversize",
     "derivative provenance mismatch"
   ],
-  "derivative": {
-    "explicitOnly": true,
-    "label": "derivative_for_model_review=true",
-    "bindsOriginalSha": true,
-    "bindsDerivativeSha": true,
-    "bindsTransformSettings": true
-  },
   "reproduction": {
     "focused": "npm run test:r17",
+    "metadata": "node tools/verify-r17-upstream-artifact.mjs",
     "build": "npm run build:r17",
     "verify": "npm run verify:r17",
+    "acceptedR16Root": ".artifacts/r16-accepted",
     "artifactRoot": ".artifacts/r17-web-chat-review"
   },
-  "preserved": [
-    "R11",
-    "R12",
-    "R13",
-    "R14",
-    "R15",
-    "R16",
-    "media.render_export.v1"
-  ],
-  "conformanceManifest": {
-    "path": "conformance/media.web_chat_review_bundle.v1/manifest.json",
-    "gitBlobSha": "924ca4e22e7cce1ddaeceb466816150333f9141b"
-  }
+  "preserved": ["R11","R12","R13","R14","R15","R16","media.render_export.v1"]
 }
