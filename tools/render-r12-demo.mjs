@@ -174,13 +174,19 @@ const exportSpec = {
 const store = new PersistentRenderJobStore({ filePath: path.join(root, "jobs.json") });
 const executor = new ShortformFfmpegExecutor({ store, sandboxRoot: root, executor: processExecutor });
 const probe = new FfmpegQaProbe({ store, sandboxRoot: root });
+let deterministicNowMs = 1800000000000;
+const demoClock = () => {
+  deterministicNowMs += 10;
+  return deterministicNowMs;
+};
 const runtime = new RenderRuntimeV2({
   store,
   executor,
   probe,
   sandboxRoot: root,
   liveExecutionEnabled: true,
-  processTimeoutMs: 180000
+  processTimeoutMs: 180000,
+  clock: demoClock
 });
 const protocol = new MediaJobProtocolV1(runtime);
 
