@@ -1,5 +1,6 @@
 import { canonicalizeTimeline } from "./timeline.js";
 import { fingerprint } from "./stable.js";
+import { isShortformR11Timeline, SHORTFORM_R11_PROFILE } from "./shortform-profile.js";
 
 function inputKey(source) {
   return source?.uri ?? null;
@@ -9,6 +10,14 @@ function frames(ms, fps) {
   return Math.round((ms / 1000) * fps);
 }
 
+function inputEntry(uri, source) {
+  const entry = { id: "", uri };
+  if (source?.id) entry.sourceId = source.id;
+  if (source?.sha256) entry.sha256 = source.sha256;
+  if (source?.size !== undefined) entry.size = source.size;
+  return entry;
+}
+
 export function buildRenderPlan(timelineInput, exportSpec = {}) {
   const timeline = canonicalizeTimeline(timelineInput);
   const sources = new Map();
@@ -16,7 +25,7 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
     for (const item of track.items) {
       if (!item.source) continue;
       const uri = inputKey(item.source);
-      if (!sources.has(uri)) sources.set(uri, { id: "", uri });
+      if (!sources.has(uri)) sources.set(uri, inputEntry(uri, item.source));
     }
   }
 
@@ -36,6 +45,7 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
         fromFrame: frames(item.startMs, timeline.canvas.fps),
         durationInFrames: frames(item.endMs - item.startMs, timeline.canvas.fps)
       };
+      if (item.role) sequence.role = item.role;
       sequences.push(sequence);
 
       if (item.source) {
@@ -47,6 +57,9 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
           durationMs: item.endMs - item.startMs
         });
       }
+      if (item.speed !== undefined && item.speed !== 1) {
+        operations.push({ type: "time.speed", itemId: item.id, speed: item.speed });
+      }
       if (track.kind === "video" && (item.crop || item.reframe)) {
         operations.push({ type: "video.reframe", itemId: item.id, crop: item.crop ?? null, reframe: item.reframe ?? null });
       }
@@ -54,10 +67,23 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
         operations.push({ type: "caption.render", itemId: item.id, text: item.text, style: item.style ?? {} });
       }
       if (track.kind === "overlay") {
-        operations.push({ type: "overlay.compose", itemId: item.id, text: item.text ?? null, position: item.position ?? { x: 0, y: 0 } });
+        const operation = { type: "overlay.compose", itemId: item.id, text: item.text ?? null, position: item.position ?? { x: 0, y: 0 } };
+        if (item.role) operation.role = item.role;
+        operations.push(operation);
       }
       if (track.kind === "audio") {
-        operations.push({ type: "audio.mix", itemId: item.id, gainDb: item.gainDb ?? 0 });
+        const operation = { type: "audio.mix", itemId: item.id, gainDb: item.gainDb ?? 0 };
+        if (item.role) operation.role = item.role;
+        if (item.duckUnderVoice !== undefined) operation.duckUnderVoice = item.duckUnderVoice;
+        operations.push(operation);
+      }
+      if (item.fadeInMs || item.fadeOutMs) {
+        operations.push({
+          type: track.kind === "audio" ? "audio.fade" : "video.fade",
+          itemId: item.id,
+          fadeInMs: item.fadeInMs ?? 0,
+          fadeOutMs: item.fadeOutMs ?? 0
+        });
       }
       if (item.transitionOut) {
         operations.push({
@@ -81,6 +107,9 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
     audioBitrate: exportSpec.audioBitrate ?? "192k",
     pixelFormat: exportSpec.pixelFormat ?? "yuv420p"
   };
+  if (exportSpec.preset) exportConfig.preset = exportSpec.preset;
+  if (exportSpec.loudness && typeof exportSpec.loudness === "object") exportConfig.loudness = { ...exportSpec.loudness };
+  else if (isShortformR11Timeline(timeline)) exportConfig.loudness = { ...SHORTFORM_R11_PROFILE.loudness };
 
   const core = {
     schemaVersion: 1,
@@ -91,5 +120,6 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
     operations,
     export: exportConfig
   };
+  if (timeline.profileVersion) core.profileVersion = timeline.profileVersion;
   return { ...core, fingerprint: fingerprint(core), timeline };
 }
