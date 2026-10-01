@@ -50,7 +50,7 @@ function makeRealFixture() {
 
   execFileSync("ffmpeg", [
     "-hide_banner", "-nostdin", "-y",
-    "-f", "lavfi", "-i", "testsrc2=s=1080x1920:r=30:d=5",
+    "-f", "lavfi", "-i", "color=c=blue:s=1080x1920:r=30:d=5",
     "-t", "5",
     "-map_metadata", "-1",
     "-metadata", "creation_time=1970-01-01T00:00:00Z",
@@ -359,4 +359,20 @@ test("R17 render export digest remains bound to exact validated sidecar", () => 
     createHash("sha256").update(sidecarBytes).digest("hex")
   );
   assert.equal(bundle.candidates[0].renderExport.fileSha256, first.final.renderExportSha256);
+});
+
+
+test("R17 conformance manifest pins exact implementation/schema/dependency blobs", () => {
+  const root = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.web_chat_review_bundle.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION);
+  assert.equal(manifest.attachmentPolicy.maxBytesPerFile, WEB_CHAT_REVIEW_MAX_FILE_BYTES);
+  assert.equal(manifest.modelJudgment, false);
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    const actual = execFileSync("git", ["hash-object", pin.path], { cwd: root, encoding: "utf8" }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
 });
