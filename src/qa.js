@@ -1,4 +1,5 @@
 import { expectedMediaShape } from "./timeline.js";
+import { evaluateCreativeVisualQa } from "./creative-plan.js";
 import { isShortformR11Timeline, SHORTFORM_R11_PROFILE } from "./shortform-profile.js";
 
 function check(name, pass, actual, expected, details = null) {
@@ -109,6 +110,12 @@ export function evaluateRenderQa(timeline, probe, thresholds = {}) {
     checks.push(check("source-assets-provenance", source.failures.length === 0, source.failures.length, 0, source));
     const unsafe = captionSafeArea(timeline);
     checks.push(check("subtitle-safe-area", unsafe.length === 0, unsafe.length, 0, { failures: unsafe }));
+  }
+  if (timeline.creativePlan?.contractVersion === "media.creative_edit_plan.r12.v1") {
+    const creative = evaluateCreativeVisualQa(timeline, probe);
+    for (const entry of creative.checks) {
+      checks.push(check(entry.name, entry.pass, entry.actual, entry.expected, entry.details ?? null));
+    }
   }
   return {
     passed: checks.every((entry) => entry.pass),
