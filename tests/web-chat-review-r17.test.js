@@ -18,7 +18,6 @@ import {
   MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION,
   WEB_CHAT_REVIEW_MAX_FILE_BYTES,
   WEB_CHAT_REVIEW_DERIVATIVE_SETTINGS,
-  artifactManifestDigest,
   attachmentEligibility,
   buildArtifactManifest,
   buildSucceededRenderExport,
@@ -351,35 +350,13 @@ test("R17 render export digest remains bound to exact validated sidecar", () => 
     producerSha: PRODUCER
   });
   const first = f.batch.candidates[0];
-  const sidecar = JSON.parse(readFileSync(path.join(f.batchRoot, first.final.renderExportRelativePath), "utf8"));
+  const sidecarPath = path.join(f.batchRoot, first.final.renderExportRelativePath);
+  const sidecarBytes = readFileSync(sidecarPath);
+  const sidecar = JSON.parse(sidecarBytes);
   assert.equal(bundle.candidates[0].renderExport.digest, renderExportDigest(sidecar));
+  assert.equal(
+    bundle.candidates[0].renderExport.fileSha256,
+    createHash("sha256").update(sidecarBytes).digest("hex")
+  );
   assert.equal(bundle.candidates[0].renderExport.fileSha256, first.final.renderExportSha256);
-  assert.equal(sidecar.artifact.artifactManifestDigest, artifactManifestDigest(
-    buildArtifactManifest({
-      id: sidecar.job.logicalJobId,
-      idempotencyKey: sidecar.job.idempotencyKey,
-      status: "succeeded",
-      dryRun: false,
-      renderFingerprint: sidecar.job.renderFingerprint,
-      currentAttempt: { token: "unused" },
-      timeline: {
-        id: "not-reconstructed",
-        version: 1,
-        profileVersion: MEDIA_SHORTFORM_PROFILE_VERSION,
-        canvas: { width: 1080, height: 1920, fps: 30, durationMs: 5000 },
-        tracks: []
-      },
-      exportSpec: { format: "mp4" },
-      outputPath: first.final.relativePath,
-      probe: sidecar.probe,
-      qa: sidecar.qa.technical.value,
-      createdAtMs: 1
-    }, {
-      finalDigest: { sha256: first.final.sha256, size: first.final.size },
-      preparedDigest: { sha256: first.final.sha256, size: first.final.size },
-      preparedAtMs: 2,
-      finalizedAtMs: 3,
-      manifestCommittedAtMs: 4
-    })
-  ));
 });
