@@ -40,7 +40,7 @@ await run({ binary: "ffmpeg", args: [
   "-an", "-map_metadata", "-1", "-threads", "1", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-f", "mp4", clipA
 ]}, "clip-a generation");
 await run({ binary: "ffmpeg", args: [
-  "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i", "smptebars=s=540x960:r=30:d=4",
+  "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=s=540x960:r=30:d=4",
   "-an", "-map_metadata", "-1", "-threads", "1", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-f", "mp4", clipB
 ]}, "clip-b generation");
 await run({ binary: "ffmpeg", args: [
