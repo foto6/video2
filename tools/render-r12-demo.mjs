@@ -41,26 +41,26 @@ const voicePath = path.join(root, "inputs", "voice.wav");
 const musicPath = path.join(root, "inputs", "music.wav");
 
 await run({ binary: "ffmpeg", args: [
-  "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc2=s=540x960:r=30:d=12",
+  "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc2=s=360x640:r=30:d=6",
   "-an", "-map_metadata", "-1", "-threads", "1", "-c:v", "libx264", "-preset", "ultrafast",
   "-pix_fmt", "yuv420p", "-f", "mp4", mainPath
 ]}, "main source generation");
 
 await run({ binary: "ffmpeg", args: [
-  "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=s=540x960:r=30:d=3",
+  "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=2",
   "-vf", "hue=h=2*PI*t:s=1.2", "-an", "-map_metadata", "-1", "-threads", "1",
   "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-f", "mp4", brollPath
 ]}, "b-roll generation");
 
 await run({ binary: "ffmpeg", args: [
   "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i",
-  "sine=frequency=760:sample_rate=48000:duration=12",
+  "sine=frequency=760:sample_rate=48000:duration=6",
   "-map_metadata", "-1", "-c:a", "pcm_s16le", voicePath
 ]}, "voice generation");
 
 await run({ binary: "ffmpeg", args: [
   "-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i",
-  "sine=frequency=190:sample_rate=48000:duration=12",
+  "sine=frequency=190:sample_rate=48000:duration=6",
   "-map_metadata", "-1", "-c:a", "pcm_s16le", musicPath
 ]}, "music generation");
 
@@ -96,32 +96,32 @@ const baselineTimeline = {
   id: "r12-before",
   version: 1,
   profileVersion: MEDIA_SHORTFORM_PROFILE_VERSION,
-  canvas: { width: 1080, height: 1920, fps: 30, durationMs: 12000 },
+  canvas: { width: 1080, height: 1920, fps: 30, durationMs: 6000 },
   tracks: [
     {
       id: "video", kind: "video",
       items: [{
-        id: "main", startMs: 0, endMs: 12000, role: "body",
-        source: source("main-source", "inputs/main.mp4", "main", 12000)
+        id: "main", startMs: 0, endMs: 6000, role: "body",
+        source: source("main-source", "inputs/main.mp4", "main", 6000)
       }]
     },
     {
       id: "captions", kind: "caption",
       items: [
         { id: "caption-a", startMs: 350, endMs: 2600, text: "Here is the result first", style: { fontSize: 62, y: 1460, maxWidth: 860 } },
-        { id: "caption-b", startMs: 4300, endMs: 6500, text: "Then remove the pauses", style: { fontSize: 62, y: 1460, maxWidth: 860 } }
+        { id: "caption-b", startMs: 2500, endMs: 3600, text: "Then remove the pauses", style: { fontSize: 62, y: 1460, maxWidth: 860 } }
       ]
     },
     {
       id: "audio", kind: "audio",
       items: [
         {
-          id: "voice", startMs: 0, endMs: 12000, role: "voiceover",
-          source: source("voice-source", "inputs/voice.wav", "voice", 12000), gainDb: -3
+          id: "voice", startMs: 0, endMs: 6000, role: "voiceover",
+          source: source("voice-source", "inputs/voice.wav", "voice", 6000), gainDb: -3
         },
         {
-          id: "music", startMs: 0, endMs: 12000, role: "music",
-          source: source("music-source", "inputs/music.wav", "music", 12000), gainDb: -18, duckUnderVoice: true
+          id: "music", startMs: 0, endMs: 6000, role: "music",
+          source: source("music-source", "inputs/music.wav", "music", 6000), gainDb: -18, duckUnderVoice: true
         }
       ]
     }
@@ -135,27 +135,27 @@ const creative = compileCreativeEditPlan({
   ctaText: "SAVE THIS EDIT",
   hints: {
     silenceRanges: [
-      { startMs: 3100, endMs: 3850 },
-      { startMs: 7200, endMs: 7950 }
+      { startMs: 1500, endMs: 1900 },
+      { startMs: 3500, endMs: 3950 }
     ],
-    sentenceBoundariesMs: [0, 3050, 3950, 7100, 8050, 12000],
-    beatMarkersMs: Array.from({ length: 24 }, (_, index) => index * 500),
+    sentenceBoundariesMs: [0, 1450, 1950, 3450, 4050, 6000],
+    beatMarkersMs: Array.from({ length: 12 }, (_, index) => index * 500),
     saliency: [
-      { startMs: 0, endMs: 6000, centerX: 0.43, centerY: 0.45, confidence: 0.96 },
-      { startMs: 6000, endMs: 12000, centerX: 0.57, centerY: 0.46, confidence: 0.93 }
+      { startMs: 0, endMs: 3000, centerX: 0.43, centerY: 0.45, confidence: 0.96 },
+      { startMs: 3000, endMs: 6000, centerX: 0.57, centerY: 0.46, confidence: 0.93 }
     ],
     brollCandidates: [{
       id: "proof-broll",
       score: 0.98,
-      durationMs: 3000,
+      durationMs: 1800,
       source: source("broll-source", "inputs/broll.mp4", "broll")
     }],
     captionTokens: [
-      { id: "tok-1", text: "RESULT", startMs: 250, endMs: 1050, emphasis: true },
-      { id: "tok-2", text: "first", startMs: 1100, endMs: 1850 },
-      { id: "tok-3", text: "CUT THE PAUSE", startMs: 4050, endMs: 5200, emphasis: true },
-      { id: "tok-4", text: "keep the proof", startMs: 5350, endMs: 6600 },
-      { id: "tok-5", text: "finish clean", startMs: 8200, endMs: 9300 }
+      { id: "tok-1", text: "RESULT", startMs: 200, endMs: 700, emphasis: true },
+      { id: "tok-2", text: "first", startMs: 750, endMs: 1250 },
+      { id: "tok-3", text: "CUT THE PAUSE", startMs: 2100, endMs: 2850, emphasis: true },
+      { id: "tok-4", text: "keep the proof", startMs: 2900, endMs: 3600 },
+      { id: "tok-5", text: "finish clean", startMs: 3900, endMs: 4300 }
     ]
   }
 });
@@ -164,7 +164,7 @@ const exportSpec = {
   format: "mp4",
   videoCodec: "libx264",
   audioCodec: "aac",
-  videoBitrate: "2M",
+  videoBitrate: "1M",
   audioBitrate: "160k",
   pixelFormat: "yuv420p",
   preset: "ultrafast",
@@ -223,7 +223,8 @@ const beforeBundle = await materializeShortformArtifacts({
   artifactManifest: beforeManifest,
   sourceEvidence: beforeJob.probe.sourceEvidence,
   outputDir: path.join(root, "before-bundle"),
-  executor: processExecutor
+  executor: processExecutor,
+  previewDurationMs: 1000
 });
 const afterBundle = await materializeShortformArtifacts({
   finalPath: afterJob.resolvedOutputPath,
@@ -233,7 +234,8 @@ const afterBundle = await materializeShortformArtifacts({
   artifactManifest: afterManifest,
   sourceEvidence: afterJob.probe.sourceEvidence,
   outputDir: path.join(root, "after-bundle"),
-  executor: processExecutor
+  executor: processExecutor,
+  previewDurationMs: 1000
 });
 
 const beforeMetrics = creativeMetrics(beforeJob.timeline);
