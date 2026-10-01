@@ -84,6 +84,6 @@
   ],
   "conformanceManifest": {
     "path": "conformance/media.web_chat_review_bundle.v1/manifest.json",
-    "gitBlobSha": "670af95dddd1295a49191512005f2dbbbff40ac8"
+    "gitBlobSha": "dddcd09d0fb9d066ec309fee45f84939a7330b0b"
   }
 }
