@@ -87,9 +87,9 @@ ffmpeg([
 const talking = path.join(outputRoot, "talking-head-pauses.mp4");
 ffmpeg([
   "-f", "lavfi", "-i",
-  "color=c=0x26384a:s=360x640:r=30:d=6," +
-  "noise=alls=2:allf=t," +
-  "drawbox=x='118+12*sin(t*1.3)':y='145+7*cos(t)':w=124:h=190:color=0xd9aa7d:t=fill," +
+  "testsrc2=s=360x640:r=30:d=6," +
+  "eq=saturation=0.28:brightness=-0.18," +
+  "drawbox=x='118+18*sin(t*1.3)':y='145+10*cos(t)':w=124:h=190:color=0xd9aa7d:t=fill," +
   "drawbox=x='145+12*sin(t*1.3)':y='205+7*cos(t)':w=70:h=14:color=0x25150e:t=fill",
   "-i", speech,
   "-map", "0:v:0", "-map", "1:a:0",
@@ -113,18 +113,18 @@ ffmpeg([
 const low = path.join(outputRoot, "low-motion.mp4");
 ffmpeg([
   "-f", "lavfi", "-i",
-  "color=c=0x38424a:s=360x640:r=30:d=6," +
-  "noise=alls=2:allf=t," +
-  "drawbox=x='75+18*sin(t/2)':y=170:w=210:h=280:color=0x6b7c8a:t=fill",
+  "testsrc2=s=360x640:r=2:d=6,fps=30," +
+  "eq=saturation=0.18:brightness=-0.22," +
+  "drawbox=x='75+12*sin(t/2)':y=170:w=210:h=280:color=0x6b7c8a@0.72:t=fill",
   ...deterministicMp4Args(low, { audio: false })
 ]);
 
 const speechMusic = path.join(outputRoot, "speech-music.mp4");
 ffmpeg([
   "-f", "lavfi", "-i",
-  "color=c=0x182c3a:s=360x640:r=30:d=6," +
-  "noise=alls=2:allf=t," +
-  "drawbox=x='120+8*sin(t)':y=150:w=120:h=185:color=0xd3a273:t=fill",
+  "testsrc2=s=360x640:r=30:d=6," +
+  "eq=saturation=0.22:brightness=-0.20," +
+  "drawbox=x='120+14*sin(t)':y=150:w=120:h=185:color=0xd3a273:t=fill",
   "-i", speech,
   "-map", "0:v:0", "-map", "1:a:0",
   ...deterministicMp4Args(speechMusic)
