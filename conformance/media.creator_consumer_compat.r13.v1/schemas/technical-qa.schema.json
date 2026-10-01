@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.technical_qa.r13.schema.v1",
+  "title": "Media technical QA evidence consumed by Creator",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sha256", "passed", "value"],
+  "properties": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "passed": { "const": true },
+    "value": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["passed", "checks", "expected"],
+      "properties": {
+        "passed": { "const": true },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "pass"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "pass": { "const": true }
+            }
+          }
+        },
+        "expected": { "type": "object" }
+      }
+    }
+  }
+}
