@@ -16,6 +16,8 @@ export {
   MEDIA_CANDIDATE_BATCH_VERSION,
   MEDIA_CANDIDATE_BATCH_STATE_VERSION,
   MEDIA_CANDIDATE_BATCH_CACHE_VERSION,
+  R16_RENDERER_RESOURCE_PROFILE,
+  candidateRendererConfigDigest,
   PersistentCandidateBatchStore,
   PersistentCandidateCache,
   CandidateBatchRuntime,
