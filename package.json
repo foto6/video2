@@ -34,6 +34,9 @@
     "test:r15": "node --test tests/render-export-r15.test.js",
     "export:r15:batch": "node tools/export-r15-batch.mjs",
     "prove:r15:benchmark": "node tools/prove-r15-benchmark.mjs",
-    "verify:r15": "npm run test:r15"
+    "verify:r15": "npm run test:r15",
+    "test:r16": "node --test tests/candidate-batch-r16.test.js",
+    "demo:r16": "node tools/demo-r16-candidate-batch.mjs",
+    "verify:r16": "npm run test:r16 && npm run demo:r16"
   }
 }
