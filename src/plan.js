@@ -121,5 +121,6 @@ export function buildRenderPlan(timelineInput, exportSpec = {}) {
     export: exportConfig
   };
   if (timeline.profileVersion) core.profileVersion = timeline.profileVersion;
+  if (timeline.creativePlan?.planDigest) core.creativePlanDigest = timeline.creativePlan.planDigest;
   return { ...core, fingerprint: fingerprint(core), timeline };
 }
