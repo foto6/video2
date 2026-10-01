@@ -4,13 +4,11 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
-  readFileSync,
-  statSync
+  readFileSync
 } from "node:fs";
 import path from "node:path";
 
 import {
-  MEDIA_RENDER_EXPORT_FILENAME,
   renderExportDigest,
   validateRenderExportAgainstFinal
 } from "./render-export-r15.js";
@@ -20,6 +18,57 @@ import { runtimeError } from "./runtime/errors.js";
 
 export const MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION = "media.web_chat_review_bundle.v1";
 export const WEB_CHAT_REVIEW_MAX_FILE_BYTES = 500_000_000;
+
+export const R17_ACCEPTED_R16_UPSTREAM_AUTHORITY = Object.freeze({
+  contractVersion: "media.candidate_batch.v1",
+  repository: "foto6/video2",
+  producerSha: "231a0680c8939cfec77aaa283e507e93f383ad73",
+  ciRunId: 36865890506,
+  artifact: {
+    id: 11163920921,
+    name: "media-r16-candidate-batch-demo",
+    archiveDigest: "sha256:d929b592c76ec93e41b54701376f4b02366a3bdbd127d3472d73ae277d450d0f"
+  },
+  candidateBatch: {
+    manifestFileSha256: "44ab0a7dd761bbc79e554a21003b7e67b65b6e80b6c1b3830179caedab509872",
+    manifestDigest: "ec75baee68bc73b8c8e1812dddbf6dbe5cc0dfdc4d0a66938a16c6db87536dbf"
+  },
+  source: {
+    sourceId: "r16-demo-source",
+    sha256: "7b484abef5de1569e1b7f91a5d780f17c6d687ef68b3c42c9e54375f4e5e434b",
+    size: 763377
+  },
+  candidates: [
+    {
+      order: 0,
+      candidateId: "candidate-1",
+      finalSha256: "3bd12d999264cb932cb3ef15dfbd96e002ede517f2273795b593553b9642d864",
+      finalSize: 575465,
+      renderExportFileSha256: "2b5177c00bb054184a239c7eddb1383ad253922e8eb686f5aa2e56c91a1335ac",
+      renderExportDigest: "6a005607dd463643a908a35ce24f411ae74be4100c349a212bd70b59e449a2b5",
+      technicalQaEvidenceSha256: "7e836b809da7fe483ee140c5115e8a58b4b299109c279ccb16c0197be827ff0f"
+    },
+    {
+      order: 1,
+      candidateId: "candidate-2",
+      finalSha256: "cdae63d5ccce67332e607af7fd87b18c31da8dc77c2f0ce5182550321767286c",
+      finalSize: 576763,
+      renderExportFileSha256: "b349b897f8f86bc9257e2622f564d6430f3864ff605ae4b82ba0cb09c59298f6",
+      renderExportDigest: "47b7d0dcaaf0277274c1990825025042e89272dd153e3752b15d29a515041d82",
+      technicalQaEvidenceSha256: "41bce4934320d225e6a58847233702b4ae706a5bed85427272a1f309acb50d79"
+    },
+    {
+      order: 2,
+      candidateId: "candidate-3",
+      finalSha256: "3bd12d999264cb932cb3ef15dfbd96e002ede517f2273795b593553b9642d864",
+      finalSize: 575465,
+      renderExportFileSha256: "26fe61f0644e263ce047869334ba65c5973eba809ff45f76286490f573d61b8e",
+      renderExportDigest: "d31f45e0b29b1c002e8a9b3d52f54d69838ebcb902b04cfbde963cd82e2c2233",
+      technicalQaEvidenceSha256: "7e836b809da7fe483ee140c5115e8a58b4b299109c279ccb16c0197be827ff0f"
+    }
+  ]
+});
+
 export const WEB_CHAT_REVIEW_DERIVATIVE_SETTINGS = Object.freeze({
   transformVersion: "media.web_chat_review_derivative.v1",
   videoCodec: "libx264",
@@ -36,8 +85,8 @@ export const WEB_CHAT_REVIEW_DERIVATIVE_SETTINGS = Object.freeze({
 });
 
 const TOP_FIELDS = new Set([
-  "contractVersion", "source", "producer", "candidateBatch",
-  "attachmentPolicy", "candidates"
+  "contractVersion", "review_bundle_producer", "upstream_media_authority",
+  "source", "candidate_batch", "attachment_policy", "candidates"
 ]);
 
 function fail(code, message, details = null) {
@@ -101,6 +150,13 @@ function reviewFileIdentity(filePath, root) {
   };
 }
 
+export function validateAcceptedR16UpstreamAuthority(input) {
+  if (stableStringify(input) !== stableStringify(R17_ACCEPTED_R16_UPSTREAM_AUTHORITY)) {
+    fail("web_chat_review_upstream_authority_mismatch", "upstream Media authority is not the exact accepted R16 pin/artifact");
+  }
+  return clone(input);
+}
+
 export function attachmentEligibility(size) {
   if (!Number.isInteger(size) || size < 0) throw new TypeError("size must be a non-negative integer");
   return {
@@ -155,10 +211,7 @@ export function createBoundedReviewDerivative({
   }
   const derivative = hashFile(derivativePath);
   if (derivative.size > WEB_CHAT_REVIEW_MAX_FILE_BYTES) {
-    fail("web_chat_review_derivative_oversize", "deterministic review derivative still exceeds 500 MB", {
-      derivativeSize: derivative.size,
-      maxBytes: WEB_CHAT_REVIEW_MAX_FILE_BYTES
-    });
+    fail("web_chat_review_derivative_oversize", "deterministic review derivative still exceeds 500 MB");
   }
   return validateReviewDerivativeProvenance({
     derivative_for_model_review: true,
@@ -179,16 +232,12 @@ export function validateReviewDerivativeProvenance(input, {
     "derivative_for_model_review", "originalSha256", "originalSize",
     "derivativeSha256", "derivativeSize", "settings", "settingsDigest"
   ], "derivative");
-  if (input.derivative_for_model_review !== true) {
-    fail("web_chat_review_derivative_invalid", "derivative_for_model_review must be true");
-  }
+  if (input.derivative_for_model_review !== true) fail("web_chat_review_derivative_invalid", "derivative_for_model_review must be true");
   sha256(input.originalSha256, "derivative.originalSha256");
   positiveInt(input.originalSize, "derivative.originalSize");
   sha256(input.derivativeSha256, "derivative.derivativeSha256");
   positiveInt(input.derivativeSize, "derivative.derivativeSize");
-  if (input.derivativeSize > WEB_CHAT_REVIEW_MAX_FILE_BYTES) {
-    fail("web_chat_review_derivative_oversize", "derivative exceeds 500 MB");
-  }
+  if (input.derivativeSize > WEB_CHAT_REVIEW_MAX_FILE_BYTES) fail("web_chat_review_derivative_oversize", "derivative exceeds 500 MB");
   if (!plain(input.settings)) fail("web_chat_review_derivative_invalid", "derivative.settings must be an object");
   sha256(input.settingsDigest, "derivative.settingsDigest");
   if (reviewDerivativeSettingsDigest(input.settings) !== input.settingsDigest) {
@@ -203,17 +252,22 @@ export function validateReviewDerivativeProvenance(input, {
   return clone(input);
 }
 
-function summarizeTechnicalQa(renderExport) {
+function summarizeTechnicalQa(renderExport, expectedQaSha) {
   const technical = renderExport.qa?.technical;
   if (!technical || technical.passed !== true || technical.value?.passed !== true) {
     fail("web_chat_review_technical_qa_failed", "candidate technical QA is not passing");
   }
+  if (technical.sha256 !== expectedQaSha) {
+    fail("web_chat_review_upstream_provenance_mismatch", "technical QA lineage does not match accepted R16 evidence");
+  }
   const checks = technical.value.checks ?? [];
+  const failedChecks = checks.filter((entry) => entry?.pass !== true).map((entry) => entry?.name ?? "unknown");
+  if (failedChecks.length) fail("web_chat_review_technical_qa_failed", "candidate technical QA contains failed checks");
   return {
     passed: true,
     evidenceSha256: technical.sha256,
     checkCount: checks.length,
-    failedChecks: checks.filter((entry) => entry?.pass !== true).map((entry) => entry?.name ?? "unknown")
+    failedChecks
   };
 }
 
@@ -229,46 +283,46 @@ function sourceMatchesRenderExport(renderExport, source) {
 export function validateWebChatReviewBundle(input) {
   const bundle = clone(input);
   exactKeys(bundle, TOP_FIELDS, "review bundle");
-  if (bundle.contractVersion !== MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION) {
-    fail("web_chat_review_invalid", "review bundle contractVersion mismatch");
+  if (bundle.contractVersion !== MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION) fail("web_chat_review_invalid", "contractVersion mismatch");
+  exactKeys(bundle.review_bundle_producer, ["repository", "sha"], "review_bundle_producer");
+  if (bundle.review_bundle_producer.repository !== "foto6/video2") fail("web_chat_review_invalid", "review bundle producer repository mismatch");
+  gitSha(bundle.review_bundle_producer.sha, "review_bundle_producer.sha");
+  validateAcceptedR16UpstreamAuthority(bundle.upstream_media_authority);
+  if (stableStringify(bundle.source) !== stableStringify(bundle.upstream_media_authority.source)) {
+    fail("web_chat_review_upstream_provenance_mismatch", "bundle source differs from accepted R16 source");
   }
-  exactKeys(bundle.source, ["sourceId", "sha256", "size"], "source");
-  sha256(bundle.source.sha256, "source.sha256");
-  positiveInt(bundle.source.size, "source.size");
-  exactKeys(bundle.producer, ["repository", "sha"], "producer");
-  if (bundle.producer.repository !== "foto6/video2") fail("web_chat_review_invalid", "producer repository mismatch");
-  gitSha(bundle.producer.sha, "producer.sha");
-  exactKeys(bundle.candidateBatch, ["manifestDigest", "producerSha"], "candidateBatch");
-  sha256(bundle.candidateBatch.manifestDigest, "candidateBatch.manifestDigest");
-  if (bundle.candidateBatch.producerSha !== bundle.producer.sha) {
-    fail("web_chat_review_invalid", "candidate batch producer mismatch");
+  exactKeys(bundle.candidate_batch, ["manifestFileSha256", "manifestDigest"], "candidate_batch");
+  if (stableStringify(bundle.candidate_batch) !== stableStringify(bundle.upstream_media_authority.candidateBatch)) {
+    fail("web_chat_review_upstream_provenance_mismatch", "candidate batch identity differs from accepted R16");
   }
-  exactKeys(bundle.attachmentPolicy, ["maxBytesPerFile", "oversizeBehavior"], "attachmentPolicy");
-  if (bundle.attachmentPolicy.maxBytesPerFile !== WEB_CHAT_REVIEW_MAX_FILE_BYTES) {
-    fail("web_chat_review_invalid", "attachment limit mismatch");
-  }
-  if (bundle.attachmentPolicy.oversizeBehavior !== "ineligible_without_explicit_derivative") {
-    fail("web_chat_review_invalid", "oversize behavior mismatch");
-  }
-  if (!Array.isArray(bundle.candidates) || bundle.candidates.length < 1) {
-    fail("web_chat_review_invalid", "review bundle requires candidates");
+  exactKeys(bundle.attachment_policy, ["maxBytesPerFile", "oversizeBehavior"], "attachment_policy");
+  if (bundle.attachment_policy.maxBytesPerFile !== WEB_CHAT_REVIEW_MAX_FILE_BYTES) fail("web_chat_review_invalid", "attachment limit mismatch");
+  if (bundle.attachment_policy.oversizeBehavior !== "ineligible_without_explicit_derivative") fail("web_chat_review_invalid", "oversize behavior mismatch");
+  if (!Array.isArray(bundle.candidates) || bundle.candidates.length !== bundle.upstream_media_authority.candidates.length) {
+    fail("web_chat_review_invalid", "review bundle candidate count mismatch");
   }
   const seen = new Set();
   bundle.candidates.forEach((candidate, index) => {
+    const accepted = bundle.upstream_media_authority.candidates[index];
     exactKeys(candidate, [
       "order", "candidateId", "final", "renderExport", "technicalQa",
       "attachmentEligibility", "reviewAttachment"
     ], `candidates[${index}]`);
-    if (candidate.order !== index) fail("web_chat_review_invalid", "candidate order must be stable and contiguous");
+    if (candidate.order !== accepted.order || candidate.candidateId !== accepted.candidateId) {
+      fail("web_chat_review_upstream_provenance_mismatch", "candidate ID/order differs from accepted R16");
+    }
     if (seen.has(candidate.candidateId)) fail("web_chat_review_duplicate_candidate", "duplicate candidate ID");
     seen.add(candidate.candidateId);
-    if (!plain(candidate.final)) fail("web_chat_review_invalid", "candidate.final is required");
-    sha256(candidate.final.sha256, "candidate.final.sha256");
-    positiveInt(candidate.final.size, "candidate.final.size");
-    sha256(candidate.renderExport.digest, "candidate.renderExport.digest");
-    sha256(candidate.renderExport.fileSha256, "candidate.renderExport.fileSha256");
-    if (candidate.technicalQa?.passed !== true || candidate.technicalQa.failedChecks?.length !== 0) {
-      fail("web_chat_review_technical_qa_failed", "candidate technical QA summary is not passing");
+    if (candidate.final.sha256 !== accepted.finalSha256 || candidate.final.size !== accepted.finalSize) {
+      fail("web_chat_review_upstream_provenance_mismatch", "candidate final identity differs from accepted R16");
+    }
+    if (
+      candidate.renderExport.fileSha256 !== accepted.renderExportFileSha256 ||
+      candidate.renderExport.digest !== accepted.renderExportDigest ||
+      candidate.renderExport.producerSha !== bundle.upstream_media_authority.producerSha
+    ) fail("web_chat_review_upstream_provenance_mismatch", "candidate render export differs from accepted R16");
+    if (candidate.technicalQa?.passed !== true || candidate.technicalQa.evidenceSha256 !== accepted.technicalQaEvidenceSha256) {
+      fail("web_chat_review_upstream_provenance_mismatch", "candidate technical QA lineage differs from accepted R16");
     }
     const eligibility = attachmentEligibility(candidate.final.size);
     if (stableStringify(eligibility) !== stableStringify(candidate.attachmentEligibility)) {
@@ -279,19 +333,15 @@ export function validateWebChatReviewBundle(input) {
       return;
     }
     exactKeys(candidate.reviewAttachment, ["file", "derivative"], "reviewAttachment");
-    sha256(candidate.reviewAttachment.file.sha256, "reviewAttachment.file.sha256");
-    positiveInt(candidate.reviewAttachment.file.size, "reviewAttachment.file.size");
-    if (candidate.reviewAttachment.file.size > WEB_CHAT_REVIEW_MAX_FILE_BYTES) {
-      fail("web_chat_review_oversize", "review attachment exceeds 500 MB");
-    }
+    if (candidate.reviewAttachment.file.size > WEB_CHAT_REVIEW_MAX_FILE_BYTES) fail("web_chat_review_oversize", "review attachment exceeds 500 MB");
     if (candidate.reviewAttachment.derivative === null) {
       if (
-        candidate.reviewAttachment.file.sha256 !== candidate.final.sha256 ||
-        candidate.reviewAttachment.file.size !== candidate.final.size
-      ) fail("web_chat_review_invalid", "original review attachment does not match final.mp4");
+        candidate.reviewAttachment.file.sha256 !== accepted.finalSha256 ||
+        candidate.reviewAttachment.file.size !== accepted.finalSize
+      ) fail("web_chat_review_upstream_provenance_mismatch", "original review attachment differs from accepted R16 MP4");
     } else {
       validateReviewDerivativeProvenance(candidate.reviewAttachment.derivative, {
-        expectedOriginalSha256: candidate.final.sha256,
+        expectedOriginalSha256: accepted.finalSha256,
         expectedDerivativeSha256: candidate.reviewAttachment.file.sha256
       });
     }
@@ -301,55 +351,82 @@ export function validateWebChatReviewBundle(input) {
 
 export function buildWebChatReviewBundle({
   candidateBatchManifest,
+  candidateBatchManifestFileSha256,
   batchRoot,
   sourcePath,
-  producerSha,
+  reviewBundleProducerSha,
+  upstreamMediaAuthority = R17_ACCEPTED_R16_UPSTREAM_AUTHORITY,
   attachmentRoot = null,
   transcodeOversize = false,
   derivativeSettings = WEB_CHAT_REVIEW_DERIVATIVE_SETTINGS
 } = {}) {
+  const authority = validateAcceptedR16UpstreamAuthority(upstreamMediaAuthority);
   const batch = validateCandidateBatchManifest(candidateBatchManifest);
-  gitSha(producerSha, "producerSha");
-  if (batch.producer.sha !== producerSha) {
-    fail("web_chat_review_stale_producer", "candidate batch producer SHA does not match current producer");
+  gitSha(reviewBundleProducerSha, "reviewBundleProducerSha");
+  sha256(candidateBatchManifestFileSha256, "candidateBatchManifestFileSha256");
+
+  if (batch.producer.sha !== authority.producerSha) {
+    fail("web_chat_review_upstream_provenance_mismatch", "candidate batch producer is not accepted R16");
   }
+  if (candidateBatchManifestFileSha256 !== authority.candidateBatch.manifestFileSha256) {
+    fail("web_chat_review_upstream_provenance_mismatch", "candidate batch manifest file SHA differs from accepted R16 artifact");
+  }
+  if (fingerprint(batch) !== authority.candidateBatch.manifestDigest) {
+    fail("web_chat_review_upstream_provenance_mismatch", "candidate batch semantic digest differs from accepted R16");
+  }
+  if (stableStringify(batch.source) !== stableStringify(authority.source)) {
+    fail("web_chat_review_upstream_provenance_mismatch", "candidate batch source differs from accepted R16");
+  }
+
   const sourceBytes = hashFile(sourcePath);
-  if (sourceBytes.sha256 !== batch.source.sha256 || sourceBytes.size !== batch.source.size) {
-    fail("web_chat_review_wrong_source", "exact source bytes do not match candidate batch source");
+  if (sourceBytes.sha256 !== authority.source.sha256 || sourceBytes.size !== authority.source.size) {
+    fail("web_chat_review_wrong_source", "exact source bytes do not match accepted R16 source");
   }
   const outputRoot = attachmentRoot ? path.resolve(attachmentRoot) : null;
   if (outputRoot) mkdirSync(outputRoot, { recursive: true });
 
+  if (batch.candidates.length !== authority.candidates.length) {
+    fail("web_chat_review_upstream_provenance_mismatch", "candidate count differs from accepted R16");
+  }
+
   const seen = new Set();
   const candidates = batch.candidates.map((entry, order) => {
+    const accepted = authority.candidates[order];
+    if (
+      entry.order !== accepted.order ||
+      entry.candidateId !== accepted.candidateId ||
+      entry.status !== "succeeded" ||
+      !entry.final
+    ) fail("web_chat_review_upstream_provenance_mismatch", "candidate terminal identity differs from accepted R16");
     if (seen.has(entry.candidateId)) fail("web_chat_review_duplicate_candidate", "duplicate candidate ID");
     seen.add(entry.candidateId);
-    if (entry.status !== "succeeded" || !entry.final) {
-      fail("web_chat_review_candidate_failed", `candidate ${entry.candidateId} is not a successful review candidate`);
-    }
+    if (
+      entry.final.sha256 !== accepted.finalSha256 ||
+      entry.final.size !== accepted.finalSize ||
+      entry.final.renderExportSha256 !== accepted.renderExportFileSha256
+    ) fail("web_chat_review_upstream_provenance_mismatch", "candidate manifest evidence differs from accepted R16");
+
     const finalPath = safeRelative(batchRoot, entry.final.relativePath, "candidate final path");
     const sidecarPath = safeRelative(batchRoot, entry.final.renderExportRelativePath, "render export path");
     const finalBytes = hashFile(finalPath);
-    if (finalBytes.sha256 !== entry.final.sha256 || finalBytes.size !== entry.final.size) {
-      fail("web_chat_review_hash_mismatch", `candidate ${entry.candidateId} final.mp4 hash/size mismatch`);
+    if (finalBytes.sha256 !== accepted.finalSha256 || finalBytes.size !== accepted.finalSize) {
+      fail("web_chat_review_hash_mismatch", `candidate ${entry.candidateId} final.mp4 differs from accepted R16 bytes`);
     }
     const sidecarBytes = hashFile(sidecarPath);
-    if (sidecarBytes.sha256 !== entry.final.renderExportSha256) {
-      fail("web_chat_review_stale_render_export", `candidate ${entry.candidateId} render export sidecar hash mismatch`);
+    if (sidecarBytes.sha256 !== accepted.renderExportFileSha256) {
+      fail("web_chat_review_stale_render_export", `candidate ${entry.candidateId} sidecar bytes differ from accepted R16`);
     }
     const renderExport = JSON.parse(readFileSync(sidecarPath, "utf8"));
     validateRenderExportAgainstFinal(renderExport, finalPath);
-    if (renderExport.producer.sha !== producerSha) {
-      fail("web_chat_review_stale_render_export", `candidate ${entry.candidateId} render export producer mismatch`);
-    }
+    const semanticDigest = renderExportDigest(renderExport);
     if (
-      renderExport.artifact.sha256 !== entry.final.sha256 ||
-      renderExport.artifact.size !== entry.final.size
-    ) {
-      fail("web_chat_review_stale_render_export", `candidate ${entry.candidateId} render export final identity mismatch`);
-    }
-    if (!sourceMatchesRenderExport(renderExport, batch.source)) {
-      fail("web_chat_review_wrong_source", `candidate ${entry.candidateId} render export does not bind exact source`);
+      renderExport.producer.sha !== authority.producerSha ||
+      semanticDigest !== accepted.renderExportDigest ||
+      renderExport.artifact.sha256 !== accepted.finalSha256 ||
+      renderExport.artifact.size !== accepted.finalSize
+    ) fail("web_chat_review_upstream_provenance_mismatch", `candidate ${entry.candidateId} render export provenance differs from accepted R16`);
+    if (!sourceMatchesRenderExport(renderExport, authority.source)) {
+      fail("web_chat_review_wrong_source", `candidate ${entry.candidateId} render export does not bind accepted R16 source`);
     }
 
     const eligibility = attachmentEligibility(finalBytes.size);
@@ -363,7 +440,7 @@ export function buildWebChatReviewBundle({
         copyFileSync(finalPath, destination);
       }
       const copied = hashFile(destination);
-      if (copied.sha256 !== finalBytes.sha256 || copied.size !== finalBytes.size) {
+      if (copied.sha256 !== accepted.finalSha256 || copied.size !== accepted.finalSize) {
         fail("web_chat_review_hash_mismatch", "copied attachment bytes changed");
       }
       reviewAttachment = {
@@ -395,10 +472,11 @@ export function buildWebChatReviewBundle({
       },
       renderExport: {
         path: entry.final.renderExportRelativePath,
-        digest: renderExportDigest(renderExport),
-        fileSha256: sidecarBytes.sha256
+        digest: semanticDigest,
+        fileSha256: sidecarBytes.sha256,
+        producerSha: renderExport.producer.sha
       },
-      technicalQa: summarizeTechnicalQa(renderExport),
+      technicalQa: summarizeTechnicalQa(renderExport, accepted.technicalQaEvidenceSha256),
       attachmentEligibility: eligibility,
       reviewAttachment
     };
@@ -406,13 +484,11 @@ export function buildWebChatReviewBundle({
 
   return validateWebChatReviewBundle({
     contractVersion: MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION,
-    source: clone(batch.source),
-    producer: { repository: "foto6/video2", sha: producerSha },
-    candidateBatch: {
-      manifestDigest: fingerprint(batch),
-      producerSha: batch.producer.sha
-    },
-    attachmentPolicy: {
+    review_bundle_producer: { repository: "foto6/video2", sha: reviewBundleProducerSha },
+    upstream_media_authority: clone(authority),
+    source: clone(authority.source),
+    candidate_batch: clone(authority.candidateBatch),
+    attachment_policy: {
       maxBytesPerFile: WEB_CHAT_REVIEW_MAX_FILE_BYTES,
       oversizeBehavior: "ineligible_without_explicit_derivative"
     },
