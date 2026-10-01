@@ -75,12 +75,21 @@
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["sourceId","sha256","size"]
+      "required": ["sourceId","sha256","size"],
+      "properties": {
+        "sourceId": { "const": "r16-demo-source" },
+        "sha256": { "const": "7b484abef5de1569e1b7f91a5d780f17c6d687ef68b3c42c9e54375f4e5e434b" },
+        "size": { "const": 763377 }
+      }
     },
     "candidate_batch": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["manifestFileSha256","manifestDigest"]
+      "required": ["manifestFileSha256","manifestDigest"],
+      "properties": {
+        "manifestFileSha256": { "const": "44ab0a7dd761bbc79e554a21003b7e67b65b6e80b6c1b3830179caedab509872" },
+        "manifestDigest": { "const": "ec75baee68bc73b8c8e1812dddbf6dbe5cc0dfdc4d0a66938a16c6db87536dbf" }
+      }
     },
     "attachment_policy": {
       "type": "object",
