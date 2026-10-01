@@ -148,6 +148,21 @@ function buildRemovalRanges(hints, style, durationMs) {
   return normalizeRanges(removals, durationMs);
 }
 
+function limitRemovalBudget(removals, durationMs, minimumDurationMs) {
+  let remaining = Math.max(0, durationMs - minimumDurationMs);
+  if (remaining === 0) return [];
+  const bounded = [];
+  for (const range of removals) {
+    if (remaining < 120) break;
+    const duration = range.endMs - range.startMs;
+    const take = Math.min(duration, remaining);
+    if (take < 120) break;
+    bounded.push({ startMs: range.startMs, endMs: range.startMs + take });
+    remaining -= take;
+  }
+  return bounded;
+}
+
 function removedBefore(timeMs, removals) {
   let total = 0;
   for (const range of removals) {
@@ -631,7 +646,11 @@ export function compileCreativeEditPlan(request) {
   const base = canonicalizeTimeline(request.timeline);
   if (base.profileVersion !== MEDIA_SHORTFORM_PROFILE_VERSION) fail("R12 requires an R11 short-form timeline");
   const hints = clone(request.hints ?? {});
-  const removals = buildRemovalRanges(hints, style, base.canvas.durationMs);
+  const removals = limitRemovalBudget(
+    buildRemovalRanges(hints, style, base.canvas.durationMs),
+    base.canvas.durationMs,
+    SHORTFORM_R11_PROFILE.targetDurationMs.min
+  );
 
   let timeline = remapTimelineForDeadAir(base, removals);
   const sentencePoints = remapPoints(hints.sentenceBoundariesMs, removals, base.canvas.durationMs);
