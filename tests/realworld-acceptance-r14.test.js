@@ -10,7 +10,8 @@ import {
 } from "../src/acceptance-r14.js";
 import {
   MEDIA_SHORTFORM_PROFILE_VERSION,
-  compileCreativeEditPlan
+  compileCreativeEditPlan,
+  compileFfmpegCommand
 } from "../src/index.js";
 
 test("R14 corpus covers all required real-world shapes and both creative styles", () => {
@@ -237,4 +238,71 @@ test("R14 CI shards exactly one case/style render to avoid long silent two-rende
   assert.match(workflow, /--style \$\{\{ matrix\.style \}\}/);
   assert.match(workflow, /media-r14-case-\$\{\{ matrix\.case \}\}-\$\{\{ matrix\.style \}\}/);
   assert.match(workflow, /r14-acceptance\/\$\{\{ matrix\.case \}\}\/\$\{\{ matrix\.style \}\}/);
+});
+
+
+test("R14 long acceptance renders emit stage heartbeat instead of remaining opaque", () => {
+  const runner = readFileSync(
+    new URL("../tools/run-r14-acceptance.mjs", import.meta.url),
+    "utf8"
+  );
+  assert.match(runner, /R14_PROGRESS/);
+  assert.match(runner, /setInterval\(\(\) => \{/);
+  assert.match(runner, /\}, 5000\)/);
+  for (const stage of ["render_execute", "derivatives", "contact_sheet", "style_complete"]) {
+    assert.match(runner, new RegExp(`progress\\("${stage}"`), stage);
+  }
+});
+
+test("R14 audio regression: loudness normalization explicitly resamples before AAC encoding", () => {
+  const timeline = {
+    id: "r14-aac-peak-regression",
+    version: 1,
+    profileVersion: MEDIA_SHORTFORM_PROFILE_VERSION,
+    canvas: { width: 1080, height: 1920, fps: 30, durationMs: 5000 },
+    tracks: [
+      {
+        id: "video",
+        kind: "video",
+        items: [{
+          id: "v",
+          startMs: 0,
+          endMs: 5000,
+          source: {
+            id: "source",
+            uri: "input.mp4",
+            inMs: 0,
+            outMs: 5000,
+            sha256: "a".repeat(64),
+            size: 100
+          }
+        }]
+      },
+      {
+        id: "audio",
+        kind: "audio",
+        items: [{
+          id: "voice",
+          startMs: 0,
+          endMs: 5000,
+          role: "voiceover",
+          source: {
+            id: "source",
+            uri: "input.mp4",
+            inMs: 0,
+            outMs: 5000,
+            sha256: "a".repeat(64),
+            size: 100
+          },
+          gainDb: -3
+        }]
+      }
+    ]
+  };
+  const command = compileFfmpegCommand(timeline, {
+    format: "mp4",
+    loudness: { integratedLufs: -16, truePeakDb: -1.5, lra: 11 }
+  }, "out.mp4");
+  const graph = command.args[command.args.indexOf("-filter_complex") + 1];
+  assert.match(graph, /loudnorm=I=-16:TP=-1\.5:LRA=11,aresample=48000\[anorm\]/);
 });
