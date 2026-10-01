@@ -1,0 +1,28 @@
+{
+  "fixtureVersion": "media.shortform_editor.r11.v1.fixture.1",
+  "contractVersion": "media.shortform_editor.r11.v1",
+  "producerRepository": "foto6/video2",
+  "producerBranch": "agent/media-r11-autonomous-reels-20261001",
+  "producerShaRule": "Pin the exact Git commit containing this manifest; do not use a moving branch ref.",
+  "contracts": {
+    "job": "media.job.v1",
+    "render": "media.render.v1",
+    "profile": "media.shortform_profile.r11.v1",
+    "artifactManifest": "media.artifact_manifest.v1",
+    "artifactBundle": "media.shortform_artifact_bundle.r11.v1",
+    "artifactPinLease": "media.artifact_pin_lease.v1",
+    "artifactRetention": "media.artifact_retention.v1"
+  },
+  "files": [
+    { "path": "profile.json", "sha256": "7d5e6a4a470c1a60744f514c83d38e6159395b372d6e033e48374e02c465dcad" },
+    { "path": "fixtures/canonical-request.json", "sha256": "13853ef65d98665013fc0f4bfebde9caeccf65fd309a11a4c9e0cf2b8ec0415c" },
+    { "path": "fixtures/creator-consumer.json", "sha256": "141677dbbc09a0ac37b1feceadb0cae1754ea7d67c0ca7d121af8ff8ed591556" }
+  ],
+  "safety": {
+    "providerPublishing": false,
+    "credentials": false,
+    "desktopCommander": false,
+    "protectedPathAccess": false,
+    "creatorOrGrowthMutation": false
+  }
+}
