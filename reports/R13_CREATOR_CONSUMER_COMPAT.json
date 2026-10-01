@@ -1,0 +1,42 @@
+{
+  "reportVersion": "media.r13.creator_consumer_compat.v1",
+  "baselineSha": "3472934e6fbdc4e756aeb0bb79ea11c5b3464499",
+  "branch": "agent/media-r13-creator-compat-20261001",
+  "compatibilityContract": "media.creator_consumer_compat.r13.v1",
+  "compatibilityManifest": "conformance/media.creator_consumer_compat.r13.v1/manifest.json",
+  "producerShaBinding": {
+    "runtimeSource": "git rev-parse HEAD",
+    "ciAssertion": "GITHUB_SHA === git rev-parse HEAD",
+    "selfReportedStaticSha": false
+  },
+  "reproduction": {
+    "verify": "npm run verify:r13",
+    "emit": "npm run emit:r13",
+    "bundle": ".artifacts/r13-compat/compatibility-bundle.json",
+    "demoEnvelope": ".artifacts/r13-compat/demo-consumer-envelope.json",
+    "sourceDemoJob": "r12-after"
+  },
+  "failClosed": [
+    "contract_version",
+    "unknown_fields",
+    "producer_sha",
+    "contract_git_blob_ids",
+    "artifact_manifest_digest",
+    "final_content_digest_and_size",
+    "probe_evidence",
+    "technical_qa",
+    "creative_guardrails",
+    "creative_visual_qa",
+    "timeline_digest",
+    "creative_plan_digest"
+  ],
+  "safety": {
+    "readOnlyCompatibilityExport": true,
+    "publishing": false,
+    "credentials": false,
+    "creatorGrowthMutation": false,
+    "desktopCommander": false,
+    "protectedPathAccess": false,
+    "mergeRelease": false
+  }
+}
