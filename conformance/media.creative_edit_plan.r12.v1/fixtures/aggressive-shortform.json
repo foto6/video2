@@ -1,0 +1,11 @@
+{
+  "fixtureVersion": "media.creative_edit_plan.r12.v1.fixture.aggressive_shortform",
+  "style": "aggressive_shortform",
+  "intent": "hook-first pacing with tighter jump cuts, bounded motion and emphasized captions",
+  "expected": {
+    "hookCadenceMs": 900,
+    "regularCadenceMs": 1700,
+    "captionPreset": "impact",
+    "loopFriendly": true
+  }
+}
