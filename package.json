@@ -30,6 +30,10 @@
     "generate:r14": "node tools/generate-r14-corpus.mjs",
     "accept:r14": "node tools/run-r14-acceptance.mjs --input-dir .artifacts/r14-corpus --output-dir .artifacts/r14-acceptance --manifest tests/fixtures/r14-acceptance/corpus.json",
     "verify:r14": "npm run test:r14 && npm run generate:r14 && npm run accept:r14",
-    "accept:r14:folder": "node tools/run-r14-acceptance.mjs"
+    "accept:r14:folder": "node tools/run-r14-acceptance.mjs",
+    "test:r15": "node --test tests/render-export-r15.test.js",
+    "export:r15:batch": "node tools/export-r15-batch.mjs",
+    "prove:r15:benchmark": "node tools/prove-r15-benchmark.mjs",
+    "verify:r15": "npm run test:r15"
   }
 }
