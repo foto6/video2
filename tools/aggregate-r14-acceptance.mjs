@@ -49,28 +49,31 @@ if (process.env.GITHUB_SHA && process.env.GITHUB_SHA !== producerSha) {
 }
 
 const summaryFiles = findFiles(inputRoot, "mvp-acceptance-summary.json").sort();
-if (summaryFiles.length !== 7) {
-  throw new Error(`expected 7 R14 shard summaries, found ${summaryFiles.length}`);
+if (summaryFiles.length !== 14) {
+  throw new Error(`expected 14 R14 case/style shard summaries, found ${summaryFiles.length}`);
 }
 
 const results = [];
 const seenCases = new Set();
+const seenPairs = new Set();
 for (const filePath of summaryFiles) {
   const shard = JSON.parse(readFileSync(filePath, "utf8"));
   if (shard?.producer?.sha !== producerSha) {
     throw new Error(`stale producer SHA in ${filePath}: ${shard?.producer?.sha}`);
   }
-  const caseIds = new Set((shard.results ?? []).map((entry) => entry.caseId));
-  if (caseIds.size !== 1) throw new Error(`shard must contain exactly one case: ${filePath}`);
-  const caseId = [...caseIds][0];
-  if (seenCases.has(caseId)) throw new Error(`duplicate R14 shard for case ${caseId}`);
-  seenCases.add(caseId);
-  for (const entry of shard.results ?? []) {
-    results.push({
-      ...entry,
-      ciShard: path.relative(inputRoot, path.dirname(filePath)).split(path.sep).join("/")
-    });
+  if (!Array.isArray(shard.results) || shard.results.length !== 1) {
+    throw new Error(`shard must contain exactly one case/style result: ${filePath}`);
   }
+  const entry = shard.results[0];
+  const caseId = entry.caseId;
+  const pair = `${entry.caseId}::${entry.style}`;
+  if (seenPairs.has(pair)) throw new Error(`duplicate R14 shard for ${pair}`);
+  seenPairs.add(pair);
+  seenCases.add(caseId);
+  results.push({
+    ...entry,
+    ciShard: path.relative(inputRoot, path.dirname(filePath)).split(path.sep).join("/")
+  });
 }
 
 const expectedCases = new Set([
@@ -84,6 +87,11 @@ const expectedCases = new Set([
 ]);
 for (const id of expectedCases) {
   if (!seenCases.has(id)) throw new Error(`missing R14 shard for case ${id}`);
+}
+for (const id of expectedCases) {
+  for (const style of ["clean_podcast", "aggressive_shortform"]) {
+    if (!seenPairs.has(`${id}::${style}`)) throw new Error(`missing R14 shard for ${id}/${style}`);
+  }
 }
 if (results.length !== 14) throw new Error(`expected 14 case/style results, found ${results.length}`);
 
