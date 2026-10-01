@@ -20,6 +20,8 @@ export {
   attachmentEligibility,
   reviewDerivativeSettingsDigest,
   validateAcceptedR16UpstreamAuthority,
+  verifyReviewSourceFile,
+  verifyReviewCandidateAgainstPin,
   createBoundedReviewDerivative,
   validateReviewDerivativeProvenance,
   validateWebChatReviewBundle,
