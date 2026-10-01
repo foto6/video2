@@ -37,6 +37,9 @@
     "verify:r15": "npm run test:r15",
     "test:r16": "node --test tests/candidate-batch-r16.test.js",
     "demo:r16": "node tools/demo-r16-candidate-batch.mjs",
-    "verify:r16": "npm run test:r16 && npm run demo:r16"
+    "verify:r16": "npm run test:r16 && npm run demo:r16",
+    "test:r17": "node --test tests/web-chat-review-r17.test.js",
+    "build:r17": "node tools/build-r17-web-chat-review.mjs",
+    "verify:r17": "npm run test:r17 && npm run demo:r16 && npm run build:r17"
   }
 }
