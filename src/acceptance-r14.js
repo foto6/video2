@@ -5,6 +5,7 @@ function add(list, code, message, details = null) {
 }
 
 export function acceptanceMetrics({ probe = {}, technicalQa = null, creativeQuality = null } = {}) {
+  probe = probe ?? {};
   const metrics = creativeQuality?.metrics ?? {};
   const technicalByName = new Map((technicalQa?.checks ?? []).map((entry) => [entry.name, entry]));
   const visualByName = new Map((creativeQuality?.visualQa?.checks ?? []).map((entry) => [entry.name, entry]));
