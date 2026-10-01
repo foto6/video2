@@ -13,6 +13,18 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_RENDER_EXPORT_VERSION,
+  MEDIA_RENDER_EXPORT_FILENAME,
+  R15_BOSS_BENCHMARK_BINDING,
+  buildSucceededRenderExport,
+  buildFailedRenderExport,
+  validateRenderExport,
+  validateRenderExportAgainstFinal,
+  renderExportDigest,
+  writeRenderExportSidecar,
+  requireRenderExportSidecar
+} from "./render-export-r15.js";
+export {
   MEDIA_CREATIVE_EDIT_PLAN_VERSION,
   MEDIA_CREATIVE_QUALITY_REPORT_VERSION,
   R12_GUARDRAILS,
