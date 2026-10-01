@@ -19,6 +19,9 @@
     "test:r10": "node --test tests/native-mcp-exposure-r10.test.js tests/creator-pin-recovery-r10.test.js",
     "test:r11": "node --test tests/shortform-r11.test.js",
     "demo:r11": "node tools/render-r11-demo.mjs",
-    "verify:r11": "npm run test:r11 && npm run demo:r11"
+    "verify:r11": "npm run test:r11 && npm run demo:r11",
+    "test:r12": "node --test tests/creative-polish-r12.test.js",
+    "demo:r12": "node tools/render-r12-demo.mjs",
+    "verify:r12": "npm run test:r12 && npm run demo:r12"
   }
 }
