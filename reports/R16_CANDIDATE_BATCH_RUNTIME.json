@@ -1,0 +1,55 @@
+{
+  "reportVersion": "media.r16.candidate_batch_runtime.v1",
+  "baselineSha": "a17f782da8144d1e890ac83195396a3192df93c2",
+  "branch": "agent/media-r16-candidate-batch-runtime-20261001",
+  "contractVersion": "media.candidate_batch.v1",
+  "bounds": {
+    "candidateCount": [2, 4],
+    "candidateParallelismMax": 2,
+    "runtimeMaxConcurrency": 2,
+    "renderSlots": 1,
+    "probeSlots": 1
+  },
+  "cacheIdentity": [
+    "source.sha256",
+    "source.size",
+    "candidate.planDigest",
+    "renderer.configDigest",
+    "producer.sha"
+  ],
+  "failureIsolation": true,
+  "canonicalPerCandidateEvidence": [
+    "final.mp4 sha256+size",
+    "media.render_export.v1 sidecar sha256",
+    "plan digest",
+    "terminal status"
+  ],
+  "restartRecovery": {
+    "runningToPending": true,
+    "terminalSiblingPreservation": true,
+    "duplicateReplay": true,
+    "lostAckReplay": true
+  },
+  "testsRequired": [
+    "2-4 candidates",
+    "stable IDs/order",
+    "wrong source",
+    "duplicate IDs",
+    "restart",
+    "partial failure",
+    "cache reuse",
+    "source invalidation",
+    "plan invalidation",
+    "config invalidation",
+    "producer invalidation",
+    "stale/hash mismatch",
+    "bounded parallelism"
+  ],
+  "reproduction": {
+    "focused": "npm run test:r16",
+    "demo": "npm run demo:r16",
+    "verify": "npm run verify:r16",
+    "outputRoot": ".artifacts/r16-demo"
+  },
+  "preserved": ["R11", "R12", "R13", "R14", "R15", "media.render_export.v1"]
+}
