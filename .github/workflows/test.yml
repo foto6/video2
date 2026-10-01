@@ -9,6 +9,7 @@ on:
       - agent/media-r11-autonomous-reels-20261001
       - agent/media-r12-creative-polish-20261001
       - agent/media-r13-creator-compat-20261001
+      - agent/media-r14-realworld-acceptance-20261001
   pull_request:
 
 permissions:
@@ -22,8 +23,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
       - run: ffmpeg -version && ffprobe -version
+      - run: npm run verify:r14
       - run: npm run verify:r13
       - run: npm run verify:r12
       - run: npm run verify:r11
@@ -37,8 +39,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: media-r13-compat
+          name: media-r14-acceptance
           path: |
+            .artifacts/r14-corpus
+            .artifacts/r14-acceptance
             .artifacts/r13-compat
             .artifacts/r12-demo
           if-no-files-found: warn
