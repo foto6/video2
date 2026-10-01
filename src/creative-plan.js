@@ -307,7 +307,7 @@ function chooseBroll(candidates, index, durationMs) {
   const eligible = (candidates ?? [])
     .filter((candidate) => candidate?.source?.sha256 && candidate?.source?.size >= 0 && (candidate.durationMs ?? Infinity) >= durationMs)
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || String(a.id).localeCompare(String(b.id)));
-  return eligible.length ? eligible[index % eligible.length] : null;
+  return eligible[index] ?? null;
 }
 
 function applyCreativeVideoDecisions(timeline, hints, style) {
