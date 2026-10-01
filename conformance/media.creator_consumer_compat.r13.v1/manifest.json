@@ -1,0 +1,64 @@
+{
+  "manifestVersion": "media.creator_consumer_compat.r13.v1.manifest.1",
+  "contractVersion": "media.creator_consumer_compat.r13.v1",
+  "producerRepository": "foto6/video2",
+  "producerBranch": "agent/media-r13-creator-compat-20261001",
+  "producerShaBinding": {
+    "source": "git rev-parse HEAD",
+    "ciAssertion": "GITHUB_SHA must equal git rev-parse HEAD when present",
+    "rule": "Creator must pin the exact producer SHA emitted by the compatibility bundle; moving branch refs are invalid."
+  },
+  "pins": {
+    "mediaJobConsumerManifest": {
+      "path": "conformance/media.job.v1/consumer-manifest.json",
+      "gitBlobSha": "96b252acae743f8fe059fd634ee320f92bd9c79c"
+    },
+    "mediaArtifactManifest": {
+      "path": "conformance/media.artifact_manifest.v1/manifest.json",
+      "gitBlobSha": "42aed1ca4720cddd4a5e48af076bc73b663322b0"
+    },
+    "creativePlanManifest": {
+      "path": "conformance/media.creative_edit_plan.r12.v1/manifest.json",
+      "gitBlobSha": "d031a07f1d392c690942bd5f8288a1713f1af791"
+    },
+    "creativePlanContract": {
+      "path": "conformance/media.creative_edit_plan.r12.v1/contract.json",
+      "gitBlobSha": "5298aeb2a9e4e13ed31b1610ce88778b7a911592"
+    },
+    "shortformEditorManifest": {
+      "path": "conformance/media.shortform_editor.r11.v1/manifest.json",
+      "gitBlobSha": "07c38a048d23490b8e55924697650e9969bf089f"
+    },
+    "shortformProfile": {
+      "path": "conformance/media.shortform_editor.r11.v1/profile.json",
+      "gitBlobSha": "d8f19d9a9d117c5736238159bd5e6d2491370986"
+    },
+    "compatContract": {
+      "path": "conformance/media.creator_consumer_compat.r13.v1/contract.json",
+      "gitBlobSha": "ecfeaed347b53ed549124b9d1701ebf70b37eea3"
+    },
+    "resultEnvelopeSchema": {
+      "path": "conformance/media.creator_consumer_compat.r13.v1/schemas/result-envelope.schema.json",
+      "gitBlobSha": "119b26b494df77c4ce8d83ffd63791afc112d264"
+    },
+    "technicalQaSchema": {
+      "path": "conformance/media.creator_consumer_compat.r13.v1/schemas/technical-qa.schema.json",
+      "gitBlobSha": "1b2f71e443b0038736e8be99f544493965693658"
+    },
+    "creativeQualitySchema": {
+      "path": "conformance/media.creator_consumer_compat.r13.v1/schemas/creative-quality-report.schema.json",
+      "gitBlobSha": "c63f95b45f5440aabd8c14dc5fcb8eeae1fc8535"
+    }
+  },
+  "resultEnvelope": "schemas/result-envelope.schema.json",
+  "reproductionCommand": "npm run emit:r13",
+  "failClosed": true,
+  "compatibilityGuarantees": {
+    "noQaBypass": true,
+    "noCreativeGuardrailBypass": true,
+    "noSchemaGuessing": true,
+    "noRuntimeSiblingImportRequiredByCreator": true,
+    "noPublishingAuthority": true,
+    "futureSchemaChangesRequireNewCompatibilityVersion": true
+  }
+}
