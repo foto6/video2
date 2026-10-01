@@ -553,6 +553,9 @@ for (const caseSpec of cases) {
       writeJson(path.join(renderDir, "probe-report.json"), probeReport);
       writeJson(path.join(renderDir, "qa-report.json"), qaReport);
       writeJson(path.join(renderDir, "creative-quality-report.json"), creativeReport);
+      writeJson(path.join(renderDir, "probe.json"), job.probe);
+      writeJson(path.join(renderDir, "technical-qa.json"), job.qa);
+      writeJson(path.join(renderDir, "creative-quality.json"), quality);
 
       const acceptance = classifyMvpAcceptance({
         renderSucceeded: true,
