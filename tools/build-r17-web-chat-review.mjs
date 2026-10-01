@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -6,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION,
   WEB_CHAT_REVIEW_MAX_FILE_BYTES,
+  R17_ACCEPTED_R16_UPSTREAM_AUTHORITY,
   buildWebChatReviewBundle,
   stableStringify
 } from "../src/index.js";
@@ -28,7 +30,7 @@ function parseArgs(argv) {
 }
 
 const args = parseArgs(process.argv.slice(2));
-const r16Root = path.resolve(args["r16-root"] ?? path.join(repoRoot, ".artifacts", "r16-demo"));
+const r16Root = path.resolve(args["r16-root"] ?? path.join(repoRoot, ".artifacts", "r16-accepted"));
 const batchRoot = path.resolve(args["batch-root"] ?? path.join(r16Root, "batch"));
 const sourcePath = path.resolve(args["source"] ?? path.join(r16Root, "source.mp4"));
 const outputRoot = path.resolve(args["output-dir"] ?? path.join(repoRoot, ".artifacts", "r17-web-chat-review"));
@@ -45,14 +47,18 @@ if (process.env.GITHUB_SHA && process.env.GITHUB_SHA !== producerSha) {
   throw new Error(`GITHUB_SHA ${process.env.GITHUB_SHA} does not match checked-out HEAD ${producerSha}`);
 }
 
-const candidateBatchManifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+const candidateBatchManifestBytes = readFileSync(manifestPath);
+const candidateBatchManifest = JSON.parse(candidateBatchManifestBytes);
+const candidateBatchManifestFileSha256 = createHash("sha256").update(candidateBatchManifestBytes).digest("hex");
 mkdirSync(outputRoot, { recursive: true });
 
 const bundle = buildWebChatReviewBundle({
   candidateBatchManifest,
   batchRoot,
   sourcePath,
-  producerSha,
+  reviewBundleProducerSha: producerSha,
+  upstreamMediaAuthority: R17_ACCEPTED_R16_UPSTREAM_AUTHORITY,
+  candidateBatchManifestFileSha256,
   attachmentRoot: outputRoot,
   transcodeOversize
 });
@@ -63,7 +69,8 @@ writeFileSync(outputPath, `${stableStringify(bundle)}\n`);
 const summary = {
   evidenceVersion: "media.web_chat_review_bundle.r17.evidence.v1",
   contractVersion: MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION,
-  producerSha,
+  reviewBundleProducerSha: producerSha,
+  upstreamMediaAuthority: bundle.upstream_media_authority,
   source: bundle.source,
   maxBytesPerFile: WEB_CHAT_REVIEW_MAX_FILE_BYTES,
   candidateCount: bundle.candidates.length,
