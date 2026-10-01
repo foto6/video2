@@ -147,9 +147,9 @@ ffmpeg([
 
 const brollInsert = path.join(outputRoot, "broll-insert.mp4");
 ffmpeg([
-  "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=2.5",
+  "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=6",
   "-vf", "hue=h=PI/2+2*PI*t:s=1.3",
-  "-t", "2.5",
+  "-t", "6",
   "-map_metadata", "-1",
   "-metadata", "creation_time=1970-01-01T00:00:00Z",
   "-fflags", "+bitexact",
