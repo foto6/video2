@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.creative_quality_report.r12.v1.consumer-schema.r13",
+  "title": "Media R12 creative quality evidence consumed by Creator",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "passed", "metrics", "guardrails", "visualQa", "creativePlanDigest"],
+  "properties": {
+    "contractVersion": { "const": "media.creative_quality_report.r12.v1" },
+    "passed": { "const": true },
+    "metrics": { "type": "object" },
+    "guardrails": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["name", "pass", "actual", "expected"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "pass": { "const": true }
+        }
+      }
+    },
+    "visualQa": {
+      "type": "object",
+      "required": ["passed", "checks", "metrics"],
+      "properties": {
+        "passed": { "const": true },
+        "checks": {
+          "type": "array",
+          "minItems": 7,
+          "items": {
+            "type": "object",
+            "required": ["name", "pass", "actual", "expected"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "pass": { "const": true }
+            }
+          }
+        },
+        "metrics": { "type": "object" }
+      }
+    },
+    "creativePlanDigest": {
+      "anyOf": [
+        { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        { "type": "null" }
+      ]
+    }
+  }
+}
