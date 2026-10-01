@@ -10,6 +10,7 @@ on:
       - agent/media-r12-creative-polish-20261001
       - agent/media-r13-creator-compat-20261001
       - agent/media-r14-realworld-acceptance-20261001
+      - agent/media-r15-benchmark-render-export-20261001
   pull_request:
 
 permissions:
@@ -25,6 +26,7 @@ jobs:
           node-version: "22"
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: ffmpeg -version && ffprobe -version
+      - run: npm run test:r15
       - run: npm run test:r14
       - run: npm run verify:r13
       - run: npm run verify:r12
@@ -95,10 +97,20 @@ jobs:
           node tools/aggregate-r14-acceptance.mjs
           --input-dir .artifacts/r14-shards
           --output-dir .artifacts/r14-aggregate
+      - name: Prove R15 export against frozen boss benchmark
+        run: >-
+          node tools/prove-r15-benchmark.mjs
+          --input-root .artifacts/r14-shards
+          --output-dir .artifacts/r15-benchmark-proof
       - uses: actions/upload-artifact@v4
         with:
           name: media-r14-acceptance
           path: |
             .artifacts/r14-shards
             .artifacts/r14-aggregate
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r15-benchmark-proof
+          path: .artifacts/r15-benchmark-proof
           if-no-files-found: error
