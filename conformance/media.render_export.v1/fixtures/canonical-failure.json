@@ -1,0 +1,51 @@
+{
+  "contractVersion": "media.render_export.v1",
+  "status": "failed",
+  "producer": {
+    "repository": "foto6/video2",
+    "sha": "2222222222222222222222222222222222222222"
+  },
+  "job": {
+    "logicalJobId": "fixture-failure",
+    "idempotencyKey": "fixture:failure:1",
+    "renderFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "status": "failed"
+  },
+  "artifact": null,
+  "probe": null,
+  "qa": {
+    "technical": null,
+    "creative": null
+  },
+  "evidence": {
+    "sources": { "count": 0, "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "items": [] },
+    "captions": null,
+    "crop": null,
+    "audio": null
+  },
+  "provenance": {
+    "validatedRequestDigest": null,
+    "profileDigest": null,
+    "timelineDigest": null,
+    "creativePlanDigest": null,
+    "sourceEvidenceDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifactManifestDigest": null
+  },
+  "failure": {
+    "code": "render_process_failed",
+    "category": "render",
+    "message": "ffmpeg exited nonzero",
+    "retryable": false
+  },
+  "benchmark": {
+    "binding": {
+      "protocol": "human.editorial_benchmark.v1",
+      "repository": "foto6/boss",
+      "producerSha": "912fb4b937ec3bd0c1752fe198a41d60236a20dc",
+      "path": "GATES/EDITORIAL_PARITY_BENCHMARK_V1.md",
+      "gitBlobSha": "af509b79ff8dce6cb621f8ac1c88db1bba6e5219"
+    },
+    "technicalDq": true,
+    "technicalDqReasons": ["render_not_succeeded"]
+  }
+}
