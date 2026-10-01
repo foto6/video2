@@ -1,4 +1,5 @@
 import { canonicalizeTimeline } from "./timeline.js";
+import { isShortformR11Timeline, SHORTFORM_R11_PROFILE } from "./shortform-profile.js";
 
 function seconds(ms) {
   return (ms / 1000).toFixed(3);
@@ -22,12 +23,39 @@ function collectInputs(timeline) {
   return uris.sort();
 }
 
+function sourceDurationMs(item) {
+  const outputDuration = item.endMs - item.startMs;
+  const speed = item.speed ?? 1;
+  const needed = Math.round(outputDuration * speed);
+  if (item.source?.outMs !== undefined) {
+    const available = item.source.outMs - (item.source.inMs ?? 0);
+    if (available < needed) throw new TypeError(`${item.id} source range is shorter than speed-adjusted duration`);
+  }
+  return needed;
+}
+
+function atempoFilters(speed) {
+  const filters = [];
+  let value = speed;
+  while (value > 2) {
+    filters.push("atempo=2");
+    value /= 2;
+  }
+  while (value < 0.5) {
+    filters.push("atempo=0.5");
+    value /= 0.5;
+  }
+  if (Math.abs(value - 1) > 1e-9) filters.push(`atempo=${value.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`);
+  return filters;
+}
+
 function videoFilter(item, index, inputIndex, canvas) {
   const durationMs = item.endMs - item.startMs;
   const sourceInMs = item.source.inMs ?? 0;
+  const speed = item.speed ?? 1;
   const parts = [
-    `[${inputIndex}:v]trim=start=${seconds(sourceInMs)}:duration=${seconds(durationMs)}`,
-    "setpts=PTS-STARTPTS"
+    `[${inputIndex}:v]trim=start=${seconds(sourceInMs)}:duration=${seconds(sourceDurationMs(item))}`,
+    speed === 1 ? "setpts=PTS-STARTPTS" : `setpts=(PTS-STARTPTS)/${speed}`
   ];
   if (item.crop) {
     parts.push(`crop=${item.crop.width}:${item.crop.height}:${item.crop.x ?? 0}:${item.crop.y ?? 0}`);
@@ -38,7 +66,9 @@ function videoFilter(item, index, inputIndex, canvas) {
     const y = item.reframe?.y ?? "(in_h-out_h)/2";
     parts.push(`crop=${canvas.width}:${canvas.height}:${x}:${y}`);
   }
-  parts.push("setsar=1");
+  parts.push(`fps=${canvas.fps}`, "setsar=1", "settb=AVTB");
+  if (item.fadeInMs) parts.push(`fade=t=in:st=0:d=${seconds(item.fadeInMs)}`);
+  if (item.fadeOutMs) parts.push(`fade=t=out:st=${seconds(durationMs - item.fadeOutMs)}:d=${seconds(item.fadeOutMs)}`);
   return `${parts.join(",")}[v${index}]`;
 }
 
@@ -67,6 +97,26 @@ function chainVideos(items) {
     current = out;
   }
   return { filters, output: current };
+}
+
+function mixLabels(filters, labels, name) {
+  if (labels.length === 0) return null;
+  if (labels.length === 1) return labels[0];
+  const output = `[${name}]`;
+  filters.push(`${labels.join("")}amix=inputs=${labels.length}:normalize=0:dropout_transition=0${output}`);
+  return output;
+}
+
+function normalizedLoudness(timeline, exportSpec) {
+  if (exportSpec.loudness === false) return null;
+  if (exportSpec.loudness && typeof exportSpec.loudness === "object") {
+    return {
+      integratedLufs: exportSpec.loudness.integratedLufs ?? SHORTFORM_R11_PROFILE.loudness.integratedLufs,
+      truePeakDb: exportSpec.loudness.truePeakDb ?? SHORTFORM_R11_PROFILE.loudness.truePeakDb,
+      lra: exportSpec.loudness.lra ?? SHORTFORM_R11_PROFILE.loudness.lra
+    };
+  }
+  return isShortformR11Timeline(timeline) ? { ...SHORTFORM_R11_PROFILE.loudness } : null;
 }
 
 export function compileClipExtraction({ inputPath, outputPath, startMs = 0, durationMs, videoCodec = "libx264", audioCodec = "aac" }) {
@@ -115,7 +165,11 @@ export function compileFfmpegCommand(timelineInput, exportSpec = {}, outputPath 
       const y = item.position?.y ?? 0;
       filters.push(`${videoOut}[${idx}:v]overlay=x=${x}:y=${y}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
     } else {
-      filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${item.position?.x ?? 0}:y=${item.position?.y ?? 0}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
+      const size = item.style?.fontSize ?? 56;
+      const x = item.position?.x ?? "(w-text_w)/2";
+      const y = item.position?.y ?? 180;
+      const box = item.style?.box === false ? "" : ":box=1:boxcolor=black@0.55:boxborderw=20";
+      filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=white${box}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
     }
     videoOut = next;
   });
@@ -125,29 +179,54 @@ export function compileFfmpegCommand(timelineInput, exportSpec = {}, outputPath 
     if (!videoOut) return;
     const next = `[vsub${index}]`;
     const x = item.style?.x ?? "(w-text_w)/2";
-    const y = item.style?.y ?? "h-(text_h*2)";
-    const size = item.style?.fontSize ?? 48;
-    filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${x}:y=${y}:fontsize=${size}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
+    const y = item.style?.y ?? "h-text_h-300";
+    const size = item.style?.fontSize ?? 64;
+    const box = item.style?.box === false ? "" : ":box=1:boxcolor=black@0.62:boxborderw=18";
+    filters.push(`${videoOut}drawtext=text='${escapeDrawtext(item.text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=white${box}:enable='between(t,${seconds(item.startMs)},${seconds(item.endMs)})'${next}`);
     videoOut = next;
   });
 
   const audioItems = timeline.tracks.filter((track) => track.kind === "audio").flatMap((track) => track.items);
   const audioLabels = [];
+  const voiceLabels = [];
+  const bedLabels = [];
+  let duckRequested = false;
   audioItems.forEach((item, index) => {
     const idx = inputIndex.get(item.source.uri);
-    const duration = item.endMs - item.startMs;
+    const outputDuration = item.endMs - item.startMs;
+    const speed = item.speed ?? 1;
     const label = `[a${index}]`;
-    filters.push(
-      `[${idx}:a]atrim=start=${seconds(item.source.inMs ?? 0)}:duration=${seconds(duration)},asetpts=PTS-STARTPTS,adelay=${item.startMs}|${item.startMs},volume=${item.gainDb ?? 0}dB${label}`
-    );
+    const parts = [
+      `[${idx}:a]atrim=start=${seconds(item.source.inMs ?? 0)}:duration=${seconds(sourceDurationMs(item))}`,
+      "asetpts=PTS-STARTPTS",
+      ...atempoFilters(speed)
+    ];
+    if (item.fadeInMs) parts.push(`afade=t=in:st=0:d=${seconds(item.fadeInMs)}`);
+    if (item.fadeOutMs) parts.push(`afade=t=out:st=${seconds(outputDuration - item.fadeOutMs)}:d=${seconds(item.fadeOutMs)}`);
+    parts.push(`adelay=${item.startMs}|${item.startMs}`, `volume=${item.gainDb ?? 0}dB`);
+    filters.push(`${parts.join(",")}${label}`);
     audioLabels.push(label);
+    if (item.role === "voiceover") voiceLabels.push(label);
+    else bedLabels.push(label);
+    if (item.duckUnderVoice === true) duckRequested = true;
   });
 
   let audioOut = null;
-  if (audioLabels.length === 1) audioOut = audioLabels[0];
-  if (audioLabels.length > 1) {
-    audioOut = "[amix]";
-    filters.push(`${audioLabels.join("")}amix=inputs=${audioLabels.length}:normalize=0:dropout_transition=0${audioOut}`);
+  if (duckRequested && voiceLabels.length > 0 && bedLabels.length > 0) {
+    const voice = mixLabels(filters, voiceLabels, "avoice");
+    const bed = mixLabels(filters, bedLabels, "abed");
+    filters.push(`${voice}asplit=2[avoice_mix][avoice_sc]`);
+    filters.push(`${bed}[avoice_sc]sidechaincompress=threshold=0.025:ratio=8:attack=20:release=350[aducked]`);
+    filters.push(`[avoice_mix][aducked]amix=inputs=2:normalize=0:dropout_transition=0[amixed]`);
+    audioOut = "[amixed]";
+  } else {
+    audioOut = mixLabels(filters, audioLabels, "amix");
+  }
+
+  const loudness = normalizedLoudness(timeline, exportSpec);
+  if (audioOut && loudness) {
+    filters.push(`${audioOut}loudnorm=I=${loudness.integratedLufs}:TP=${loudness.truePeakDb}:LRA=${loudness.lra}[anorm]`);
+    audioOut = "[anorm]";
   }
 
   if (!videoOut) {
@@ -161,6 +240,7 @@ export function compileFfmpegCommand(timelineInput, exportSpec = {}, outputPath 
     "-t", seconds(timeline.canvas.durationMs),
     "-r", String(timeline.canvas.fps),
     "-map_metadata", "-1",
+    "-metadata", "creation_time=1970-01-01T00:00:00Z",
     "-fflags", "+bitexact",
     "-flags:v", "+bitexact",
     "-threads", "1",
@@ -168,9 +248,12 @@ export function compileFfmpegCommand(timelineInput, exportSpec = {}, outputPath 
     "-pix_fmt", exportSpec.pixelFormat ?? "yuv420p",
     "-b:v", exportSpec.videoBitrate ?? "8M"
   );
+  if (exportSpec.preset) args.push("-preset", String(exportSpec.preset));
   if (audioOut) args.push("-c:a", exportSpec.audioCodec ?? "aac", "-b:a", exportSpec.audioBitrate ?? "192k");
   else args.push("-an");
-  args.push(outputPath);
+  const format = exportSpec.format ?? "mp4";
+  if (format === "mp4") args.push("-movflags", "+faststart");
+  args.push("-f", format, outputPath);
   return { binary: "ffmpeg", args };
 }
 
