@@ -14,6 +14,7 @@ on:
       - agent/media-r16-candidate-batch-runtime-20261001
       - agent/media-r17-web-chat-review-bundle-20261001
       - agent/media-r18-direct-model-review-package-20261002
+      - agent/media-r19-editorial-runtime-production-20261002
   pull_request:
 
 permissions:
@@ -34,8 +35,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
       - run: ffmpeg -version && ffprobe -version
+      - run: npm run verify:r19
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-r19-editorial-reedit
+          path: .artifacts/r19-demo
+          if-no-files-found: warn
       - name: Verify accepted R17 Actions authority
         env:
           GITHUB_TOKEN: ${{ github.token }}
