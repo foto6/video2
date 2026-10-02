@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.live_review_operator_manifest.r22.v1",
+  "title": "Media R22 live review operator manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "state",
+    "sourceState",
+    "bridgeR31Authority",
+    "bridgeR31Inputs",
+    "package",
+    "prompt",
+    "attachments",
+    "sealedMapping",
+    "sourceLineage",
+    "invocation",
+    "modelReviewPerformed",
+    "liveModelReviewed",
+    "browserMutationPerformed",
+    "providerPublish",
+    "humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.live_review_operator_manifest.r22.v1" },
+    "state": { "const": "LIVE_REVIEW_ARTIFACT_READY" },
+    "sourceState": { "const": "ROUND_PAIR_PACKAGE_READY" },
+    "bridgeR31Inputs": {
+      "type": "object",
+      "required": [
+        "artifactDirRelative",
+        "archiveRelative",
+        "expectedArchiveSha256",
+        "requiredMediaProducerSha",
+        "requiredMediaCiRunId"
+      ],
+      "properties": {
+        "artifactDirRelative": { "const": "payload" },
+        "archiveRelative": { "const": "media-r22-live-package.tar" },
+        "expectedArchiveSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "requiredMediaProducerSha": { "const": "d753e9e4c1f4448386608a1425232dbc1dba87ea" },
+        "requiredMediaCiRunId": { "const": 36994000619 }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["blindLabel", "relativePath", "name", "sha256", "size", "mime"]
+      }
+    },
+    "modelReviewPerformed": { "const": false },
+    "liveModelReviewed": { "const": false },
+    "browserMutationPerformed": { "const": false },
+    "providerPublish": { "const": false },
+    "humanQuality": { "const": false },
+    "bridgeR31Authority": { "type": "object" },
+    "package": { "type": "object" },
+    "prompt": { "type": "object" },
+    "sealedMapping": { "type": "object" },
+    "sourceLineage": { "type": "object" },
+    "invocation": { "type": "object" }
+  }
+}
