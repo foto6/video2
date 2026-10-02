@@ -16,6 +16,8 @@
     "media.live_review_package_manifest.r22.v1.json"
   ],
   "preExportValidation": {
+    "exactR21RequestRequired": true,
+    "r21RequestContract": "media.review_round_request.r21.v1",
     "r21BundleState": "ROUND_PAIR_PACKAGE_READY",
     "sameSourceAndBriefLineage": true,
     "byteIdenticalPairRejected": true,
