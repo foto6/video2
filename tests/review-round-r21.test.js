@@ -103,6 +103,22 @@ test("R21 initial review requires exactly round-0 same-brief participants", () =
   assert.throws(() => validateReviewRoundRequest(wrongRound), /round-0/);
 });
 
+test("R21 rejects unrelated sources and byte-identical initial candidates before artifact work", () => {
+  const unrelated = {
+    mode: "initial",
+    left: participant({ id: "left", renderSha: H("6") }),
+    right: participant({ id: "right", renderSha: H("7") })
+  };
+  unrelated.right.candidate.source.sha256 = H("8");
+  assert.throws(() => validateReviewRoundRequest(unrelated), /same exact source/);
+
+  assert.throws(() => validateReviewRoundRequest({
+    mode: "initial",
+    left: participant({ id: "left", renderSha: H("6") }),
+    right: participant({ id: "right", renderSha: H("6") })
+  }), /byte-identical renders/);
+});
+
 test("R21 targeted review requires selected baseline and exactly N+1 challenger", () => {
   const parsed = validateReviewRoundRequest({
     mode: "targeted_reedit",
