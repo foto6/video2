@@ -174,13 +174,12 @@ test("R22 conformance manifest pins exact materializer surface and frozen author
   assert.equal(manifest.bridgeR31Authority.producerSha,R22_BRIDGE_R31_AUTHORITY.producerSha);
   assert.equal(manifest.requiredState,LIVE_REVIEW_ARTIFACT_READY);
   assert.equal(manifest.liveModelReviewed,false);
+  const r22ProducerSha="e82a7ac04f3758d0e3e21ea3d05265dbc2822132";
   for(const [name,pin] of Object.entries(manifest.pins)){
-    if(name==="tests")continue;
-    const actual=execFileSync("git",["hash-object",pin.path],{
+    const actual=execFileSync("git",["rev-parse",r22ProducerSha+":"+pin.path],{
       cwd:repoRoot,
       encoding:"utf8"
     }).trim();
     assert.equal(actual,pin.gitBlobSha,name);
   }
-  assert.match(manifest.pins.tests.gitBlobSha,/^[a-f0-9]{40}$/);
 });
