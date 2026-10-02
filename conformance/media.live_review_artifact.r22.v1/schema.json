@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.live_review_package_manifest.r22.v1",
+  "title": "Media R22 live review package manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "state",
+    "bundleMode",
+    "reviewRound",
+    "r21PackageDigest",
+    "sealedMappingDigest",
+    "promptDigest",
+    "payloadDigest",
+    "files",
+    "manifestSelf",
+    "modelReviewPerformed",
+    "liveModelReviewed",
+    "providerPublish",
+    "humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.live_review_package_manifest.r22.v1" },
+    "state": { "const": "LIVE_REVIEW_ARTIFACT_READY" },
+    "bundleMode": { "enum": ["initial", "targeted_reedit"] },
+    "reviewRound": { "type": "integer", "minimum": 0, "maximum": 2 },
+    "r21PackageDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "sealedMappingDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "promptDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "payloadDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "files": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path","sha256","size","mime","visibility"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "size": { "type": "integer", "minimum": 1 },
+          "mime": { "type": "string", "minLength": 1 },
+          "visibility": { "enum": ["model-facing","machine-side"] }
+        }
+      }
+    },
+    "manifestSelf": {
+      "type": "object",
+      "required": ["path","mime","sha256RecordedExternally"],
+      "properties": {
+        "path": { "const": "media.live_review_package_manifest.r22.v1.json" },
+        "mime": { "const": "application/json" },
+        "sha256RecordedExternally": { "const": true }
+      }
+    },
+    "modelReviewPerformed": { "const": false },
+    "liveModelReviewed": { "const": false },
+    "providerPublish": { "const": false },
+    "humanQuality": { "const": false }
+  }
+}
