@@ -43,6 +43,9 @@
     "verify:r17": "npm run test:r17 && npm run build:r17",
     "test:r18": "node --test tests/direct-model-review-r18.test.js",
     "build:r18": "node tools/build-r18-direct-model-review.mjs",
-    "verify:r18": "npm run test:r18 && npm run build:r18"
+    "verify:r18": "npm run test:r18 && npm run build:r18",
+    "test:r19": "node --test tests/editorial-reedit-r19.test.js",
+    "demo:r19": "node tools/demo-r19-editorial-reedit.mjs",
+    "verify:r19": "npm run test:r19 && npm run demo:r19"
   }
 }
