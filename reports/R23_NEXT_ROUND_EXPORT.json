@@ -1,0 +1,34 @@
+{
+  "reportVersion": "media.r23.next_round_export.readiness.v1",
+  "branch": "agent/media-r23-next-round-export-20261002",
+  "baselineSha": "e82a7ac04f3758d0e3e21ea3d05265dbc2822132",
+  "baselineCiRunId": 37001071721,
+  "contractVersion": "media.review_session_package.r23.v1",
+  "requestVersion": "media.review_session_request.r23.v1",
+  "state": "REVIEW_SESSION_PACKAGE_READY",
+  "nestedAuthorities": {
+    "r21": {
+      "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+      "ciRunId": 36994000619
+    },
+    "r22": {
+      "producerSha": "e82a7ac04f3758d0e3e21ea3d05265dbc2822132",
+      "ciRunId": 37001071721,
+      "artifactId": 11224061610,
+      "artifactDigest": "sha256:d534f1656e22b72cf42531c827e66516965b4167549906521dee04edafd01734"
+    }
+  },
+  "reproduction": {
+    "focused": "npm run test:r23",
+    "demo": "npm run demo:r23",
+    "verify": "npm run verify:r23",
+    "artifactRoot": ".artifacts/r23-demo"
+  },
+  "realRehearsalRounds": [0, 1, 2],
+  "sameSessionRoundChangedEvidenceFailsClosed": true,
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "merge": false
+}
