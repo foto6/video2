@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -196,4 +197,24 @@ test("R18 bundle file hash pin rejects regenerated/stale R17 manifest", { skip: 
   assert.throws(() => validateR18AcceptedR17Bundle(loaded.bundle, {
     bundleFileSha256: "9".repeat(64)
   }), /bundle file hash mismatch/);
+});
+
+
+test("R18 conformance manifest pins exact package/consumer authority blobs", () => {
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.direct_model_review_package.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_DIRECT_MODEL_REVIEW_PACKAGE_VERSION);
+  assert.equal(manifest.upstreamR17Authority.artifactId, 11177570580);
+  assert.equal(manifest.attachmentPolicy.maxBytesPerFile, WEB_CHAT_REVIEW_MAX_FILE_BYTES);
+  assert.equal(manifest.liveUploadPerformed, false);
+  assert.equal(manifest.modelJudgmentPerformed, false);
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    const actual = execFileSync("git", ["hash-object", pin.path], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
 });
