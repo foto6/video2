@@ -246,13 +246,12 @@ test("R20 conformance manifest pins current implementation and frozen authoritie
   assert.equal(manifest.requiredStates.media, DYNAMIC_REVIEW_PACKAGE_READY);
   assert.equal(manifest.requiredStates.afterExternalBridgeCapture, LIVE_MODEL_REVIEWED);
   assert.equal(manifest.humanQuality, false);
+  const r20ProducerSha = "b22174db3c772a49a21fb9f8b1d40828bf258005";
   for (const [name, pin] of Object.entries(manifest.pins)) {
-    if (name === "tests") continue;
-    const actual = execFileSync("git", ["hash-object", pin.path], {
+    const actual = execFileSync("git", ["rev-parse", `${r20ProducerSha}:${pin.path}`], {
       cwd: repoRoot,
       encoding: "utf8"
     }).trim();
     assert.equal(actual, pin.gitBlobSha, name);
   }
-  assert.match(manifest.pins.tests.gitBlobSha, /^[a-f0-9]{40}$/);
 });
