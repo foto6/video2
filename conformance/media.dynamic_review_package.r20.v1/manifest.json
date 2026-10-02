@@ -27,7 +27,7 @@
     },
     "tests": {
       "path": "tests/dynamic-review-r20.test.js",
-      "gitBlobSha": "370f4ac033cea4998f17e57ad1fd16c57269534a"
+      "gitBlobSha": "2d7bfeb4182ea772fe38903236aa7b04776dfd2b"
     },
     "contract": {
       "path": "conformance/media.dynamic_review_package.r20.v1/contract.json",
