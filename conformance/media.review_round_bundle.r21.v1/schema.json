@@ -84,10 +84,11 @@
         {
           "type": "object",
           "required": [
-            "parentCandidateId",
+            "baselineReviewCandidateId",
+            "applicationParentCandidateId",
             "parentRenderSha256",
             "parentRound",
-            "childCandidateId",
+            "childReviewCandidateId",
             "childRenderSha256",
             "childRound",
             "growthHandoffDigest",
