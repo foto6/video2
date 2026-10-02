@@ -46,6 +46,9 @@
     "verify:r18": "npm run test:r18 && npm run build:r18",
     "test:r19": "node --test tests/editorial-reedit-r19.test.js",
     "demo:r19": "node tools/demo-r19-editorial-reedit.mjs",
-    "verify:r19": "npm run test:r19 && npm run demo:r19"
+    "verify:r19": "npm run test:r19 && npm run demo:r19",
+    "test:r20": "node --test tests/dynamic-review-r20.test.js",
+    "demo:r20": "node tools/demo-r20-dynamic-review.mjs",
+    "verify:r20": "npm run test:r20 && npm run demo:r20"
   }
 }
