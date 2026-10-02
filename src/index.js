@@ -13,6 +13,20 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_EDITORIAL_REEDIT_APPLICATION_VERSION,
+  GROWTH_CREATOR_REEDIT_HANDOFF_VERSION,
+  GROWTH_REEDIT_ADAPTER_VERSION,
+  R19_GROWTH_R23_AUTHORITY,
+  R19_SUPPORTED_OPERATIONS,
+  validateGrowthR23Handoff,
+  validateEditorialReeditInput,
+  compileEditorialReeditPlan,
+  validateEditorialReeditApplicationSidecar,
+  buildEditorialReeditApplicationSidecar,
+  editorialReeditReplayIdentity,
+  verifyEditorialReeditReplay
+} from "./editorial-reedit-r19.js";
+export {
   MEDIA_DIRECT_MODEL_REVIEW_PACKAGE_VERSION,
   MEDIA_DIRECT_MODEL_REVIEW_PROMPT_VERSION,
   R18_ACCEPTED_R17_AUTHORITY,
