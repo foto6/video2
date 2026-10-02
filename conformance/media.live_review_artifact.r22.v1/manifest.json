@@ -24,7 +24,7 @@
     "extractor": {"path":"tools/extract-r22-live-review.mjs","gitBlobSha":"dc45ee753480fc62249bd69ca209b994d680d08a"},
     "upstreamVerifier": {"path":"tools/verify-r22-upstream-r21-artifact.mjs","gitBlobSha":"4284d3705f8a8fa2543d15d1f17765edc406d857"},
     "demo": {"path":"tools/demo-r22-live-review.mjs","gitBlobSha":"013573138ffcabf0911874c8de904c7623e9eaf8"},
-    "tests": {"path":"tests/live-review-artifact-r22.test.js","gitBlobSha":"7787fe400e28693d49dbb1db1f46e18f9befa03d"},
+    "tests": {"path":"tests/live-review-artifact-r22.test.js","gitBlobSha":"87a37970a5725ec4a9c97ac687d007449219f3be"},
     "contract": {"path":"conformance/media.live_review_artifact.r22.v1/contract.json","gitBlobSha":"d6e494950b5ab54383733db69912c2384cce188f"},
     "operatorManifestSchema": {"path":"conformance/media.live_review_artifact.r22.v1/operator-manifest.schema.json","gitBlobSha":"7e78d7be9fffbbda6ee86cf39c4db8e59a635a3d"},
     "package": {"path":"package.json","gitBlobSha":"6513415e29d8701e5d8b0acd9983ad7d4b0e540f"},
