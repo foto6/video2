@@ -1,0 +1,41 @@
+{
+  "manifestVersion": "media.review_session_package.r23.v1.manifest.1",
+  "contractVersion": "media.review_session_package.r23.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "e82a7ac04f3758d0e3e21ea3d05265dbc2822132",
+  "baselineCiRunId": 37001071721,
+  "r21Authority": {
+    "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+    "ciRunId": 36994000619,
+    "implementationBlob": "c6f556b8a177b6182d787356625094cdcad5a58e"
+  },
+  "r22Authority": {
+    "producerSha": "e82a7ac04f3758d0e3e21ea3d05265dbc2822132",
+    "ciRunId": 37001071721,
+    "artifactId": 11224061610,
+    "artifactName": "media-r22-live-review-operator-bundle",
+    "artifactDigest": "sha256:d534f1656e22b72cf42531c827e66516965b4167549906521dee04edafd01734",
+    "implementationBlob": "31845333a6919364d81a7c2bc52aad1cb3ae82ed"
+  },
+  "pins": {
+    "implementation": {"path":"src/review-session-r23.js","gitBlobSha":"442ca6a46cbf107d29e6cd320fbb1a4cb38951b0"},
+    "exporter": {"path":"tools/export-r23-next-round.mjs","gitBlobSha":"4799338cf58edee89bebd773eb544719cdb7f56d"},
+    "demo": {"path":"tools/demo-r23-review-session.mjs","gitBlobSha":"0dd674cc68bc1103ef0a2ae547c46b345a873dbb"},
+    "tests": {"path":"tests/review-session-r23.test.js","gitBlobSha":"b154c4c3a0c075b3f7966aa7d28b195dcf53c6a4"},
+    "contract": {"path":"conformance/media.review_session_package.r23.v1/contract.json","gitBlobSha":"63f863493054dea4ad0e2ebf3a996137602f8940"},
+    "schema": {"path":"conformance/media.review_session_package.r23.v1/schema.json","gitBlobSha":"92470d29b4a524ee6d797194f023a20c5b0dbaa6"},
+    "package": {"path":"package.json","gitBlobSha":"0da628a9f8a88aa5d8828203ac7fbe296f98c832"},
+    "workflow": {"path":".github/workflows/test.yml","gitBlobSha":"398b9b8a7a7a40161fd50f4c831531a848195c9a"},
+    "r21Implementation": {"path":"src/review-round-r21.js","gitBlobSha":"c6f556b8a177b6182d787356625094cdcad5a58e"},
+    "r22Implementation": {"path":"src/live-review-artifact-r22.js","gitBlobSha":"31845333a6919364d81a7c2bc52aad1cb3ae82ed"}
+  },
+  "reproductionCommand": "npm run verify:r23",
+  "artifactRoot": ".artifacts/r23-demo",
+  "realRehearsalRounds": [0,1,2],
+  "requiredState": "REVIEW_SESSION_PACKAGE_READY",
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "failClosed": true
+}
