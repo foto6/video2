@@ -1,0 +1,68 @@
+{
+  "contractVersion": "media.review_session_package.r23.v1",
+  "requestVersion": "media.review_session_request.r23.v1",
+  "state": "REVIEW_SESSION_PACKAGE_READY",
+  "purpose": "One-command Creator-facing export that builds a frozen R21 round-pair package and immediately materializes the frozen R22 Bridge operator directory/archive.",
+  "authorities": {
+    "r21": {
+      "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+      "ciRunId": 36994000619,
+      "contract": "media.review_round_bundle.r21.v1"
+    },
+    "r22": {
+      "producerSha": "e82a7ac04f3758d0e3e21ea3d05265dbc2822132",
+      "ciRunId": 37001071721,
+      "artifactId": 11224061610,
+      "artifactName": "media-r22-live-review-operator-bundle",
+      "artifactDigest": "sha256:d534f1656e22b72cf42531c827e66516965b4167549906521dee04edafd01734"
+    }
+  },
+  "modes": {
+    "initial": {
+      "reviewRound": 0,
+      "growthSelectedEnvelopeDigest": null,
+      "growthHandoffDigest": null,
+      "candidateCount": 2
+    },
+    "targeted_reedit": {
+      "reviewRounds": [1, 2],
+      "baselineRound": "N",
+      "challengerRound": "N+1",
+      "growthSelectedEnvelopeDigestRequired": true,
+      "growthHandoffDigestRequired": true,
+      "r19ApplicationRequired": true
+    }
+  },
+  "replay": {
+    "sameRequestSameBytes": true,
+    "sameSessionRoundChangedEvidence": "fail_closed_before_nested_mutation"
+  },
+  "reject": [
+    "byte_identical_baseline_and_challenger",
+    "source_or_brief_lineage_mismatch",
+    "stale_R15_or_R19_evidence",
+    "missing_R19_application",
+    "wrong_Growth_handoff_digest",
+    "round_skip",
+    "candidate_path_escape",
+    "output_path_escape",
+    "R21_or_R22_package_drift"
+  ],
+  "outputIndex": [
+    "source_and_brief_lineage",
+    "review_round",
+    "baseline_candidate_and_render",
+    "challenger_candidate_and_render",
+    "R21_package_digest",
+    "R22_directory_digest",
+    "R22_archive_digest",
+    "blinded_attachment_hashes_sizes",
+    "prompt_digest",
+    "sealed_mapping_digest",
+    "producer_sha_and_ci"
+  ],
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false
+}
