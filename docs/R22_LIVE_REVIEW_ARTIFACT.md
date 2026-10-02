@@ -20,7 +20,7 @@ The first three files are model-facing only by filename/content. Candidate IDs, 
 
 ## Validation before export
 
-R22 does not merely copy the R21 directory. It revalidates the exact evidence referenced by the sealed mapping:
+R22 does not merely copy the R21 directory. The export command requires the exact `media.review_round_request.r21.v1` that produced the bundle, because R21 intentionally seals R19 digests while omitting the original application path from its exported mapping. R22 revalidates the request-bound evidence and then proves it matches the sealed R21 lineage:
 
 1. source file SHA-256 and size;
 2. candidate MP4 SHA-256 and size;
@@ -70,7 +70,7 @@ Media does not invoke the Bridge live command.
 
 ## Deterministic archive
 
-The export command creates a deterministic USTAR archive:
+The export command takes both `--source-bundle-root` and `--source-request`, then creates a deterministic USTAR archive:
 
 - lexicographic file order;
 - mtime 0;
