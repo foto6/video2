@@ -49,6 +49,9 @@
     "verify:r19": "npm run test:r19 && npm run demo:r19",
     "test:r20": "node --test tests/dynamic-review-r20.test.js",
     "demo:r20": "node tools/demo-r20-dynamic-review.mjs",
-    "verify:r20": "npm run test:r20 && npm run demo:r20"
+    "verify:r20": "npm run test:r20 && npm run demo:r20",
+    "test:r21": "node --test tests/review-round-r21.test.js",
+    "demo:r21": "node tools/demo-r21-review-round.mjs",
+    "verify:r21": "npm run test:r21 && npm run demo:r21"
   }
 }
