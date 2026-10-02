@@ -292,18 +292,22 @@ export function verifyExactR21RoundDirectory(sourceDir) {
     const lineage = bundle.roundLineage;
     const child = sealed.entries.find((entry) => entry.candidateId === lineage?.childReviewCandidateId);
     const parent = sealed.entries.find((entry) => entry.candidateId === lineage?.baselineReviewCandidateId);
-    if (!lineage || !child?.editorialApplication || !parent) {
+    if (!lineage || !child || !parent) {
       fail("live_review_lineage_mismatch", "round-1 R19 lineage missing");
     }
     if (
       lineage.parentRenderSha256 !== parent.render.sha256 ||
       lineage.childRenderSha256 !== child.render.sha256 ||
-      lineage.mediaApplicationDigest !== child.editorialApplication.digest ||
-      lineage.mediaApplicationFileSha256 !== child.editorialApplication.fileSha256 ||
-      lineage.growthHandoffDigest !== child.editorialApplication.handoffDigest ||
-      child.editorialApplication.inputRenderSha256 !== parent.render.sha256 ||
-      child.editorialApplication.reeditRound + 1 !== child.roundNumber ||
-      bundle.reviewRound !== child.roundNumber
+      lineage.mediaApplicationDigest !== child.mediaApplicationDigest ||
+      lineage.growthHandoffDigest !== child.growthHandoffDigest ||
+      lineage.applicationParentCandidateId !== child.applicationParentCandidateId ||
+      lineage.baselineReviewCandidateId !== child.baselineReviewCandidateId ||
+      child.parentRenderSha256 !== parent.render.sha256 ||
+      child.roundNumber !== lineage.childRound ||
+      parent.roundNumber !== lineage.parentRound ||
+      bundle.reviewRound !== child.roundNumber ||
+      typeof lineage.mediaApplicationFileSha256 !== "string" ||
+      !/^[a-f0-9]{64}$/.test(lineage.mediaApplicationFileSha256)
     ) fail("live_review_lineage_mismatch", "stale R15/R19 parent-child evidence detected");
   }
 
