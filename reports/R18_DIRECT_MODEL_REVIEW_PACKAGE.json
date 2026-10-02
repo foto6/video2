@@ -1,0 +1,54 @@
+{
+  "reportVersion": "media.r18.direct_model_review_package.readiness.v1",
+  "baselineSha": "e88f1791ae47e7333ce85db584f0a04dbf229809",
+  "branch": "agent/media-r18-direct-model-review-package-20261002",
+  "contractVersion": "media.direct_model_review_package.v1",
+  "promptContractVersion": "media.direct_model_review_prompt.v1",
+  "upstreamR17": {
+    "producerSha": "e88f1791ae47e7333ce85db584f0a04dbf229809",
+    "ciRunId": 36890371410,
+    "artifactId": 11177570580,
+    "artifactName": "media-r17-web-chat-review",
+    "artifactDigest": "sha256:37778b26f02b248f47a97046f87bf83b988191cb91e0486182c09e4d695e1ad2",
+    "bundleFileSha256": "96a8f5376daadb710916880c036c54154e28ccc63c05f15482cabc2d3bf465bc"
+  },
+  "selectedPair": [
+    {
+      "blindLabel": "A",
+      "genericFileName": "review-A.mp4",
+      "candidateId": "candidate-1",
+      "renderSha256": "3bd12d999264cb932cb3ef15dfbd96e002ede517f2273795b593553b9642d864",
+      "renderSize": 575465,
+      "renderExportDigest": "6a005607dd463643a908a35ce24f411ae74be4100c349a212bd70b59e449a2b5",
+      "renderExportFileSha256": "2b5177c00bb054184a239c7eddb1383ad253922e8eb686f5aa2e56c91a1335ac"
+    },
+    {
+      "blindLabel": "B",
+      "genericFileName": "review-B.mp4",
+      "candidateId": "candidate-2",
+      "renderSha256": "cdae63d5ccce67332e607af7fd87b18c31da8dc77c2f0ce5182550321767286c",
+      "renderSize": 576763,
+      "renderExportDigest": "47b7d0dcaaf0277274c1990825025042e89272dd153e3752b15d29a515041d82",
+      "renderExportFileSha256": "b349b897f8f86bc9257e2622f564d6430f3864ff605ae4b82ba0cb09c59298f6"
+    }
+  ],
+  "attachmentPolicy": {
+    "maxBytesPerFile": 500000000,
+    "selectedOriginalsEligible": true,
+    "derivativeRequired": false
+  },
+  "consumerBindings": {
+    "bridgeContract": "bridge.chat_file_attachment.v1",
+    "bridgeExactSha": "bfe6b043460b6c0c3d712cbcc7e0c9772d6bd3af",
+    "growthExactSha": "0f6824d7c3962ccee572b21a4e1a343e6470c1a9",
+    "growthCritic": "growth.web_video_critic.v1",
+    "growthPairwise": "growth.web_video_critic_pairwise.v1"
+  },
+  "reproduction": {
+    "verify": "npm run verify:r18",
+    "outputRoot": ".artifacts/r18-direct-model-review"
+  },
+  "modelReviewPerformed": false,
+  "liveUploadPerformed": false,
+  "preserved": ["R11","R12","R13","R14","R15","R16","R17"]
+}
