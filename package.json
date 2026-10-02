@@ -40,6 +40,9 @@
     "verify:r16": "npm run test:r16 && npm run demo:r16",
     "test:r17": "node --test tests/web-chat-review-r17.test.js",
     "build:r17": "node tools/build-r17-web-chat-review.mjs",
-    "verify:r17": "npm run test:r17 && npm run build:r17"
+    "verify:r17": "npm run test:r17 && npm run build:r17",
+    "test:r18": "node --test tests/direct-model-review-r18.test.js",
+    "build:r18": "node tools/build-r18-direct-model-review.mjs",
+    "verify:r18": "npm run test:r18 && npm run build:r18"
   }
 }
