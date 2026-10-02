@@ -14,7 +14,7 @@
   "pins": {
     "implementation": {
       "path": "src/review-round-r21.js",
-      "gitBlobSha": "588eb5fa88b9f38fbf86edc5b5e3c2f6e64f09c9"
+      "gitBlobSha": "c6f556b8a177b6182d787356625094cdcad5a58e"
     },
     "runner": {
       "path": "tools/build-r21-review-round.mjs",
@@ -22,19 +22,19 @@
     },
     "demo": {
       "path": "tools/demo-r21-review-round.mjs",
-      "gitBlobSha": "ce0b0f86185cfda4fc6150e7467cab908905cd1d"
+      "gitBlobSha": "f57b7284b2780deeb2ca345c0ea8d1225ee12cd1"
     },
     "tests": {
       "path": "tests/review-round-r21.test.js",
-      "gitBlobSha": "f38bab743ee40e70cdeb312bcf18cfab0c9b7d19"
+      "gitBlobSha": "aee99857db99e53a2084911b38fd973ec31ab37f"
     },
     "contract": {
       "path": "conformance/media.review_round_bundle.r21.v1/contract.json",
-      "gitBlobSha": "d061d61b60d7cc8dc0838258c66672b7c4678dc9"
+      "gitBlobSha": "65358261775f0fcd2ab9e21f3f621aee977f29da"
     },
     "schema": {
       "path": "conformance/media.review_round_bundle.r21.v1/schema.json",
-      "gitBlobSha": "52bf94d0802ae2551f8928175257f70cb00318f8"
+      "gitBlobSha": "f04925e317d849434852e6b706533f909da47b22"
     },
     "package": {
       "path": "package.json",
