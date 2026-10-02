@@ -213,9 +213,10 @@ if (targeted.bundle.mode !== "targeted_reedit" || targeted.bundle.reviewRound !=
 }
 const lineage = targeted.bundle.roundLineage;
 if (
-  lineage.parentCandidateId !== baselineEntry.candidateId ||
+  lineage.baselineReviewCandidateId !== baselineEntry.candidateId ||
+  lineage.applicationParentCandidateId !== challengerEntry.editorialApplication.inputCandidateId ||
   lineage.parentRenderSha256 !== baselineEntry.render.sha256 ||
-  lineage.childCandidateId !== challengerEntry.candidateId ||
+  lineage.childReviewCandidateId !== challengerEntry.candidateId ||
   lineage.childRenderSha256 !== challengerEntry.render.sha256 ||
   lineage.growthHandoffDigest !== challengerEntry.editorialApplication.handoffDigest ||
   lineage.mediaApplicationDigest !== challengerEntry.editorialApplication.digest
