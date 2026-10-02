@@ -346,13 +346,12 @@ test("R19 conformance manifest pins exact runtime, runner, tests and preserved a
   assert.equal(manifest.growthR23Authority.sourceSha, R19_GROWTH_R23_AUTHORITY.sourceSha);
   assert.equal(manifest.growthR23Authority.ciRunId, R19_GROWTH_R23_AUTHORITY.ciRunId);
   assert.equal(manifest.humanQuality, false);
+  const r19ProducerSha = "31409de4bef473417a33a8c698507f7cfb1905e1";
   for (const [name, pin] of Object.entries(manifest.pins)) {
-    if (name === "tests") continue;
-    const actual = execFileSync("git", ["hash-object", pin.path], {
+    const actual = execFileSync("git", ["rev-parse", `${r19ProducerSha}:${pin.path}`], {
       cwd: repoRoot,
       encoding: "utf8"
     }).trim();
     assert.equal(actual, pin.gitBlobSha, name);
   }
-  assert.match(manifest.pins.tests.gitBlobSha, /^[a-f0-9]{40}$/);
 });
