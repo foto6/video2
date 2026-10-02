@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.review_session_package.r23.v1",
+  "title": "Media R23 review session package",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","state","producer","sessionId","mode","reviewRound",
+    "source","briefLineageDigest","growthSelectedEnvelopeDigest","growthHandoffDigest",
+    "baseline","challenger","r21","r22","attachments","promptDigest",
+    "sealedMappingDigest","sessionIdentity","modelReviewPerformed",
+    "liveModelReviewed","providerPublish","humanQuality"
+  ],
+  "properties": {
+    "contractVersion": {"const":"media.review_session_package.r23.v1"},
+    "state": {"const":"REVIEW_SESSION_PACKAGE_READY"},
+    "producer": {
+      "type":"object",
+      "required":["repository","sha","ciRunId"],
+      "properties":{
+        "repository":{"const":"foto6/video2"},
+        "sha":{"type":"string","pattern":"^[a-f0-9]{40}$"},
+        "ciRunId":{"type":"integer","minimum":1}
+      }
+    },
+    "sessionId":{"type":"string","minLength":1},
+    "mode":{"enum":["initial","targeted_reedit"]},
+    "reviewRound":{"type":"integer","minimum":0,"maximum":2},
+    "source":{"type":"object","required":["sourceId","sha256","size"]},
+    "briefLineageDigest":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "growthSelectedEnvelopeDigest":{"type":["string","null"]},
+    "growthHandoffDigest":{"type":["string","null"]},
+    "baseline":{"type":"object"},
+    "challenger":{"type":"object"},
+    "r21":{"type":"object"},
+    "r22":{"type":"object"},
+    "attachments":{"type":"array","minItems":2,"maxItems":2},
+    "promptDigest":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "sealedMappingDigest":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "sessionIdentity":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "modelReviewPerformed":{"const":false},
+    "liveModelReviewed":{"const":false},
+    "providerPublish":{"const":false},
+    "humanQuality":{"const":false}
+  }
+}
