@@ -44,6 +44,22 @@ export {
 } from "./review-round-r21.js";
 
 export {
+  MEDIA_REVIEW_SESSION_REQUEST_VERSION,
+  MEDIA_REVIEW_SESSION_PACKAGE_VERSION,
+  REVIEW_SESSION_PACKAGE_READY,
+  R23_R21_AUTHORITY,
+  R23_R22_AUTHORITY,
+  validateReviewSessionRequest,
+  reviewSessionIdentity,
+  reviewSessionToR21Request,
+  buildFrozenR21RoundForSession,
+  materializeFrozenR22ForSession,
+  validateReviewSessionPackage,
+  buildReviewSessionPackage,
+  hashSessionPromptBytes
+} from "./review-session-r23.js";
+
+export {
   MEDIA_DYNAMIC_REVIEW_PACKAGE_VERSION,
   MEDIA_DYNAMIC_REVIEW_HANDOFF_VERSION,
   MEDIA_DYNAMIC_REVIEW_EVIDENCE_VERSION,
