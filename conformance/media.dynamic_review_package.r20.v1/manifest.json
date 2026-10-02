@@ -1,0 +1,70 @@
+{
+  "manifestVersion": "media.dynamic_review_package.r20.v1.manifest.1",
+  "contractVersion": "media.dynamic_review_package.r20.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "31409de4bef473417a33a8c698507f7cfb1905e1",
+  "bridgeR29Authority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r29-isolated-live-video-review-20261002",
+    "branchHeadSha": "8b314bd020b05d90f6c45fa861727df5e78e5a39",
+    "inheritedGreenBranch": "agent/bridge-r28-live-existing-chat-review-20261002",
+    "inheritedGreenCiRunId": 36983797963,
+    "requestContract": "bridge.existing_chat_video_review_request.v1",
+    "captureContract": "bridge.existing_chat_video_review_capture.v1"
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/dynamic-review-r20.js",
+      "gitBlobSha": "cebaa1083d121844b5f7d5a78196d201f860d8a8"
+    },
+    "runner": {
+      "path": "tools/build-r20-dynamic-review.mjs",
+      "gitBlobSha": "33c742f1e0314e462fb3e97337bf82883ec80f00"
+    },
+    "demo": {
+      "path": "tools/demo-r20-dynamic-review.mjs",
+      "gitBlobSha": "87a6fc25f6457b889890f6338b30221483c2ac27"
+    },
+    "tests": {
+      "path": "tests/dynamic-review-r20.test.js",
+      "gitBlobSha": "370f4ac033cea4998f17e57ad1fd16c57269534a"
+    },
+    "contract": {
+      "path": "conformance/media.dynamic_review_package.r20.v1/contract.json",
+      "gitBlobSha": "bf650ad1552686d830965edad3fd62451ec0ec22"
+    },
+    "schema": {
+      "path": "conformance/media.dynamic_review_package.r20.v1/schema.json",
+      "gitBlobSha": "680aa69dfb595f31e93fb2bdfe0fdae2ac5ca25b"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "2701afa71c67c7b10f2ed9aa01fd85049aa452ad"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "4d4f38f5fa6816cb621d125bfbc665bd78fb07d6"
+    },
+    "r19Runtime": {
+      "path": "src/editorial-reedit-r19.js",
+      "gitBlobSha": "8110a086b5b319bd2601860845c6afbf97681921"
+    },
+    "r18PromptPackage": {
+      "path": "src/direct-model-review-r18.js",
+      "gitBlobSha": "973e0735775f0a6e45b401521907d35031d945a2"
+    },
+    "r15RenderExport": {
+      "path": "src/render-export-r15.js",
+      "gitBlobSha": "2aee865404d78eeb64e17e9aeae8f44a0c1a746e"
+    }
+  },
+  "reproductionCommand": "npm run verify:r20",
+  "artifactRoot": ".artifacts/r20-demo",
+  "requiredStates": {
+    "media": "DYNAMIC_REVIEW_PACKAGE_READY",
+    "afterExternalBridgeCapture": "LIVE_MODEL_REVIEWED"
+  },
+  "modelReviewPerformed": false,
+  "liveUploadPerformed": false,
+  "humanQuality": false
+}
