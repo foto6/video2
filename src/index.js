@@ -13,6 +13,19 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_REVIEW_ROUND_BUNDLE_VERSION,
+  MEDIA_REVIEW_ROUND_HANDOFF_VERSION,
+  MEDIA_PRIOR_REVIEW_SELECTION_VERSION,
+  MEDIA_REVIEW_ROUND_EVIDENCE_VERSION,
+  ROUND_PAIR_PACKAGE_READY,
+  R21_BRIDGE_R30_AUTHORITY,
+  validatePriorReviewSelection,
+  validateReviewRoundRequest,
+  validateReviewRoundBundle,
+  buildReviewRoundBundle
+} from "./review-round-r21.js";
+
+export {
   MEDIA_DYNAMIC_REVIEW_PACKAGE_VERSION,
   MEDIA_DYNAMIC_REVIEW_HANDOFF_VERSION,
   MEDIA_DYNAMIC_REVIEW_EVIDENCE_VERSION,
