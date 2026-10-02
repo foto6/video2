@@ -174,6 +174,7 @@ export function buildDirectModelReviewPromptManifest({
   const prompt = {
     contractVersion: promptVersion,
     task: "blinded_pairwise_editorial_review",
+    promptText: "Review the two attached MP4 files as blinded candidates A and B. Use the actual video/audio content as the primary semantic evidence. For every actionable defect, return: attachment_label, start_ms, end_ms, defect_category, severity, evidence, description, proposed_edit, confidence, uncertainty. Keep timestamps bounded to the observed defect. Also return coverage with inspected_ranges, notes, uninspected_possible=true, and every_frame_inspected=false. Finish with a pairwise selection of A, B, tie, or insufficient_evidence, with rationale and uncertainty. Do not claim human ground truth, human labels, live platform evidence, or that every frame/millisecond was inspected.",
     attachments: attachments.map((entry) => ({
       blindLabel: entry.blindLabel,
       fileName: entry.genericFileName,
@@ -224,7 +225,7 @@ export function buildDirectModelReviewPromptManifest({
 export function validateDirectModelReviewPromptManifest(input) {
   const prompt = clone(input);
   exactKeys(prompt, [
-    "contractVersion", "task", "attachments", "reviewInstructions",
+    "contractVersion", "task", "promptText", "attachments", "reviewInstructions",
     "growthOutputCompatibility"
   ], "prompt manifest");
   if (prompt.contractVersion !== MEDIA_DIRECT_MODEL_REVIEW_PROMPT_VERSION) {
@@ -232,6 +233,9 @@ export function validateDirectModelReviewPromptManifest(input) {
   }
   if (prompt.task !== "blinded_pairwise_editorial_review") {
     fail("direct_model_review_invalid", "prompt task mismatch");
+  }
+  if (typeof prompt.promptText !== "string" || !prompt.promptText.includes("start_ms") || !prompt.promptText.includes("proposed_edit")) {
+    fail("direct_model_review_invalid", "promptText does not request timestamped actionable critique");
   }
   if (!Array.isArray(prompt.attachments) || prompt.attachments.length !== 2) {
     fail("direct_model_review_invalid", "prompt must contain two attachments");
