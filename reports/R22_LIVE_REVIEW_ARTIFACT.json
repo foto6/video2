@@ -1,0 +1,50 @@
+{
+  "reportVersion": "media.r22.live_review_artifact.readiness.v1",
+  "branch": "agent/media-r22-live-review-artifact-20261002",
+  "baselineSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+  "artifactContract": "media.live_review_artifact.r22.v1",
+  "packageManifestContract": "media.live_review_package_manifest.r22.v1",
+  "archiveIndexContract": "media.live_review_archive_index.r22.v1",
+  "state": "LIVE_REVIEW_ARTIFACT_READY",
+  "upstreamR21": {
+    "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+    "ciRunId": 36994000619,
+    "contract": "media.review_round_bundle.r21.v1"
+  },
+  "bridgeR31": {
+    "branch": "agent/bridge-r31-live-dynamic-operator-20261002",
+    "headSha": "ceaee873231a8552c5b7324083baa800eec566a8",
+    "inheritedGreenCiRunId": 36993885456,
+    "handoffContract": "media.dynamic_review_handoff.v1",
+    "wireFormatDivergedFromR30": false
+  },
+  "reproduction": {
+    "command": "npm run verify:r22",
+    "artifactRoot": ".artifacts/r22-demo",
+    "initialBundle": ".artifacts/r22-demo/initial-live-review",
+    "initialArchive": ".artifacts/r22-demo/initial-live-review.tar",
+    "round1Bundle": ".artifacts/r22-demo/round-1-live-review",
+    "round1Archive": ".artifacts/r22-demo/round-1-live-review.tar",
+    "evidence": ".artifacts/r22-demo/r22-readiness-evidence.json"
+  },
+  "requiredEvidence": {
+    "realReviewAReviewB": true,
+    "exactRawPromptBytes": true,
+    "R21Bundle": true,
+    "R21TransportHandoff": true,
+    "sealedMapping": true,
+    "authorityProfile": true,
+    "packageManifest": true,
+    "BridgeOperatorHandoff": true,
+    "deterministicArchive": true,
+    "archiveExtractionVerification": true,
+    "staleR15Rejected": true,
+    "staleR19Rejected": true
+  },
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "browserUploadPerformed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "mergeRelease": false
+}
