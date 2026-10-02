@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -230,4 +231,28 @@ test("R20 materializes exact Bridge R29/R28 request with blinded basenames and b
     createHash("sha256").update(request.prompt, "utf8").digest("hex"),
     pkg.promptDigest
   );
+});
+
+
+test("R20 conformance manifest pins current implementation and frozen authorities", () => {
+  const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.dynamic_review_package.r20.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_DYNAMIC_REVIEW_PACKAGE_VERSION);
+  assert.equal(manifest.bridgeR29Authority.branchHeadSha, R20_BRIDGE_R29_AUTHORITY.branchHeadSha);
+  assert.equal(manifest.bridgeR29Authority.inheritedGreenCiRunId, R20_BRIDGE_R29_AUTHORITY.inheritedGreenCiRunId);
+  assert.equal(manifest.requiredStates.media, DYNAMIC_REVIEW_PACKAGE_READY);
+  assert.equal(manifest.requiredStates.afterExternalBridgeCapture, LIVE_MODEL_REVIEWED);
+  assert.equal(manifest.humanQuality, false);
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    if (name === "tests") continue;
+    const actual = execFileSync("git", ["hash-object", pin.path], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
+  assert.match(manifest.pins.tests.gitBlobSha, /^[a-f0-9]{40}$/);
 });
