@@ -65,6 +65,23 @@ function gitSha(value, label) {
 function positive(value, label) {
   if (!Number.isInteger(value) || value <= 0) fail("review_session_invalid", `${label} must be positive integer`);
 }
+function confinedRelative(value, label) {
+  if (typeof value !== "string" || !value || value.startsWith("/") || /^[A-Za-z]:[\\/]/.test(value)) {
+    fail("review_session_path_escape", `${label} must be confined relative path`);
+  }
+  const parts = value.replaceAll("\\", "/").split("/");
+  if (parts.includes("..") || parts.includes(".")) {
+    fail("review_session_path_escape", `${label} contains traversal segments`);
+  }
+}
+function validateCandidatePaths(candidate, label) {
+  confinedRelative(candidate.source.path, `${label}.source.path`);
+  confinedRelative(candidate.render.path, `${label}.render.path`);
+  confinedRelative(candidate.renderExport.path, `${label}.renderExport.path`);
+  if (candidate.editorialApplication) {
+    confinedRelative(candidate.editorialApplication.path, `${label}.editorialApplication.path`);
+  }
+}
 function sameSource(candidate, source) {
   return candidate.source.sourceId === source.sourceId &&
     candidate.source.sha256 === source.sha256 &&
@@ -134,6 +151,8 @@ export function validateReviewSessionRequest(input) {
     }
     const left = validateDynamicCandidateDescriptor(input.initial.left);
     const right = validateDynamicCandidateDescriptor(input.initial.right);
+    validateCandidatePaths(left, "initial.left");
+    validateCandidatePaths(right, "initial.right");
     if (left.roundNumber !== 0 || right.roundNumber !== 0) fail("review_session_round_invalid", "initial candidates must be round 0");
     if (!sameSource(left, input.source) || !sameSource(right, input.source)) {
       fail("review_session_source_mismatch", "initial candidates do not bind request source");
@@ -151,6 +170,8 @@ export function validateReviewSessionRequest(input) {
   }
   const baseline = validateDynamicCandidateDescriptor(input.baseline.candidate);
   const challenger = validateDynamicCandidateDescriptor(input.challenger);
+  validateCandidatePaths(baseline, "baseline.candidate");
+  validateCandidatePaths(challenger, "challenger");
   sha256(input.baseline.priorReviewPackageDigest, "baseline.priorReviewPackageDigest");
   sha256(input.baseline.priorSealedMappingDigest, "baseline.priorSealedMappingDigest");
   if (baseline.roundNumber !== input.reviewRound - 1 || challenger.roundNumber !== input.reviewRound) {
