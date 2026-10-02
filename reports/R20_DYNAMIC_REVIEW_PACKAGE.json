@@ -1,0 +1,50 @@
+{
+  "reportVersion": "media.r20.dynamic_review_package.readiness.v1",
+  "branch": "agent/media-r20-r19-creator-integration-20261002",
+  "baselineSha": "31409de4bef473417a33a8c698507f7cfb1905e1",
+  "packageContract": "media.dynamic_review_package.r20.v1",
+  "requestContract": "media.dynamic_review_request.r20.v1",
+  "bridgeHandoffContract": "media.bridge_live_review_handoff.r20.v1",
+  "bridgeAuthority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r29-isolated-live-video-review-20261002",
+    "headSha": "8b314bd020b05d90f6c45fa861727df5e78e5a39",
+    "inheritedGreenCiRunId": 36983797963,
+    "transportRequest": "bridge.existing_chat_video_review_request.v1",
+    "captureContract": "bridge.existing_chat_video_review_capture.v1",
+    "wireFormatDivergedFromR28": false
+  },
+  "supportedReviewContexts": [
+    "initial_candidate_review",
+    "targeted_reedit_review"
+  ],
+  "rehearsal": {
+    "command": "npm run verify:r20",
+    "artifactRoot": ".artifacts/r20-demo",
+    "evidence": ".artifacts/r20-demo/r20-readiness-evidence.json",
+    "requiresRealR19RoundOneCandidate": true,
+    "generatesRealReviewAAndReviewB": true
+  },
+  "invariants": {
+    "exactSourceBinding": true,
+    "exactRenderBinding": true,
+    "exactR15RenderExportBinding": true,
+    "exactR19ApplicationBindingWhenPresent": true,
+    "deterministicBlindAssignment": true,
+    "byteIdenticalPairRejected": true,
+    "modelPromptIdentityLeakForbidden": true,
+    "sealedMappingPreserved": true,
+    "originalBytesPreservedWithoutDerivative": true,
+    "explicitDerivativeProvenanceRequired": true,
+    "bridgeAttachmentShaSizeMimeBound": true,
+    "promptDigestBound": true
+  },
+  "state": "DYNAMIC_REVIEW_PACKAGE_READY",
+  "nextStateAfterExternalModelCapture": "LIVE_MODEL_REVIEWED",
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "browserUploadPerformed": false,
+  "providerPublishPerformed": false,
+  "humanQuality": false,
+  "mergeRelease": false
+}
