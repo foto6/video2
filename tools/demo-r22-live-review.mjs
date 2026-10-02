@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import {
   mkdtempSync,
@@ -31,16 +32,9 @@ function run(args){
     maxBuffer:32*1024*1024
   });
 }
-function sha(file){
-  const crypto=await import("node:crypto");
-}
 function hashFile(filePath){
-  const {createHash}=requireCrypto();
   const bytes=readFileSync(filePath);
   return {sha256:createHash("sha256").update(bytes).digest("hex"),size:bytes.length};
-}
-function requireCrypto(){
-  return globalThis.__r22Crypto??=eval("require")("node:crypto");
 }
 function writeJson(filePath,value){
   writeFileSync(filePath,`${stableStringify(value)}\n`);
