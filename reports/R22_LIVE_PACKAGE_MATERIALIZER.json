@@ -1,0 +1,37 @@
+{
+  "reportVersion": "media.r22.live_review_artifact.readiness.v1",
+  "branch": "agent/media-r22-live-package-materializer-20261002",
+  "baselineSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+  "sourceR21": {
+    "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+    "ciRunId": 36994000619,
+    "artifactId": 11221240371,
+    "artifactName": "media-r21-round-pair-review",
+    "artifactDigest": "sha256:1036800923196882590ace62edbaa123ab4250b9d242e14adba909ba256ab022"
+  },
+  "bridgeR31": {
+    "producerSha": "31cfef82663d72d53e69e6345b50073ffcd461ca",
+    "ciRunId": 36997793086,
+    "operatorImplementationBlob": "38509af174fc25aa4229c084fc3cd9b2e35b539e"
+  },
+  "commands": {
+    "materialize": "npm run materialize:r22",
+    "verifyDirectory": "npm run verify:r22:dir",
+    "extractVerify": "npm run extract:r22",
+    "rehearsal": "npm run verify:r22"
+  },
+  "rehearsal": {
+    "artifactRoot": ".artifacts/r22-live-package",
+    "modes": ["initial", "targeted_reedit"],
+    "realR21Mp4Bytes": true,
+    "realR19RoundOneLineage": true,
+    "deterministicArchive": true,
+    "independentExtractionVerification": true
+  },
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "browserMutationPerformed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "mergeRelease": false
+}
