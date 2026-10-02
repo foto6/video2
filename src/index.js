@@ -13,6 +13,18 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_DIRECT_MODEL_REVIEW_PACKAGE_VERSION,
+  MEDIA_DIRECT_MODEL_REVIEW_PROMPT_VERSION,
+  R18_ACCEPTED_R17_AUTHORITY,
+  R18_CONSUMER_BINDINGS,
+  validateR18AcceptedR17Bundle,
+  buildDirectModelReviewPromptManifest,
+  validateDirectModelReviewPromptManifest,
+  buildDirectModelReviewPackage,
+  validateDirectModelReviewPackage,
+  directModelReviewPackageDigest
+} from "./direct-model-review-r18.js";
+export {
   MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION,
   WEB_CHAT_REVIEW_MAX_FILE_BYTES,
   R17_ACCEPTED_R16_UPSTREAM_AUTHORITY,
