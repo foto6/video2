@@ -18,6 +18,7 @@ on:
       - agent/media-r20-r19-creator-integration-20261002
       - agent/media-r21-round-pair-review-bundle-20261002
       - agent/media-r22-live-package-materializer-20261002
+      - agent/media-r23-next-round-export-20261002
   pull_request:
 
 permissions:
@@ -80,6 +81,13 @@ jobs:
         with:
           name: media-r22-live-review-operator-bundle
           path: .artifacts/r22-live-package
+          if-no-files-found: error
+      - run: npm run verify:r23
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-r23-review-session-package
+          path: .artifacts/r23-demo
           if-no-files-found: error
       - name: Verify accepted R17 Actions authority
         env:
