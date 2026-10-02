@@ -54,12 +54,14 @@ if (!Number.isSafeInteger(ciRunId) || ciRunId <= 0) {
 
 function exportOne(name, sourceName) {
   const sourceRoot = path.join(r21Root, sourceName);
+  const sourceRequestPath = path.join(r21Root, `${sourceName}-request.json`);
   const outputRoot = path.join(root, name);
   const archivePath = path.join(root, `${name}.tar`);
   const archiveIndexPath = path.join(root, `${name}.archive-index.json`);
   const args = [
     path.join(repoRoot, "tools", "export-r22-live-review-artifact.mjs"),
     "--source-bundle-root", sourceRoot,
+    "--source-request", sourceRequestPath,
     "--sandbox-root", repoRoot,
     "--output-dir", outputRoot,
     "--archive", archivePath,
@@ -80,6 +82,7 @@ function exportOne(name, sourceName) {
   const replayArgs = [
     path.join(repoRoot, "tools", "export-r22-live-review-artifact.mjs"),
     "--source-bundle-root", sourceRoot,
+    "--source-request", sourceRequestPath,
     "--sandbox-root", repoRoot,
     "--output-dir", replayRoot,
     "--archive", replayArchive,
@@ -215,6 +218,7 @@ function expectStaleEvidenceRejection({ sourceName, evidencePath, label }) {
       run(process.execPath, [
         path.join(repoRoot, "tools", "export-r22-live-review-artifact.mjs"),
         "--source-bundle-root", path.join(r21Root, sourceName),
+        "--source-request", path.join(r21Root, `${sourceName}-request.json`),
         "--sandbox-root", repoRoot,
         "--output-dir", negativeRoot,
         "--archive", negativeArchive,
@@ -236,25 +240,24 @@ function expectStaleEvidenceRejection({ sourceName, evidencePath, label }) {
   }
 }
 
-const initialSourceBundle = JSON.parse(readFileSync(
-  path.join(r21Root, "initial", "media.review_round_bundle.r21.v1.json"),
+const initialRequest = JSON.parse(readFileSync(
+  path.join(r21Root, "initial-request.json"),
   "utf8"
 ));
-const initialR15 = initialSourceBundle.sealedMapping.entries[0]?.renderExport?.artifactPath;
-if (!initialR15) throw new Error("R22 initial sealed mapping lacks R15 evidence path");
+const initialR15 = initialRequest.review?.left?.candidate?.renderExport?.path;
+if (!initialR15) throw new Error("R22 initial request lacks R15 evidence path");
 expectStaleEvidenceRejection({
   sourceName: "initial",
   evidencePath: initialR15,
   label: "r15"
 });
 
-const round1SourceBundle = JSON.parse(readFileSync(
-  path.join(r21Root, "round-1", "media.review_round_bundle.r21.v1.json"),
+const round1Request = JSON.parse(readFileSync(
+  path.join(r21Root, "round-1-request.json"),
   "utf8"
 ));
-const round1Child = round1SourceBundle.sealedMapping.entries.find((entry) => entry.roundNumber === 1);
-const round1R19 = round1Child?.editorialApplication?.artifactPath;
-if (!round1R19) throw new Error("R22 round-1 sealed mapping lacks R19 evidence path");
+const round1R19 = round1Request.review?.challenger?.candidate?.editorialApplication?.path;
+if (!round1R19) throw new Error("R22 round-1 request lacks R19 evidence path");
 expectStaleEvidenceRejection({
   sourceName: "round-1",
   evidencePath: round1R19,
