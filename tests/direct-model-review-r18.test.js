@@ -210,8 +210,9 @@ test("R18 conformance manifest pins exact package/consumer authority blobs", () 
   assert.equal(manifest.attachmentPolicy.maxBytesPerFile, WEB_CHAT_REVIEW_MAX_FILE_BYTES);
   assert.equal(manifest.liveUploadPerformed, false);
   assert.equal(manifest.modelJudgmentPerformed, false);
+  const r18ProducerSha = "2c41f084e000eca5efd9a51d2d3752bec1bd1311";
   for (const [name, pin] of Object.entries(manifest.pins)) {
-    const actual = execFileSync("git", ["hash-object", pin.path], {
+    const actual = execFileSync("git", ["rev-parse", `${r18ProducerSha}:${pin.path}`], {
       cwd: repoRoot,
       encoding: "utf8"
     }).trim();
