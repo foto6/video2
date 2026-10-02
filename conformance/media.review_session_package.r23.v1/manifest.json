@@ -21,7 +21,7 @@
     "implementation": {"path":"src/review-session-r23.js","gitBlobSha":"442ca6a46cbf107d29e6cd320fbb1a4cb38951b0"},
     "exporter": {"path":"tools/export-r23-next-round.mjs","gitBlobSha":"4799338cf58edee89bebd773eb544719cdb7f56d"},
     "demo": {"path":"tools/demo-r23-review-session.mjs","gitBlobSha":"0dd674cc68bc1103ef0a2ae547c46b345a873dbb"},
-    "tests": {"path":"tests/review-session-r23.test.js","gitBlobSha":"3982343a8d2f0e914b39a095d1382f4343d8fdef"},
+    "tests": {"path":"tests/review-session-r23.test.js","gitBlobSha":"dea1f51fbd0719614f23e8562c6e9a4f8c0626f9"},
     "contract": {"path":"conformance/media.review_session_package.r23.v1/contract.json","gitBlobSha":"63f863493054dea4ad0e2ebf3a996137602f8940"},
     "schema": {"path":"conformance/media.review_session_package.r23.v1/schema.json","gitBlobSha":"92470d29b4a524ee6d797194f023a20c5b0dbaa6"},
     "package": {"path":"package.json","gitBlobSha":"0da628a9f8a88aa5d8828203ac7fbe296f98c832"},
