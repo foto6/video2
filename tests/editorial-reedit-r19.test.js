@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -332,4 +333,26 @@ test("R19 stable handoff serialization is deterministic", () => {
   const b = JSON.parse(stableStringify(a));
   assert.equal(fingerprint(a), fingerprint(b));
   assert.deepEqual(validateGrowthR23Handoff(a), validateGrowthR23Handoff(b));
+});
+
+
+test("R19 conformance manifest pins exact runtime, runner, tests and preserved authorities", () => {
+  const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.editorial_reedit_application.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_EDITORIAL_REEDIT_APPLICATION_VERSION);
+  assert.equal(manifest.growthR23Authority.sourceSha, R19_GROWTH_R23_AUTHORITY.sourceSha);
+  assert.equal(manifest.growthR23Authority.ciRunId, R19_GROWTH_R23_AUTHORITY.ciRunId);
+  assert.equal(manifest.humanQuality, false);
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    if (name === "tests") continue;
+    const actual = execFileSync("git", ["hash-object", pin.path], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
+  assert.match(manifest.pins.tests.gitBlobSha, /^[a-f0-9]{40}$/);
 });
