@@ -1,0 +1,46 @@
+{
+  "manifestVersion": "media.live_review_artifact.r22.v1.manifest.1",
+  "contractVersion": "media.live_review_artifact.r22.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+  "r21Authority": {
+    "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+    "ciRunId": 36994000619,
+    "artifactId": 11221240371,
+    "artifactName": "media-r21-round-pair-review",
+    "artifactDigest": "sha256:1036800923196882590ace62edbaa123ab4250b9d242e14adba909ba256ab022"
+  },
+  "bridgeR31Authority": {
+    "producerSha": "31cfef82663d72d53e69e6345b50073ffcd461ca",
+    "ciRunId": 36997793086,
+    "operatorImplementationBlob": "38509af174fc25aa4229c084fc3cd9b2e35b539e",
+    "operatorManifestSchemaBlob": "f90cd2aa4bdc868af845bfba58c612ebef3f32ad",
+    "authorityProfileSchemaBlob": "25e2cbfe487ba88f70d233774e585691ad4f70c6"
+  },
+  "pins": {
+    "implementation": {"path":"src/live-review-artifact-r22.js","gitBlobSha":"66492e4cabaf45f3ade95445476595b52b673a88"},
+    "materializer": {"path":"tools/materialize-r22-live-review.mjs","gitBlobSha":"ade9e7181ecccf8e78e7dd966240618c872c9b26"},
+    "verifier": {"path":"tools/verify-r22-live-review.mjs","gitBlobSha":"86b0a53eed6959af805fd0c492620eb037071e25"},
+    "extractor": {"path":"tools/extract-r22-live-review.mjs","gitBlobSha":"dc45ee753480fc62249bd69ca209b994d680d08a"},
+    "upstreamVerifier": {"path":"tools/verify-r22-upstream-r21-artifact.mjs","gitBlobSha":"4284d3705f8a8fa2543d15d1f17765edc406d857"},
+    "demo": {"path":"tools/demo-r22-live-review.mjs","gitBlobSha":"013573138ffcabf0911874c8de904c7623e9eaf8"},
+    "tests": {"path":"tests/live-review-artifact-r22.test.js","gitBlobSha":"7787fe400e28693d49dbb1db1f46e18f9befa03d"},
+    "contract": {"path":"conformance/media.live_review_artifact.r22.v1/contract.json","gitBlobSha":"d6e494950b5ab54383733db69912c2384cce188f"},
+    "operatorManifestSchema": {"path":"conformance/media.live_review_artifact.r22.v1/operator-manifest.schema.json","gitBlobSha":"7e78d7be9fffbbda6ee86cf39c4db8e59a635a3d"},
+    "package": {"path":"package.json","gitBlobSha":"6513415e29d8701e5d8b0acd9983ad7d4b0e540f"},
+    "workflow": {"path":".github/workflows/test.yml","gitBlobSha":"76e1534921c88da01b1ab38b28ca62c95898c987"}
+  },
+  "reproduction": {
+    "materialize": "npm run materialize:r22 -- --r21-round-dir <exact-r21-round-dir> --out-dir <operator-dir>",
+    "verify": "npm run verify:r22:dir -- --operator-dir <operator-dir>",
+    "extractVerify": "npm run extract:r22 -- --operator-dir <operator-dir> --out-dir <destination>",
+    "full": "npm run verify:r22"
+  },
+  "artifactRoot": ".artifacts/r22-live-package",
+  "requiredState": "LIVE_REVIEW_ARTIFACT_READY",
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "browserMutationPerformed": false,
+  "providerPublish": false,
+  "humanQuality": false
+}
