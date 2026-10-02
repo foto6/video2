@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.direct_model_review_package.v1",
+  "title": "Media direct model review package",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","packageProducer","upstreamReviewAuthority","source",
+    "reviewMode","attachmentPolicy","attachments","promptManifest",
+    "consumerBindings","modelReview"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.direct_model_review_package.v1" },
+    "packageProducer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository","sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["sourceId","sha256","size"],
+      "properties": {
+        "sourceId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "reviewMode": { "const": "blinded_pairwise_actual_mp4" },
+    "attachmentPolicy": {
+      "type": "object",
+      "required": ["maxBytesPerFile","derivativePolicy"],
+      "properties": {
+        "maxBytesPerFile": { "const": 500000000 },
+        "derivativePolicy": { "const": "explicit_and_provenance_bound_only" }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "blindLabel","genericFileName","candidateBinding","file",
+          "attachmentEligibility","derivative"
+        ]
+      }
+    },
+    "promptManifest": {
+      "type": "object",
+      "required": ["contractVersion","task","promptText","attachments","reviewInstructions","growthOutputCompatibility"]
+    },
+    "consumerBindings": { "type": "object" },
+    "modelReview": {
+      "type": "object",
+      "required": ["performed","verdict","liveUploadPerformed"],
+      "properties": {
+        "performed": { "const": false },
+        "verdict": { "type": "null" },
+        "liveUploadPerformed": { "const": false }
+      }
+    },
+    "upstreamReviewAuthority": { "type": "object" }
+  }
+}
