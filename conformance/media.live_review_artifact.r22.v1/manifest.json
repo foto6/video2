@@ -22,11 +22,11 @@
   "pins": {
     "implementation": {
       "path": "src/live-review-artifact-r22.js",
-      "gitBlobSha": "2be669a3dabd45d6a82771f283ef7e938cdb86be"
+      "gitBlobSha": "765e1bae39080511b02ee1f4e639b571baff3d78"
     },
     "exporter": {
       "path": "tools/export-r22-live-review-artifact.mjs",
-      "gitBlobSha": "6ba6808101505ce513eaf3d06fa9ace70ea654ce"
+      "gitBlobSha": "2c5f45d02a7453691698ee7e6d5e44082ab9c125"
     },
     "verifier": {
       "path": "tools/verify-r22-live-review-artifact.mjs",
@@ -34,7 +34,7 @@
     },
     "demo": {
       "path": "tools/demo-r22-live-review-artifact.mjs",
-      "gitBlobSha": "90a89c1b1c38c773c3b7ae988b18c12163cee4f0"
+      "gitBlobSha": "857cf54229c4e797b95cb25f42b72bd52585149e"
     },
     "tests": {
       "path": "tests/live-review-artifact-r22.test.js",
@@ -42,7 +42,7 @@
     },
     "contract": {
       "path": "conformance/media.live_review_artifact.r22.v1/contract.json",
-      "gitBlobSha": "4b8a7bef306a0129a90b5561a7dd65310c3fb611"
+      "gitBlobSha": "d998ff82110350d362e2fa190d731f17905e171d"
     },
     "schema": {
       "path": "conformance/media.live_review_artifact.r22.v1/schema.json",
@@ -58,11 +58,11 @@
     },
     "docs": {
       "path": "docs/R22_LIVE_REVIEW_ARTIFACT.md",
-      "gitBlobSha": "772eed3b5385077151e6b453ad247787f38a6bf8"
+      "gitBlobSha": "5b29ccce0af9937532250561dfc9b8ddfeae7f81"
     },
     "report": {
       "path": "reports/R22_LIVE_REVIEW_ARTIFACT.json",
-      "gitBlobSha": "67b94795fcf6a847fab75e386914305778d7ab9b"
+      "gitBlobSha": "9eebf0530b1b5c9fed1bc5d58e5630fb3fcf23e6"
     },
     "r21ReviewRound": {
       "path": "src/review-round-r21.js",
