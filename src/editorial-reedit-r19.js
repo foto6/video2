@@ -510,9 +510,10 @@ function applySpeedIntervals(timelineInput, speedDirectives) {
   return { timeline: canonicalizeTimeline(timeline), mapTime, factors: directives };
 }
 
-function splitAtBoundaries(timelineInput, boundaries) {
+function splitAtBoundaries(timelineInput, boundariesByKind) {
   const timeline = clone(timelineInput);
   timeline.tracks = timeline.tracks.map((track) => {
+    const boundaries = boundariesByKind[track.kind] ?? [];
     const items = [];
     for (const item of track.items) {
       const points = uniqueSorted([
@@ -709,7 +710,21 @@ export function compileEditorialReeditPlan(input, {
     start: mapFinalTime(d.start_ms),
     end: mapFinalTime(d.end_ms)
   }));
-  timeline = splitAtBoundaries(timeline, uniqueSorted(intervals.flatMap((row) => [row.start, row.end])));
+  const boundariesByKind = {
+    video: uniqueSorted(intervals.filter((row) =>
+      ["crop_scale_reframe", "fade_transition"].includes(row.directive.operation)
+    ).flatMap((row) => [row.start, row.end])),
+    overlay: uniqueSorted(intervals.filter((row) =>
+      ["text_overlay", "intro_outro_cta"].includes(row.directive.operation)
+    ).flatMap((row) => [row.start, row.end])),
+    caption: uniqueSorted(intervals.filter((row) =>
+      row.directive.operation === "subtitles_captions"
+    ).flatMap((row) => [row.start, row.end])),
+    audio: uniqueSorted(intervals.filter((row) =>
+      row.directive.operation === "audio_duck_mix"
+    ).flatMap((row) => [row.start, row.end]))
+  };
+  timeline = splitAtBoundaries(timeline, boundariesByKind);
 
   const applications = [];
   for (const directive of directives) {
