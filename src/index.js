@@ -13,6 +13,21 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_LIVE_REVIEW_ARTIFACT_VERSION,
+  MEDIA_LIVE_REVIEW_AUTHORITY_PROFILE_VERSION,
+  MEDIA_LIVE_REVIEW_PACKAGE_MANIFEST_VERSION,
+  MEDIA_LIVE_REVIEW_ARCHIVE_INDEX_VERSION,
+  MEDIA_BRIDGE_DYNAMIC_HANDOFF_VERSION,
+  LIVE_REVIEW_ARTIFACT_READY,
+  R22_R21_AUTHORITY,
+  R22_BRIDGE_R31_AUTHORITY,
+  computeBridgeDynamicPackageDigest,
+  buildDeterministicTar,
+  validateLiveReviewArtifactDirectory,
+  buildLiveReviewArtifact
+} from "./live-review-artifact-r22.js";
+
+export {
   MEDIA_REVIEW_ROUND_BUNDLE_VERSION,
   MEDIA_REVIEW_ROUND_HANDOFF_VERSION,
   MEDIA_PRIOR_REVIEW_SELECTION_VERSION,
