@@ -30,7 +30,7 @@
     },
     "tests": {
       "path": "tests/editorial-reedit-r19.test.js",
-      "gitBlobSha": "1875c7719b141e398c5f288eece68be2d4ba295e"
+      "gitBlobSha": "138409d40d0d75ce1b5620c067be7fec5d855e1d"
     },
     "schema": {
       "path": "conformance/media.editorial_reedit_application.v1/schema.json",
