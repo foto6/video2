@@ -1,0 +1,88 @@
+{
+  "manifestVersion": "media.direct_model_review_package.v1.manifest.1",
+  "contractVersion": "media.direct_model_review_package.v1",
+  "producerRepository": "foto6/video2",
+  "producerShaBinding": {
+    "source": "git rev-parse HEAD",
+    "ciAssertion": "GITHUB_SHA must equal git rev-parse HEAD when present"
+  },
+  "upstreamR17Authority": {
+    "producerSha": "e88f1791ae47e7333ce85db584f0a04dbf229809",
+    "ciRunId": 36890371410,
+    "artifactId": 11177570580,
+    "artifactName": "media-r17-web-chat-review",
+    "artifactDigest": "sha256:37778b26f02b248f47a97046f87bf83b988191cb91e0486182c09e4d695e1ad2",
+    "bundleFileSha256": "96a8f5376daadb710916880c036c54154e28ccc63c05f15482cabc2d3bf465bc"
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/direct-model-review-r18.js",
+      "gitBlobSha": "973e0735775f0a6e45b401521907d35031d945a2"
+    },
+    "builder": {
+      "path": "tools/build-r18-direct-model-review.mjs",
+      "gitBlobSha": "08423ff1fccf1f46385617c52d2561c00798c0b7"
+    },
+    "upstreamVerifier": {
+      "path": "tools/verify-r18-upstream-artifact.mjs",
+      "gitBlobSha": "7f0f48abfbd5ab717c75b8db4afd0c7b5b0d878b"
+    },
+    "schema": {
+      "path": "conformance/media.direct_model_review_package.v1/schema.json",
+      "gitBlobSha": "b81fd2cc1122095316fd507fda219f4a3ee469e6"
+    },
+    "contract": {
+      "path": "conformance/media.direct_model_review_package.v1/contract.json",
+      "gitBlobSha": "ef8c6c04d9254a067e8e1ea439c21e74d597c39b"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "9fb1f5c569dc1f923f369864d9c23256244fdba2"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "2fbecac10de13ef9cc63208c2b50297c5fb17dbd"
+    },
+    "r17ReviewBundle": {
+      "path": "conformance/media.web_chat_review_bundle.v1/manifest.json",
+      "gitBlobSha": "dddcd09d0fb9d066ec309fee45f84939a7330b0b"
+    },
+    "r16CandidateBatch": {
+      "path": "conformance/media.candidate_batch.v1/manifest.json",
+      "gitBlobSha": "4f68a5a8b145b14344240c45153ccd2baa479f48"
+    },
+    "r15RenderExport": {
+      "path": "conformance/media.render_export.v1/manifest.json",
+      "gitBlobSha": "945acb01ff0269d89b91463aa8d862f500e055b2"
+    }
+  },
+  "selectedPair": [
+    {
+      "blindLabel": "A",
+      "genericFileName": "review-A.mp4",
+      "candidateId": "candidate-1",
+      "renderSha256": "3bd12d999264cb932cb3ef15dfbd96e002ede517f2273795b593553b9642d864",
+      "renderSize": 575465
+    },
+    {
+      "blindLabel": "B",
+      "genericFileName": "review-B.mp4",
+      "candidateId": "candidate-2",
+      "renderSha256": "cdae63d5ccce67332e607af7fd87b18c31da8dc77c2f0ce5182550321767286c",
+      "renderSize": 576763
+    }
+  ],
+  "attachmentPolicy": {
+    "maxBytesPerFile": 500000000,
+    "derivativePolicy": "explicit_and_provenance_bound_only"
+  },
+  "consumers": {
+    "bridgeContract": "bridge.chat_file_attachment.v1",
+    "growthCriticContract": "growth.web_video_critic.v1",
+    "growthPairwiseContract": "growth.web_video_critic_pairwise.v1"
+  },
+  "reproductionCommand": "npm run verify:r18",
+  "liveUploadPerformed": false,
+  "modelJudgmentPerformed": false,
+  "failClosed": true
+}
