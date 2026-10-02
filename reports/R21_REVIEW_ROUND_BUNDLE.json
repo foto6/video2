@@ -1,0 +1,45 @@
+{
+  "reportVersion": "media.r21.round_pair_review.readiness.v1",
+  "branch": "agent/media-r21-round-pair-review-bundle-20261002",
+  "baselineSha": "b22174db3c772a49a21fb9f8b1d40828bf258005",
+  "bundleContract": "media.review_round_bundle.r21.v1",
+  "transportHandoffContract": "media.review_round_transport_handoff.r21.v1",
+  "priorSelectionContract": "media.prior_review_selection.r21.v1",
+  "requiredState": "ROUND_PAIR_PACKAGE_READY",
+  "bridgeR30Authority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r30-dynamic-review-transport-20261002",
+    "headSha": "ed9a35290f94607d7577f1ee9301de1bb44334f2",
+    "provenImplementationBranch": "agent/bridge-r29-isolated-live-video-review-20261002",
+    "provenImplementationCiRunId": 36989658042,
+    "nativeRoundPairConsumerPresentAtPin": false
+  },
+  "reproduction": {
+    "command": "npm run verify:r21",
+    "artifactRoot": ".artifacts/r21-demo",
+    "readinessEvidence": ".artifacts/r21-demo/r21-readiness-evidence.json",
+    "usesActualR19RoundOneMp4": true,
+    "emitsInitialAndTargetedReviewPairs": true
+  },
+  "invariants": {
+    "sameExactSource": true,
+    "sameBriefLineage": true,
+    "byteIdenticalPairsRejected": true,
+    "R15RenderExportRevalidated": true,
+    "R19ApplicationRevalidated": true,
+    "priorBaselineSelectionRequiredForTargetedMode": true,
+    "exactParentChildCandidateBinding": true,
+    "exactParentChildRenderBinding": true,
+    "growthHandoffDigestPreserved": true,
+    "mediaApplicationDigestPreserved": true,
+    "deterministicBlinding": true,
+    "roleLeakageForbiddenInModelPrompt": true,
+    "transportNeutralHandoff": true,
+    "replayMustBeByteStable": true
+  },
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "mergeRelease": false
+}
