@@ -38,7 +38,7 @@
     },
     "tests": {
       "path": "tests/live-review-artifact-r22.test.js",
-      "gitBlobSha": "c801ccb6e82364a75e82cd78b23ffcf044ab34f2"
+      "gitBlobSha": "0ac3355eacbad759068f62eac1db68ca88e2bbc5"
     },
     "contract": {
       "path": "conformance/media.live_review_artifact.r22.v1/contract.json",
