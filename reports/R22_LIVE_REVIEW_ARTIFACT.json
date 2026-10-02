@@ -39,7 +39,9 @@
     "deterministicArchive": true,
     "archiveExtractionVerification": true,
     "staleR15Rejected": true,
-    "staleR19Rejected": true
+    "staleR19Rejected": true,
+    "exactR21Request": true,
+    "R21RequestContract": "media.review_round_request.r21.v1"
   },
   "modelReviewPerformed": false,
   "liveModelReviewed": false,
