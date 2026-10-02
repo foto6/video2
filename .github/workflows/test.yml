@@ -17,6 +17,7 @@ on:
       - agent/media-r19-editorial-runtime-production-20261002
       - agent/media-r20-r19-creator-integration-20261002
       - agent/media-r21-round-pair-review-bundle-20261002
+      - agent/media-r22-live-review-artifact-20261002
   pull_request:
 
 permissions:
@@ -59,6 +60,13 @@ jobs:
         with:
           name: media-r21-round-pair-review
           path: .artifacts/r21-demo
+          if-no-files-found: error
+      - run: npm run verify:r22
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-r22-live-review-artifact
+          path: .artifacts/r22-demo
           if-no-files-found: error
       - name: Verify accepted R17 Actions authority
         env:
