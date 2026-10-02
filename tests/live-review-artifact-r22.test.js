@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -159,4 +160,27 @@ test("R22 sanitized operator manifest is SOURCE_READY input metadata only",{
   assert.equal(Object.hasOwn(operator.sealedMapping,"entries"),false);
   assert.match(operator.bridgeR31Inputs.expectedArchiveSha256,/^[a-f0-9]{64}$/);
   assert.equal(hashFile(path.join(root,"media-r22-live-package.tar")),operator.bridgeR31Inputs.expectedArchiveSha256);
+});
+
+
+test("R22 conformance manifest pins exact materializer surface and frozen authorities",()=>{
+  const manifest=JSON.parse(readFileSync(
+    new URL("../conformance/media.live_review_artifact.r22.v1/manifest.json",import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion,"media.live_review_artifact.r22.v1");
+  assert.equal(manifest.r21Authority.producerSha,R22_R21_AUTHORITY.producerSha);
+  assert.equal(manifest.r21Authority.ciRunId,R22_R21_AUTHORITY.ciRunId);
+  assert.equal(manifest.bridgeR31Authority.producerSha,R22_BRIDGE_R31_AUTHORITY.producerSha);
+  assert.equal(manifest.requiredState,LIVE_REVIEW_ARTIFACT_READY);
+  assert.equal(manifest.liveModelReviewed,false);
+  for(const [name,pin] of Object.entries(manifest.pins)){
+    if(name==="tests")continue;
+    const actual=execFileSync("git",["hash-object",pin.path],{
+      cwd:repoRoot,
+      encoding:"utf8"
+    }).trim();
+    assert.equal(actual,pin.gitBlobSha,name);
+  }
+  assert.match(manifest.pins.tests.gitBlobSha,/^[a-f0-9]{40}$/);
 });
