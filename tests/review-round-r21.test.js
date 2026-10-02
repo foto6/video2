@@ -143,6 +143,14 @@ test("R21 targeted review requires selected baseline and exactly N+1 challenger"
   }), /does not identify the baseline/);
 });
 
+test("R21 lineage model keeps review alias separate from canonical R19 parent identity", () => {
+  const bundle = syntheticBundle();
+  assert.equal(bundle.roundLineage.baselineReviewCandidateId, "baseline");
+  assert.equal(bundle.roundLineage.applicationParentCandidateId, "canonical-parent");
+  assert.equal(bundle.roundLineage.parentRenderSha256, H("b"));
+  assert.doesNotThrow(() => validateReviewRoundBundle(bundle));
+});
+
 test("R21 prior selection distinguishes real-model/growth evidence from fixture rehearsal", () => {
   for (const evidenceType of ["model_review_capture", "growth_reedit_handoff", "fixture_rehearsal"]) {
     const parsed = validatePriorReviewSelection(priorReview({ evidenceType }), {
@@ -198,10 +206,11 @@ function syntheticBundle() {
     digest: createHash("sha256").update(promptText, "utf8").digest("hex")
   };
   const roundLineage = {
-    parentCandidateId: "baseline",
+    baselineReviewCandidateId: "baseline",
+    applicationParentCandidateId: "canonical-parent",
     parentRenderSha256: H("b"),
     parentRound: 0,
-    childCandidateId: "challenger",
+    childReviewCandidateId: "challenger",
     childRenderSha256: H("f"),
     childRound: 1,
     growthHandoffDigest: H("6"),
