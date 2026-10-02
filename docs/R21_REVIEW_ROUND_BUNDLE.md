@@ -11,12 +11,13 @@ An initial bundle accepts exactly two round-0 candidates. Both must bind the sam
 Targeted mode accepts one baseline and one challenger. The challenger must be exactly round N+1, never more than round 2. A prior-selection record must identify the baseline candidate and baseline round.
 
 The challenger must have a valid R19 editorial application. R21 requires the verified R19 application to bind:
-- input candidate ID = baseline candidate ID;
 - input render SHA = baseline render SHA;
 - R19 handoff re-edit round = baseline round;
 - challenger round = R19 re-edit round + 1.
 
-The sealed mapping preserves the exact Growth handoff digest and Media application digest/file SHA for the child.
+Candidate identity is preserved without conflating namespaces. The baseline's review/orchestration candidate ID can be an alias created by R20, while the R19 application retains its original canonical input candidate ID. R21 records both `baselineReviewCandidateId` and `applicationParentCandidateId`, and the exact shared parent render SHA proves that they refer to the same reviewed bytes.
+
+The sealed mapping preserves both identities plus the exact Growth handoff digest and Media application digest/file SHA for the child.
 
 ## Blinding
 
