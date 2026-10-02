@@ -1,0 +1,67 @@
+{
+  "manifestVersion": "media.review_round_bundle.r21.v1.manifest.1",
+  "contractVersion": "media.review_round_bundle.r21.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "b22174db3c772a49a21fb9f8b1d40828bf258005",
+  "bridgeR30Authority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r30-dynamic-review-transport-20261002",
+    "branchHeadSha": "ed9a35290f94607d7577f1ee9301de1bb44334f2",
+    "provenImplementationBranch": "agent/bridge-r29-isolated-live-video-review-20261002",
+    "provenImplementationCiRunId": 36989658042,
+    "nativeR30RoundPairConsumerPresentAtPin": false
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/review-round-r21.js",
+      "gitBlobSha": "7eef6771bdc137768e6061d062fced7740010cb2"
+    },
+    "runner": {
+      "path": "tools/build-r21-review-round.mjs",
+      "gitBlobSha": "c93e9a69de31b66189031932ccfa7f2c83cf043c"
+    },
+    "demo": {
+      "path": "tools/demo-r21-review-round.mjs",
+      "gitBlobSha": "ce0b0f86185cfda4fc6150e7467cab908905cd1d"
+    },
+    "tests": {
+      "path": "tests/review-round-r21.test.js",
+      "gitBlobSha": "2acc546e7b9ae7cff34bf5240d5d6e822eeda9f7"
+    },
+    "contract": {
+      "path": "conformance/media.review_round_bundle.r21.v1/contract.json",
+      "gitBlobSha": "d061d61b60d7cc8dc0838258c66672b7c4678dc9"
+    },
+    "schema": {
+      "path": "conformance/media.review_round_bundle.r21.v1/schema.json",
+      "gitBlobSha": "52bf94d0802ae2551f8928175257f70cb00318f8"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "0c54b7f4f0410069c55003f31534ed3fa1428e81"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "c7a3b48d7f6e42b545d18849a2032f9eadd27438"
+    },
+    "r20DynamicReview": {
+      "path": "src/dynamic-review-r20.js",
+      "gitBlobSha": "cebaa1083d121844b5f7d5a78196d201f860d8a8"
+    },
+    "r19EditorialRuntime": {
+      "path": "src/editorial-reedit-r19.js",
+      "gitBlobSha": "8110a086b5b319bd2601860845c6afbf97681921"
+    },
+    "r15RenderExport": {
+      "path": "src/render-export-r15.js",
+      "gitBlobSha": "2aee865404d78eeb64e17e9aeae8f44a0c1a746e"
+    }
+  },
+  "reproductionCommand": "npm run verify:r21",
+  "artifactRoot": ".artifacts/r21-demo",
+  "requiredState": "ROUND_PAIR_PACKAGE_READY",
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false
+}
