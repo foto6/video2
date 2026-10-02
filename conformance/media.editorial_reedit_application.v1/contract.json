@@ -1,0 +1,52 @@
+{
+  "contractVersion": "media.editorial_reedit_application.v1",
+  "requestVersion": "media.editorial_reedit_request.r19.v1",
+  "purpose": "Apply exact Growth R23 bounded editorial directives to an exact source-bound candidate timeline and produce a new QA-passed MP4.",
+  "growthR23Authority": {
+    "repository": "foto6/video3",
+    "branch": "agent/growth-r23-critic-reedit-adapter-20261002",
+    "sourceSha": "26f769abceb43a63677ea8f7ba028369db371696",
+    "ciRunId": 36974062565,
+    "contract": "growth.creator_reedit_handoff.v1",
+    "contractBlobSha": "ced853aad722aad4c7a88e9a41756baa1b2892a6",
+    "schemaBlobSha": "ba9ada04488760147136dcaaf012206405c04653"
+  },
+  "supportedOperations": [
+    "trim",
+    "cut",
+    "crop_scale_reframe",
+    "speed_change",
+    "fade_transition",
+    "text_overlay",
+    "subtitles_captions",
+    "audio_duck_mix",
+    "intro_outro_cta"
+  ],
+  "executionRules": {
+    "freeFormProposedEditExecutable": false,
+    "textAndCaptionCopyMustAlreadyExistInTimeline": true,
+    "introOutroCtaCopyMustAlreadyExistInTimeline": true,
+    "brollOrExternalMediaMustAlreadyExistAndBeSourceBound": true,
+    "unsupportedOrMissingRequiredLayerFailsClosedBeforeRender": true,
+    "pathTraversalRejected": true,
+    "staleSourceRenderOrRenderExportRejected": true,
+    "contradictoryOrOutOfRangeIntervalsRejected": true,
+    "conflictingStructuralEditsRejected": true,
+    "deterministicPlanDigestRequired": true,
+    "maxReeditRounds": 2
+  },
+  "outputEvidence": {
+    "newFinalMp4Sha256AndSize": true,
+    "mediaRenderExportV1": true,
+    "technicalQa": true,
+    "directiveDigest": true,
+    "exactAppliedOperations": true,
+    "ffmpegPlanDigest": true,
+    "outputTimelineDigest": true,
+    "inputSourceAndCandidateLineage": true,
+    "humanQuality": false
+  },
+  "providerUpload": false,
+  "publish": false,
+  "mergeRelease": false
+}
