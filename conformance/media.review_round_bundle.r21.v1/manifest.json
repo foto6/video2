@@ -14,7 +14,7 @@
   "pins": {
     "implementation": {
       "path": "src/review-round-r21.js",
-      "gitBlobSha": "7eef6771bdc137768e6061d062fced7740010cb2"
+      "gitBlobSha": "588eb5fa88b9f38fbf86edc5b5e3c2f6e64f09c9"
     },
     "runner": {
       "path": "tools/build-r21-review-round.mjs",
@@ -26,7 +26,7 @@
     },
     "tests": {
       "path": "tests/review-round-r21.test.js",
-      "gitBlobSha": "2acc546e7b9ae7cff34bf5240d5d6e822eeda9f7"
+      "gitBlobSha": "f38bab743ee40e70cdeb312bcf18cfab0c9b7d19"
     },
     "contract": {
       "path": "conformance/media.review_round_bundle.r21.v1/contract.json",
