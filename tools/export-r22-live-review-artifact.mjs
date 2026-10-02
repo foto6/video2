@@ -38,17 +38,20 @@ function hashFile(filePath) {
 
 const args = parseArgs(process.argv.slice(2));
 if (!args["source-bundle-root"]) throw new Error("--source-bundle-root is required");
+if (!args["source-request"]) throw new Error("--source-request is required");
 if (!args["output-dir"]) throw new Error("--output-dir is required");
 if (!args.archive) throw new Error("--archive is required");
 if (!args["archive-index"]) throw new Error("--archive-index is required");
 
 const sandboxRoot = path.resolve(args["sandbox-root"] ?? repoRoot);
 const sourceBundleRoot = path.resolve(args["source-bundle-root"]);
+const sourceRequestPath = path.resolve(args["source-request"]);
 const outputRoot = path.resolve(args["output-dir"]);
 const archivePath = path.resolve(args.archive);
 const archiveIndexPath = path.resolve(args["archive-index"]);
 for (const [label, target] of [
   ["source-bundle-root", sourceBundleRoot],
+  ["source-request", sourceRequestPath],
   ["output-dir", outputRoot],
   ["archive", archivePath],
   ["archive-index", archiveIndexPath]
@@ -78,6 +81,7 @@ mkdirSync(path.dirname(archiveIndexPath), { recursive: true });
 
 const built = buildLiveReviewArtifact({
   sourceBundleRoot,
+  sourceRequestPath,
   sandboxRoot,
   outputRoot,
   producerSha,
