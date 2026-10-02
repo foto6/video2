@@ -22,7 +22,7 @@
   "pins": {
     "implementation": {
       "path": "src/live-review-artifact-r22.js",
-      "gitBlobSha": "3f618e8b02b2cd0e2810fb6a1fa028b461dc0e07"
+      "gitBlobSha": "2be669a3dabd45d6a82771f283ef7e938cdb86be"
     },
     "exporter": {
       "path": "tools/export-r22-live-review-artifact.mjs",
