@@ -58,6 +58,9 @@
     "extract:r22": "node tools/extract-r22-live-review.mjs",
     "test:r22": "node --test tests/live-review-artifact-r22.test.js",
     "demo:r22": "node tools/demo-r22-live-review.mjs",
-    "verify:r22": "npm run demo:r22 && npm run test:r22"
+    "verify:r22": "npm run demo:r22 && npm run test:r22",
+    "test:r23": "node --test tests/review-session-r23.test.js",
+    "demo:r23": "node tools/demo-r23-review-session.mjs",
+    "verify:r23": "npm run test:r23 && npm run demo:r23"
   }
 }
