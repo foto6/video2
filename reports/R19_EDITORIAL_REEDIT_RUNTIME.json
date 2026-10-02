@@ -1,0 +1,56 @@
+{
+  "reportVersion": "media.r19.editorial_reedit_runtime.readiness.v1",
+  "branch": "agent/media-r19-editorial-runtime-production-20261002",
+  "baselineSha": "2c41f084e000eca5efd9a51d2d3752bec1bd1311",
+  "contractVersion": "media.editorial_reedit_application.v1",
+  "requestVersion": "media.editorial_reedit_request.r19.v1",
+  "growthR23Authority": {
+    "repository": "foto6/video3",
+    "sha": "26f769abceb43a63677ea8f7ba028369db371696",
+    "ciRunId": 36974062565,
+    "contract": "growth.creator_reedit_handoff.v1"
+  },
+  "supportedOperations": [
+    "trim",
+    "cut",
+    "crop_scale_reframe",
+    "speed_change",
+    "fade_transition",
+    "text_overlay",
+    "subtitles_captions",
+    "audio_duck_mix",
+    "intro_outro_cta"
+  ],
+  "realRehearsal": {
+    "command": "npm run verify:r19",
+    "artifactRoot": ".artifacts/r19-demo",
+    "measuredEvidence": ".artifacts/r19-demo/r19-readiness-evidence.json",
+    "fixtureShapes": [
+      "talking_head_vertical_with_pauses",
+      "landscape_source_reframed_to_vertical",
+      "motion_heavy_shortform"
+    ]
+  },
+  "failClosed": [
+    "stale_source_sha_or_size",
+    "stale_render_sha_or_size",
+    "stale_render_export",
+    "wrong_media_producer",
+    "invalid_growth_handoff_or_directive_digest",
+    "out_of_range_or_contradictory_interval",
+    "duplicate_or_conflicting_operation",
+    "path_traversal",
+    "non_deterministic_plan_drift",
+    "unsupported_required_layer_or_asset",
+    "partial_replay_evidence"
+  ],
+  "technicalQaRequired": true,
+  "r15RenderExportRequired": true,
+  "humanQuality": false,
+  "aestheticQualityProven": false,
+  "providerUpload": false,
+  "publish": false,
+  "creatorMutation": false,
+  "growthMutation": false,
+  "mergeRelease": false
+}
