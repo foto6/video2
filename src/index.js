@@ -19,6 +19,7 @@ export {
   R19_GROWTH_R23_AUTHORITY,
   R19_SUPPORTED_OPERATIONS,
   validateGrowthR23Handoff,
+  validateEditorialDirectiveSet,
   validateEditorialReeditInput,
   compileEditorialReeditPlan,
   validateEditorialReeditApplicationSidecar,
