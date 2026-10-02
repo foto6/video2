@@ -116,7 +116,7 @@ test("R23 rejects round skips and missing R19 application evidence",()=>{
 
   const missing=targetedRequest(1);
   missing.challenger.editorialApplication=null;
-  assert.throws(()=>validateReviewSessionRequest(missing),/requires R19 application/);
+  assert.throws(()=>validateReviewSessionRequest(missing),/(requires R19 application|requires R19 editorial application)/);
 });
 
 test("R23 rejects identical bytes, unrelated source and path traversal",()=>{
