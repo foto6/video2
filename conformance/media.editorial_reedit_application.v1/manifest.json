@@ -1,0 +1,75 @@
+{
+  "manifestVersion": "media.editorial_reedit_application.v1.manifest.1",
+  "contractVersion": "media.editorial_reedit_application.v1",
+  "producerRepository": "foto6/video2",
+  "producerShaBinding": {
+    "source": "git rev-parse HEAD",
+    "ciAssertion": "GITHUB_SHA must equal git rev-parse HEAD when present"
+  },
+  "growthR23Authority": {
+    "repository": "foto6/video3",
+    "branch": "agent/growth-r23-critic-reedit-adapter-20261002",
+    "sourceSha": "26f769abceb43a63677ea8f7ba028369db371696",
+    "ciRunId": 36974062565,
+    "contract": "growth.creator_reedit_handoff.v1",
+    "contractBlobSha": "ced853aad722aad4c7a88e9a41756baa1b2892a6",
+    "schemaBlobSha": "ba9ada04488760147136dcaaf012206405c04653"
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/editorial-reedit-r19.js",
+      "gitBlobSha": "8110a086b5b319bd2601860845c6afbf97681921"
+    },
+    "runner": {
+      "path": "tools/run-r19-editorial-reedit.mjs",
+      "gitBlobSha": "7dbec612621aa42baaf2946cdac61d070e3ff41f"
+    },
+    "demo": {
+      "path": "tools/demo-r19-editorial-reedit.mjs",
+      "gitBlobSha": "88e879eaf5934b102453edae31832b5bb2ee36aa"
+    },
+    "tests": {
+      "path": "tests/editorial-reedit-r19.test.js",
+      "gitBlobSha": "1875c7719b141e398c5f288eece68be2d4ba295e"
+    },
+    "schema": {
+      "path": "conformance/media.editorial_reedit_application.v1/schema.json",
+      "gitBlobSha": "7cabf91f08ae11b68cc4a7eec88d358a46730289"
+    },
+    "contract": {
+      "path": "conformance/media.editorial_reedit_application.v1/contract.json",
+      "gitBlobSha": "6b3350c5f1524fe49a49d5637514e2fb1a808bcf"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "fa64c1c20214509bf434320524bed3804da41308"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "b6f6a752d6f94dd358bbb5dad3d87dd99361efd0"
+    },
+    "r15RenderExport": {
+      "path": "conformance/media.render_export.v1/manifest.json",
+      "gitBlobSha": "945acb01ff0269d89b91463aa8d862f500e055b2"
+    },
+    "r17ReviewBundle": {
+      "path": "conformance/media.web_chat_review_bundle.v1/manifest.json",
+      "gitBlobSha": "dddcd09d0fb9d066ec309fee45f84939a7330b0b"
+    },
+    "r18DirectModelReview": {
+      "path": "conformance/media.direct_model_review_package.v1/manifest.json",
+      "gitBlobSha": "8b26e4edbebb69a4c3c11cf00a75b0011ab66fa3"
+    }
+  },
+  "realFixtureShapes": [
+    "talking_head_vertical_with_pauses",
+    "landscape_source_reframed_to_vertical",
+    "motion_heavy_shortform"
+  ],
+  "reproductionCommand": "npm run verify:r19",
+  "artifactPath": ".artifacts/r19-demo",
+  "humanQuality": false,
+  "providerUpload": false,
+  "publish": false,
+  "failClosed": true
+}
