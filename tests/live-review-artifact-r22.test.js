@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -180,4 +181,31 @@ test("R22 rejects output traversal before reading source bundle", () => {
     ciRunId: 123,
     repoRoot: process.cwd()
   }), /escapes sandboxRoot/);
+});
+
+
+test("R22 conformance manifest pins implementation and frozen authorities", () => {
+  const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.live_review_artifact.r22.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_LIVE_REVIEW_ARTIFACT_VERSION);
+  assert.equal(manifest.r21Authority.producerSha, R22_R21_AUTHORITY.producerSha);
+  assert.equal(manifest.r21Authority.ciRunId, R22_R21_AUTHORITY.ciRunId);
+  assert.equal(manifest.bridgeR31Authority.branchHeadSha, R22_BRIDGE_R31_AUTHORITY.branchHeadSha);
+  assert.equal(manifest.bridgeR31Authority.inheritedGreenCiRunId, R22_BRIDGE_R31_AUTHORITY.inheritedGreenCiRunId);
+  assert.equal(manifest.state, LIVE_REVIEW_ARTIFACT_READY);
+  assert.equal(manifest.modelReviewPerformed, false);
+  assert.equal(manifest.liveModelReviewed, false);
+  assert.equal(manifest.humanQuality, false);
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    if (name === "tests") continue;
+    const actual = execFileSync("git", ["hash-object", pin.path], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
+  assert.match(manifest.pins.tests.gitBlobSha, /^[a-f0-9]{40}$/);
 });
