@@ -17,6 +17,7 @@ on:
       - agent/media-r19-editorial-runtime-production-20261002
       - agent/media-r20-r19-creator-integration-20261002
       - agent/media-r21-round-pair-review-bundle-20261002
+      - agent/media-r22-live-package-materializer-20261002
   pull_request:
 
 permissions:
@@ -59,6 +60,26 @@ jobs:
         with:
           name: media-r21-round-pair-review
           path: .artifacts/r21-demo
+          if-no-files-found: error
+      - name: Verify exact accepted R21 Actions authority for R22
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/verify-r22-upstream-r21-artifact.mjs
+      - name: Download exact accepted R21 round-pair artifact for R22
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: 11221240371
+          github-token: ${{ github.token }}
+          repository: foto6/video2
+          run-id: 36994000619
+          path: .artifacts/r21-accepted
+          merge-multiple: true
+      - run: npm run verify:r22
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-r22-live-review-operator-bundle
+          path: .artifacts/r22-live-package
           if-no-files-found: error
       - name: Verify accepted R17 Actions authority
         env:
