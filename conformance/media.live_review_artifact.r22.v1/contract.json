@@ -1,0 +1,59 @@
+{
+  "contractVersion": "media.live_review_artifact.r22.v1",
+  "packageManifestVersion": "media.live_review_package_manifest.r22.v1",
+  "authorityProfileVersion": "media.live_review_authority_profile.r22.v1",
+  "archiveIndexVersion": "media.live_review_archive_index.r22.v1",
+  "purpose": "Materialize a coordinator-consumable, source-bound Media R21 live-review directory and deterministic archive for one authorized Bridge R31 execution.",
+  "requiredBundleFiles": [
+    "review-A.mp4",
+    "review-B.mp4",
+    "model-review-prompt.txt",
+    "media.review_round_bundle.r21.v1.json",
+    "media.review_round_transport_handoff.r21.v1.json",
+    "media.review_round_sealed_mapping.r21.v1.json",
+    "media.live_review_authority_profile.r22.v1.json",
+    "media.dynamic_review_handoff.v1.json",
+    "media.live_review_package_manifest.r22.v1.json"
+  ],
+  "preExportValidation": {
+    "r21BundleState": "ROUND_PAIR_PACKAGE_READY",
+    "sameSourceAndBriefLineage": true,
+    "byteIdenticalPairRejected": true,
+    "R15RenderExportRevalidatedAgainstExactMp4": true,
+    "R19ApplicationRevalidatedWhenPresent": true,
+    "sealedMappingDigestRecomputed": true,
+    "modelPromptLeakCheck": true
+  },
+  "bridgeR31": {
+    "branch": "agent/bridge-r31-live-dynamic-operator-20261002",
+    "branchHeadSha": "ceaee873231a8552c5b7324083baa800eec566a8",
+    "inheritedGreenCiRunId": 36993885456,
+    "handoffContract": "media.dynamic_review_handoff.v1",
+    "packageDigestAlgorithm": "bridge.dynamic_review_package.sha256.v1",
+    "r31WireFormatDivergedFromR30": false
+  },
+  "archive": {
+    "format": "deterministic_ustar",
+    "fileOrder": "lexicographic",
+    "mtime": 0,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0644",
+    "trailerZeroBlocks": 2,
+    "sha256RecordedOutsideArchive": true
+  },
+  "extraction": {
+    "verifyArchiveSha256BeforeUse": true,
+    "verifyManifestSha256FromArchiveIndex": true,
+    "verifyEveryExtractedFileSha256SizeAndMime": true,
+    "verifyExactFileSet": true,
+    "verifyR21BundleHandoffMappingPromptAndBridgeDigest": true
+  },
+  "evidenceBoundary": {
+    "modelCallPerformed": false,
+    "browserUploadPerformed": false,
+    "providerPublishPerformed": false,
+    "liveModelReviewed": false,
+    "humanQuality": false
+  }
+}
