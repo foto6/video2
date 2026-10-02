@@ -111,6 +111,15 @@ function validateParticipant(input, label) {
   return { candidate, briefLineageDigest: input.briefLineageDigest };
 }
 
+function ensurePairEligibility(a, b, label) {
+  if (!sameSource(a.candidate, b.candidate)) {
+    fail("review_round_source_mismatch", `${label} participants must bind the same exact source`);
+  }
+  if (a.candidate.render.sha256 === b.candidate.render.sha256) {
+    fail("review_round_duplicate_render", `${label} participants cannot have byte-identical renders`);
+  }
+}
+
 function validateInitialRequest(input) {
   exactKeys(input, ["mode", "left", "right"], "initial request");
   if (input.mode !== "initial") fail("review_round_invalid", "initial mode mismatch");
@@ -122,6 +131,7 @@ function validateInitialRequest(input) {
   if (left.briefLineageDigest !== right.briefLineageDigest) {
     fail("review_round_brief_mismatch", "initial candidates must bind the same brief lineage");
   }
+  ensurePairEligibility(left, right, "initial");
   return { mode: "initial", left, right, priorReview: null };
 }
 
@@ -133,6 +143,7 @@ function validateTargetedRequest(input) {
   if (baseline.briefLineageDigest !== challenger.briefLineageDigest) {
     fail("review_round_brief_mismatch", "baseline and challenger must bind the same brief lineage");
   }
+  ensurePairEligibility(baseline, challenger, "targeted");
   if (challenger.candidate.roundNumber !== baseline.candidate.roundNumber + 1) {
     fail("review_round_parent_child_mismatch", "challenger must be exactly baseline round N+1");
   }
