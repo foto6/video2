@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.dynamic_review_package.r20.v1",
+  "title": "Media R20 dynamic blinded review package",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "state",
+    "packageProducer",
+    "bridgeAuthority",
+    "source",
+    "reviewContext",
+    "attachments",
+    "promptManifest",
+    "promptDigest",
+    "sealedMapping",
+    "bridgeHandoff",
+    "modelReview",
+    "humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.dynamic_review_package.r20.v1" },
+    "state": { "const": "DYNAMIC_REVIEW_PACKAGE_READY" },
+    "packageProducer": {
+      "type": "object",
+      "required": ["repository", "sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["sourceId", "sha256", "size", "path"],
+      "properties": {
+        "sourceId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "reviewContext": {
+      "type": "object",
+      "required": ["reviewRound", "intent"],
+      "properties": {
+        "reviewRound": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "intent": { "enum": ["initial_candidate_review", "targeted_reedit_review"] }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["blindLabel", "genericFileName", "mimeType", "file", "derivative"]
+      }
+    },
+    "promptDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "sealedMapping": {
+      "type": "object",
+      "required": ["digest", "entries"],
+      "properties": {
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "entries": { "type": "array", "minItems": 2, "maxItems": 2 }
+      }
+    },
+    "bridgeHandoff": {
+      "type": "object",
+      "required": [
+        "contractVersion", "state", "bridgeAuthority", "requestId",
+        "idempotencyKey", "target", "transportContract", "promptDigest",
+        "sealedMappingDigest", "attachments", "liveExecutionPerformed"
+      ]
+    },
+    "modelReview": {
+      "type": "object",
+      "required": ["performed", "state", "nextState", "capture"],
+      "properties": {
+        "performed": { "const": false },
+        "state": { "const": "DYNAMIC_REVIEW_PACKAGE_READY" },
+        "nextState": { "const": "LIVE_MODEL_REVIEWED" },
+        "capture": { "type": "null" }
+      }
+    },
+    "humanQuality": { "const": false },
+    "bridgeAuthority": { "type": "object" },
+    "promptManifest": { "type": "object" }
+  }
+}
