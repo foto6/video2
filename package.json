@@ -52,6 +52,9 @@
     "verify:r20": "npm run test:r20 && npm run demo:r20",
     "test:r21": "node --test tests/review-round-r21.test.js",
     "demo:r21": "node tools/demo-r21-review-round.mjs",
-    "verify:r21": "npm run test:r21 && npm run demo:r21"
+    "verify:r21": "npm run test:r21 && npm run demo:r21",
+    "test:r22": "node --test tests/live-review-artifact-r22.test.js",
+    "demo:r22": "node tools/demo-r22-live-review-artifact.mjs",
+    "verify:r22": "npm run test:r22 && npm run demo:r22"
   }
 }
