@@ -18,7 +18,7 @@
     "authorityProfileSchemaBlob": "25e2cbfe487ba88f70d233774e585691ad4f70c6"
   },
   "pins": {
-    "implementation": {"path":"src/live-review-artifact-r22.js","gitBlobSha":"66492e4cabaf45f3ade95445476595b52b673a88"},
+    "implementation": {"path":"src/live-review-artifact-r22.js","gitBlobSha":"31845333a6919364d81a7c2bc52aad1cb3ae82ed"},
     "materializer": {"path":"tools/materialize-r22-live-review.mjs","gitBlobSha":"ade9e7181ecccf8e78e7dd966240618c872c9b26"},
     "verifier": {"path":"tools/verify-r22-live-review.mjs","gitBlobSha":"86b0a53eed6959af805fd0c492620eb037071e25"},
     "extractor": {"path":"tools/extract-r22-live-review.mjs","gitBlobSha":"dc45ee753480fc62249bd69ca209b994d680d08a"},
