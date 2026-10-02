@@ -398,8 +398,18 @@ test("R17 conformance manifest pins exact blobs", () => {
   assert.equal(manifest.contractVersion, MEDIA_WEB_CHAT_REVIEW_BUNDLE_VERSION);
   assert.equal(manifest.attachmentPolicy.maxBytesPerFile, WEB_CHAT_REVIEW_MAX_FILE_BYTES);
   assert.equal(manifest.modelJudgment, false);
+  const manifestCommit = execFileSync(
+    "git",
+    ["log", "-n", "1", "--format=%H", "--", "conformance/media.web_chat_review_bundle.v1/manifest.json"],
+    { cwd: root, encoding: "utf8" }
+  ).trim();
+  assert.match(manifestCommit, /^[a-f0-9]{40}$/);
   for (const [name, pin] of Object.entries(manifest.pins)) {
-    const actual = execFileSync("git", ["hash-object", pin.path], { cwd: root, encoding: "utf8" }).trim();
+    const actual = execFileSync(
+      "git",
+      ["rev-parse", `${manifestCommit}:${pin.path}`],
+      { cwd: root, encoding: "utf8" }
+    ).trim();
     assert.equal(actual, pin.gitBlobSha, name);
   }
 });
