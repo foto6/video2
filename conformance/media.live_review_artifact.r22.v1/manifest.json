@@ -1,0 +1,87 @@
+{
+  "manifestVersion": "media.live_review_artifact.r22.v1.manifest.1",
+  "contractVersion": "media.live_review_artifact.r22.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+  "r21Authority": {
+    "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+    "ciRunId": 36994000619,
+    "contractVersion": "media.review_round_bundle.r21.v1"
+  },
+  "bridgeR31Authority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r31-live-dynamic-operator-20261002",
+    "branchHeadSha": "ceaee873231a8552c5b7324083baa800eec566a8",
+    "inheritedGreenCiRunId": 36993885456,
+    "handoffContract": "media.dynamic_review_handoff.v1",
+    "r31WireFormatDivergedFromR30": false,
+    "implementationBlobSha": "c5bd2f95a6d58a86cddd9a6fdc127e68e3346c20",
+    "verifierBlobSha": "343ee5cb41a443932a0a944eac2957dd36836dec",
+    "handoffSchemaBlobSha": "93968dc1fb65a334493acdb587b20753f0a8494a"
+  },
+  "pins": {
+    "implementation": {
+      "path": "src/live-review-artifact-r22.js",
+      "gitBlobSha": "3f618e8b02b2cd0e2810fb6a1fa028b461dc0e07"
+    },
+    "exporter": {
+      "path": "tools/export-r22-live-review-artifact.mjs",
+      "gitBlobSha": "6ba6808101505ce513eaf3d06fa9ace70ea654ce"
+    },
+    "verifier": {
+      "path": "tools/verify-r22-live-review-artifact.mjs",
+      "gitBlobSha": "fbcc7b345246d62922969b1e14f3cb0b38174907"
+    },
+    "demo": {
+      "path": "tools/demo-r22-live-review-artifact.mjs",
+      "gitBlobSha": "90a89c1b1c38c773c3b7ae988b18c12163cee4f0"
+    },
+    "tests": {
+      "path": "tests/live-review-artifact-r22.test.js",
+      "gitBlobSha": "c801ccb6e82364a75e82cd78b23ffcf044ab34f2"
+    },
+    "contract": {
+      "path": "conformance/media.live_review_artifact.r22.v1/contract.json",
+      "gitBlobSha": "4b8a7bef306a0129a90b5561a7dd65310c3fb611"
+    },
+    "schema": {
+      "path": "conformance/media.live_review_artifact.r22.v1/schema.json",
+      "gitBlobSha": "1e91c45c09a7fc3134ba89f7105651801092cdb0"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "631c6b92310f70ef6ca6b9395d913ee63fb10376"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "fe2de846eb0bff9f349d2a3b6e4ae414bed04ac7"
+    },
+    "docs": {
+      "path": "docs/R22_LIVE_REVIEW_ARTIFACT.md",
+      "gitBlobSha": "772eed3b5385077151e6b453ad247787f38a6bf8"
+    },
+    "report": {
+      "path": "reports/R22_LIVE_REVIEW_ARTIFACT.json",
+      "gitBlobSha": "67b94795fcf6a847fab75e386914305778d7ab9b"
+    },
+    "r21ReviewRound": {
+      "path": "src/review-round-r21.js",
+      "gitBlobSha": "c6f556b8a177b6182d787356625094cdcad5a58e"
+    },
+    "r19EditorialRuntime": {
+      "path": "src/editorial-reedit-r19.js",
+      "gitBlobSha": "8110a086b5b319bd2601860845c6afbf97681921"
+    },
+    "r15RenderExport": {
+      "path": "src/render-export-r15.js",
+      "gitBlobSha": "2aee865404d78eeb64e17e9aeae8f44a0c1a746e"
+    }
+  },
+  "reproductionCommand": "npm run verify:r22",
+  "artifactRoot": ".artifacts/r22-demo",
+  "state": "LIVE_REVIEW_ARTIFACT_READY",
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false
+}
