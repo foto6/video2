@@ -111,6 +111,7 @@ test("R23 accepts targeted round 1 and round 2 with exact prior selection bindin
 test("R23 rejects round skips and missing R19 application evidence",()=>{
   const skipped=targetedRequest(2);
   skipped.baseline.candidate.roundNumber=0;
+  skipped.baseline.candidate.editorialApplication=null;
   assert.throws(()=>validateReviewSessionRequest(skipped),/N -> N\+1/);
 
   const missing=targetedRequest(1);
