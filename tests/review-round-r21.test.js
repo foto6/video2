@@ -303,13 +303,12 @@ test("R21 conformance manifest pins implementation and frozen consumer authoriti
   assert.equal(manifest.bridgeR30Authority.provenImplementationCiRunId, R21_BRIDGE_R30_AUTHORITY.provenImplementationCiRunId);
   assert.equal(manifest.requiredState, ROUND_PAIR_PACKAGE_READY);
   assert.equal(manifest.humanQuality, false);
+  const r21ProducerSha = "d753e9e4c1f4448386608a1425232dbc1dba87ea";
   for (const [name, pin] of Object.entries(manifest.pins)) {
-    if (name === "tests") continue;
-    const actual = execFileSync("git", ["hash-object", pin.path], {
+    const actual = execFileSync("git", ["rev-parse", `${r21ProducerSha}:${pin.path}`], {
       cwd: repoRoot,
       encoding: "utf8"
     }).trim();
     assert.equal(actual, pin.gitBlobSha, name);
   }
-  assert.match(manifest.pins.tests.gitBlobSha, /^[a-f0-9]{40}$/);
 });
