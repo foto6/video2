@@ -22,8 +22,9 @@
     "sameBriefLineageDigest": true,
     "priorSelectionRequired": true,
     "R19ApplicationRequiredOnChallenger": true,
-    "R19InputCandidateMustEqualBaseline": true,
+    "R19ApplicationParentCandidateIdPreservedSeparatelyFromReviewAlias": true,
     "R19InputRenderMustEqualBaselineRender": true,
+    "priorSelectionMustIdentifyBaselineReviewAlias": true,
     "GrowthHandoffDigestPreserved": true,
     "MediaApplicationDigestPreserved": true
   },
