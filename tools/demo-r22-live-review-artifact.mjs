@@ -201,6 +201,65 @@ function exportOne(name, sourceName) {
 
 const initial = exportOne("initial-live-review", "initial");
 const round1 = exportOne("round-1-live-review", "round-1");
+
+function expectStaleEvidenceRejection({ sourceName, evidencePath, label }) {
+  const absoluteEvidencePath = path.join(repoRoot, evidencePath);
+  const original = readFileSync(absoluteEvidencePath);
+  const negativeRoot = path.join(root, `.${label}-negative`);
+  const negativeArchive = path.join(root, `.${label}-negative.tar`);
+  const negativeIndex = path.join(root, `.${label}-negative.archive-index.json`);
+  try {
+    writeFileSync(absoluteEvidencePath, Buffer.concat([original, Buffer.from("\nR22_STALE_EVIDENCE")]));
+    let rejected = false;
+    try {
+      run(process.execPath, [
+        path.join(repoRoot, "tools", "export-r22-live-review-artifact.mjs"),
+        "--source-bundle-root", path.join(r21Root, sourceName),
+        "--sandbox-root", repoRoot,
+        "--output-dir", negativeRoot,
+        "--archive", negativeArchive,
+        "--archive-index", negativeIndex,
+        "--ci-run-id", String(ciRunId)
+      ]);
+    } catch {
+      rejected = true;
+    }
+    if (!rejected) throw new Error(`R22 failed to reject stale ${label} evidence`);
+  } finally {
+    writeFileSync(absoluteEvidencePath, original);
+    rmSync(negativeRoot, { recursive: true, force: true });
+    rmSync(negativeArchive, { force: true });
+    rmSync(negativeIndex, { force: true });
+  }
+  if (hashFile(absoluteEvidencePath).sha256 !== createHash("sha256").update(original).digest("hex")) {
+    throw new Error(`R22 failed to restore exact ${label} evidence bytes`);
+  }
+}
+
+const initialSourceBundle = JSON.parse(readFileSync(
+  path.join(r21Root, "initial", "media.review_round_bundle.r21.v1.json"),
+  "utf8"
+));
+const initialR15 = initialSourceBundle.sealedMapping.entries[0]?.renderExport?.artifactPath;
+if (!initialR15) throw new Error("R22 initial sealed mapping lacks R15 evidence path");
+expectStaleEvidenceRejection({
+  sourceName: "initial",
+  evidencePath: initialR15,
+  label: "r15"
+});
+
+const round1SourceBundle = JSON.parse(readFileSync(
+  path.join(r21Root, "round-1", "media.review_round_bundle.r21.v1.json"),
+  "utf8"
+));
+const round1Child = round1SourceBundle.sealedMapping.entries.find((entry) => entry.roundNumber === 1);
+const round1R19 = round1Child?.editorialApplication?.artifactPath;
+if (!round1R19) throw new Error("R22 round-1 sealed mapping lacks R19 evidence path");
+expectStaleEvidenceRejection({
+  sourceName: "round-1",
+  evidencePath: round1R19,
+  label: "r19"
+});
 if (initial.mode !== "initial" || initial.reviewRound !== 0) {
   throw new Error("R22 initial artifact semantics mismatch");
 }
@@ -224,6 +283,8 @@ const summary = {
   initial,
   targetedRound1: round1,
   archiveReproducible: initial.replayArchiveByteStable && round1.replayArchiveByteStable,
+  staleR15Rejected: true,
+  staleR19Rejected: true,
   extractionVerificationRequired: true,
   bridgeR31RunPrepared: true,
   modelReviewPerformed: false,
