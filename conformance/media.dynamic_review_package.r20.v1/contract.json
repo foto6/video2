@@ -1,0 +1,63 @@
+{
+  "contractVersion": "media.dynamic_review_package.r20.v1",
+  "requestVersion": "media.dynamic_review_request.r20.v1",
+  "bridgeHandoffVersion": "media.bridge_live_review_handoff.r20.v1",
+  "purpose": "Build a deterministic blinded A/B model-review package from current provenance-bound R15/R19 Media artifacts without performing a model call.",
+  "inputs": {
+    "candidateCount": 2,
+    "requiredPerCandidate": [
+      "source ID/SHA-256/size/path",
+      "candidate ID",
+      "render path/SHA-256/size",
+      "R15 render-export path/file SHA-256/semantic digest",
+      "Media producer SHA",
+      "round number",
+      "R19 editorial application path/file SHA-256/semantic digest when round > 0"
+    ],
+    "rounds": [0, 1, 2],
+    "roundZeroEditorialApplication": "forbidden",
+    "reeditRoundEditorialApplication": "required"
+  },
+  "blinding": {
+    "assignment": "deterministic provenance-derived sort independent of candidate ID",
+    "modelFacingNames": ["review-A.mp4", "review-B.mp4"],
+    "modelFacingPromptMayContainCandidateIds": false,
+    "modelFacingPromptMayContainProducerSha": false,
+    "modelFacingPromptMayContainSourceOrRenderHashes": false,
+    "sealedMappingMachineSide": true,
+    "sealedMappingContentAddressed": true
+  },
+  "duplicatePolicy": {
+    "default": "reject",
+    "byteIdenticalPairwiseComparison": "forbidden"
+  },
+  "attachmentPolicy": {
+    "maxBytesPerFile": 500000000,
+    "preserveOriginalBytesWhenDerivativeNotRequired": true,
+    "derivativeRequiresExplicitRequest": true,
+    "derivative_for_model_review": true,
+    "derivativeMustBindOriginalAndDerivativeHashes": true,
+    "derivativeMustBindExactTransformSettingsDigest": true
+  },
+  "bridgeAuthority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r29-isolated-live-video-review-20261002",
+    "branchHeadSha": "8b314bd020b05d90f6c45fa861727df5e78e5a39",
+    "inheritedGreenBranch": "agent/bridge-r28-live-existing-chat-review-20261002",
+    "inheritedGreenCiRunId": 36983797963,
+    "requestContract": "bridge.existing_chat_video_review_request.v1",
+    "captureContract": "bridge.existing_chat_video_review_capture.v1",
+    "r29WireFormatDivergedFromR28": false
+  },
+  "stateMachine": {
+    "mediaOutputState": "DYNAMIC_REVIEW_PACKAGE_READY",
+    "postBridgeModelCaptureState": "LIVE_MODEL_REVIEWED",
+    "mediaMayEmitLiveModelReviewed": false
+  },
+  "evidenceBoundary": {
+    "modelCallPerformed": false,
+    "browserUploadPerformed": false,
+    "providerPublishPerformed": false,
+    "humanQuality": false
+  }
+}
