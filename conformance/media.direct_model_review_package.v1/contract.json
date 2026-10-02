@@ -1,0 +1,64 @@
+{
+  "contractVersion": "media.direct_model_review_package.v1",
+  "reviewMode": "blinded_pairwise_actual_mp4",
+  "upstream": {
+    "contractVersion": "media.web_chat_review_bundle.v1",
+    "repository": "foto6/video2",
+    "producerSha": "e88f1791ae47e7333ce85db584f0a04dbf229809",
+    "ciRunId": 36890371410,
+    "artifactId": 11177570580,
+    "artifactName": "media-r17-web-chat-review",
+    "artifactDigest": "sha256:37778b26f02b248f47a97046f87bf83b988191cb91e0486182c09e4d695e1ad2",
+    "bundleFileSha256": "96a8f5376daadb710916880c036c54154e28ccc63c05f15482cabc2d3bf465bc"
+  },
+  "selection": {
+    "A": "candidate-1",
+    "B": "candidate-2",
+    "reason": "candidate-1 and candidate-2 are distinct exact render bytes; candidate-3 duplicates candidate-1 bytes"
+  },
+  "attachmentPolicy": {
+    "maxBytesPerFile": 500000000,
+    "originalsPreferred": true,
+    "derivativeOnlyIfExplicitlyBound": true,
+    "genericNames": ["review-A.mp4","review-B.mp4"]
+  },
+  "prompt": {
+    "contractVersion": "media.direct_model_review_prompt.v1",
+    "requires": [
+      "timestamped local observations",
+      "defect category",
+      "severity",
+      "evidence",
+      "proposed edit",
+      "confidence",
+      "uncertainty",
+      "coverage inspected ranges",
+      "uninspected_possible=true",
+      "every_frame_inspected=false",
+      "pairwise selection A/B/tie/insufficient_evidence"
+    ],
+    "forbids": [
+      "prefabricated model verdict",
+      "human ground truth claim",
+      "live platform evidence claim",
+      "every frame inspected claim"
+    ]
+  },
+  "consumerCompatibility": {
+    "bridge": {
+      "contractVersion": "bridge.chat_file_attachment.v1",
+      "exactSha": "bfe6b043460b6c0c3d712cbcc7e0c9772d6bd3af",
+      "r25Branch": "agent/bridge-r25-file-attachment-20261001",
+      "r26Branch": "agent/bridge-r26-file-attachment-rehearsal-20261002"
+    },
+    "growth": {
+      "exactSha": "0f6824d7c3962ccee572b21a4e1a343e6470c1a9",
+      "criticContract": "growth.web_video_critic.v1",
+      "pairwiseContract": "growth.web_video_critic_pairwise.v1",
+      "r22Branch": "agent/growth-r22-direct-video-critic-20261001",
+      "r23Branch": "agent/growth-r23-critic-reedit-adapter-20261002"
+    }
+  },
+  "liveUploadPerformed": false,
+  "modelJudgmentPerformed": false
+}
