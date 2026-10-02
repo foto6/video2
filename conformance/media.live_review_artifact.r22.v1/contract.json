@@ -1,0 +1,71 @@
+{
+  "contractVersion": "media.live_review_artifact.r22.v1",
+  "packageManifestVersion": "media.live_review_package_manifest.r22.v1",
+  "authorityProfileVersion": "media.live_review_authority_profile.r22.v1",
+  "operatorManifestVersion": "media.live_review_operator_manifest.r22.v1",
+  "verificationVersion": "media.live_review_verification.r22.v1",
+  "purpose": "Materialize exact green Media R21 round-pair bytes into a deterministic, independently verifiable operator directory for Bridge R30/R31 without browser or model execution.",
+  "sourceAuthority": {
+    "repository": "foto6/video2",
+    "branch": "agent/media-r21-round-pair-review-bundle-20261002",
+    "producerSha": "d753e9e4c1f4448386608a1425232dbc1dba87ea",
+    "ciRunId": 36994000619,
+    "ciConclusion": "success",
+    "artifactId": 11221240371,
+    "artifactName": "media-r21-round-pair-review",
+    "artifactDigest": "sha256:1036800923196882590ace62edbaa123ab4250b9d242e14adba909ba256ab022"
+  },
+  "bridgeR31Authority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r31-live-dynamic-operator-20261002",
+    "producerSha": "31cfef82663d72d53e69e6345b50073ffcd461ca",
+    "ciRunId": 36997793086,
+    "ciConclusion": "success",
+    "operatorImplementationBlob": "38509af174fc25aa4229c084fc3cd9b2e35b539e",
+    "operatorManifestSchemaBlob": "f90cd2aa4bdc868af845bfba58c612ebef3f32ad",
+    "authorityProfileSchemaBlob": "25e2cbfe487ba88f70d233774e585691ad4f70c6"
+  },
+  "payload": {
+    "requiredR21Files": [
+      "review-A.mp4",
+      "review-B.mp4",
+      "model-review-prompt.txt.json",
+      "media.review_round_bundle.r21.v1.json",
+      "media.review_round_transport_handoff.r21.v1.json",
+      "media.review_round_sealed_mapping.r21.v1.json",
+      "media.review_round_bundle.r21.evidence.json"
+    ],
+    "derivedFiles": [
+      "model-facing-prompt.txt",
+      "media.live_review_authority_profile.r22.v1.json",
+      "media.live_review_package_manifest.r22.v1.json"
+    ],
+    "sealedMappingMachineSideOnly": true,
+    "modelFacingIdentityLeakForbidden": true
+  },
+  "archive": {
+    "format": "ustar",
+    "deterministic": true,
+    "sortedEntries": true,
+    "mtime": 0,
+    "uid": 0,
+    "gid": 0,
+    "archiveFile": "media-r22-live-package.tar",
+    "digest": "sha256",
+    "independentExtractionVerificationRequired": true
+  },
+  "operator": {
+    "operatorManifest": "media.live_review_operator_manifest.r22.v1.json",
+    "r31ArtifactDirRelative": "payload",
+    "r31ArchiveRelative": "media-r22-live-package.tar",
+    "requiresNoHandEditedMediaPaths": true
+  },
+  "supportedModes": ["initial", "targeted_reedit"],
+  "evidenceBoundary": {
+    "modelReviewPerformed": false,
+    "liveModelReviewed": false,
+    "browserMutationPerformed": false,
+    "providerPublish": false,
+    "humanQuality": false
+  }
+}
