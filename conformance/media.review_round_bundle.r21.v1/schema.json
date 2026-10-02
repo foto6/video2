@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.review_round_bundle.r21.v1",
+  "title": "Media R21 review round bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "state",
+    "producer",
+    "bridgeAuthority",
+    "mode",
+    "source",
+    "briefLineageDigest",
+    "reviewRound",
+    "attachments",
+    "prompt",
+    "r20PackageDigest",
+    "r20SealedMappingDigest",
+    "sealedMapping",
+    "roundLineage",
+    "transportHandoff",
+    "modelReviewPerformed",
+    "liveModelReviewed",
+    "providerPublish",
+    "humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.review_round_bundle.r21.v1" },
+    "state": { "const": "ROUND_PAIR_PACKAGE_READY" },
+    "producer": {
+      "type": "object",
+      "required": ["repository", "sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "mode": { "enum": ["initial", "targeted_reedit"] },
+    "source": {
+      "type": "object",
+      "required": ["sourceId", "sha256", "size"],
+      "properties": {
+        "sourceId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "briefLineageDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "reviewRound": { "type": "integer", "minimum": 0, "maximum": 2 },
+    "attachments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "blindLabel",
+          "path",
+          "sha256",
+          "size",
+          "mimeType",
+          "derivative_for_model_review"
+        ]
+      }
+    },
+    "prompt": {
+      "type": "object",
+      "required": ["text", "digest"]
+    },
+    "r20PackageDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "r20SealedMappingDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "sealedMapping": {
+      "type": "object",
+      "required": ["digest", "entries"],
+      "properties": {
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "entries": { "type": "array", "minItems": 2, "maxItems": 2 }
+      }
+    },
+    "roundLineage": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": [
+            "parentCandidateId",
+            "parentRenderSha256",
+            "parentRound",
+            "childCandidateId",
+            "childRenderSha256",
+            "childRound",
+            "growthHandoffDigest",
+            "mediaApplicationDigest",
+            "mediaApplicationFileSha256",
+            "priorReview"
+          ]
+        }
+      ]
+    },
+    "transportHandoff": {
+      "type": "object",
+      "required": [
+        "contractVersion",
+        "state",
+        "bridgeAuthority",
+        "packageDigest",
+        "sealedMappingDigest",
+        "promptBytes",
+        "promptText",
+        "promptDigest",
+        "sourceLineage",
+        "roundLineage",
+        "attachments",
+        "modelReviewPerformed",
+        "liveModelReviewed",
+        "providerPublish",
+        "humanQuality"
+      ]
+    },
+    "bridgeAuthority": { "type": "object" },
+    "modelReviewPerformed": { "const": false },
+    "liveModelReviewed": { "const": false },
+    "providerPublish": { "const": false },
+    "humanQuality": { "const": false }
+  }
+}
