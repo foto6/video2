@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import {
   MEDIA_REVIEW_SESSION_PACKAGE_VERSION,
   MEDIA_REVIEW_SESSION_REQUEST_VERSION,
@@ -177,4 +180,25 @@ test("R23 package validator preserves exact producer CI and no-live/human bounda
   const bad=structuredClone(pkg);
   bad.humanQuality=true;
   assert.throws(()=>validateReviewSessionPackage(bad),/evidence boundary/);
+});
+
+
+test("R23 conformance manifest pins exact implementation and frozen R21/R22 authorities",()=>{
+  const repoRoot=path.resolve(new URL("..",import.meta.url).pathname);
+  const manifest=JSON.parse(readFileSync(
+    new URL("../conformance/media.review_session_package.r23.v1/manifest.json",import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion,MEDIA_REVIEW_SESSION_PACKAGE_VERSION);
+  assert.equal(manifest.r21Authority.producerSha,R23_R21_AUTHORITY.producerSha);
+  assert.equal(manifest.r22Authority.producerSha,R23_R22_AUTHORITY.producerSha);
+  assert.equal(manifest.r22Authority.ciRunId,R23_R22_AUTHORITY.ciRunId);
+  assert.deepEqual(manifest.realRehearsalRounds,[0,1,2]);
+  assert.equal(manifest.humanQuality,false);
+  for(const [name,pin] of Object.entries(manifest.pins)){
+    if(name==="tests")continue;
+    const actual=execFileSync("git",["hash-object",pin.path],{cwd:repoRoot,encoding:"utf8"}).trim();
+    assert.equal(actual,pin.gitBlobSha,name);
+  }
+  assert.match(manifest.pins.tests.gitBlobSha,/^[a-f0-9]{40}$/);
 });
