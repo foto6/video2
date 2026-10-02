@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.editorial_reedit_application.v1",
+  "title": "Media R19 editorial re-edit application sidecar",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","producer","growthAuthority","handoff","input",
+    "directiveDigest","applications","ffmpegPlanDigest","outputTimelineDigest",
+    "planDigest","output","qa","humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.editorial_reedit_application.v1" },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository","sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "growthAuthority": {
+      "type": "object",
+      "required": ["repository","branch","sourceSha","ciRunId","contractVersion"]
+    },
+    "handoff": {
+      "type": "object",
+      "required": ["id","digest","reeditRound"]
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "source","candidateId","renderSha256","renderSize",
+        "renderExportSha256","renderProducerSha","timelineDigest"
+      ]
+    },
+    "directiveDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "applications": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "directiveId","operation","originalInterval","appliedInterval",
+          "status","reason","exactOperations"
+        ],
+        "properties": {
+          "status": { "enum": ["applied","unsupported"] }
+        }
+      }
+    },
+    "ffmpegPlanDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "outputTimelineDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "planDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "output": {
+      "type": "object",
+      "required": ["status","sha256","size","renderExportSha256"],
+      "properties": {
+        "status": { "const": "succeeded" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 },
+        "renderExportSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "qa": {
+      "type": "object",
+      "required": ["technicalPassed","technicalEvidenceSha256","measurable"],
+      "properties": {
+        "technicalPassed": { "const": true },
+        "technicalEvidenceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "humanQuality": { "const": false }
+  }
+}
