@@ -135,6 +135,14 @@ function makeRound2Candidate(){
   });
   const hm=structuredClone(handoff);hm.handoff_digest="";
   handoff.handoff_digest=fingerprint(hm);
+  const timeline=structuredClone(plan.timeline);
+  for(const track of timeline.tracks??[]){
+    for(const item of track.items??[]){
+      if(item.source?.uri && !item.source.uri.startsWith(".artifacts/")){
+        item.source.uri=path.posix.join(".artifacts/r19-demo",item.source.uri.replaceAll("\\","/"));
+      }
+    }
+  }
   const request={
     contractVersion:"media.editorial_reedit_request.r19.v1",
     requestId:"r23-round2-real-reedit",
@@ -149,7 +157,7 @@ function makeRound2Candidate(){
       renderExportSha256:parent.renderExport.fileSha256,
       renderProducerSha:parent.renderProducerSha
     },
-    timeline:plan.timeline,
+    timeline,
     exportSpec:plan.exportSpec
   };
   const requestPath=path.join(root,"round2-r19-request.json");
