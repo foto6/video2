@@ -15,7 +15,8 @@ import {
   MEDIA_REVIEW_ROUND_BUNDLE_VERSION,
   MEDIA_REVIEW_ROUND_HANDOFF_VERSION,
   ROUND_PAIR_PACKAGE_READY,
-  validateReviewRoundBundle
+  validateReviewRoundBundle,
+  validateReviewRoundRequest
 } from "./review-round-r21.js";
 import {
   renderExportDigest,
@@ -195,61 +196,116 @@ export function computeBridgeDynamicPackageDigest(handoff, actual = {}) {
   return hashBytes(Buffer.from(canonicalJson(stable), "utf8"));
 }
 
-function verifySourceLineageEntry(entry, sandboxRoot) {
-  const sourcePath = safePath(sandboxRoot, entry.source.artifactPath, "sealed source");
-  const renderPath = safePath(sandboxRoot, entry.render.artifactPath, "sealed render");
-  const renderExportPath = safePath(sandboxRoot, entry.renderExport.artifactPath, "sealed render export");
+function requestParticipants(request) {
+  if (request.mode === "initial") {
+    return [
+      { role: "initial_candidate", participant: request.left },
+      { role: "initial_candidate", participant: request.right }
+    ];
+  }
+  return [
+    { role: "baseline", participant: request.baseline },
+    { role: "challenger", participant: request.challenger }
+  ];
+}
+
+function verifyCandidateEvidence({ participant, role, sealedEntry, bundle, sandboxRoot }) {
+  const candidate = participant.candidate;
+  if (
+    sealedEntry.candidateId !== candidate.candidateId ||
+    sealedEntry.roundNumber !== candidate.roundNumber ||
+    sealedEntry.briefLineageDigest !== participant.briefLineageDigest ||
+    sealedEntry.role !== role
+  ) {
+    fail("live_review_artifact_lineage_drift", "R21 sealed participant differs from exact R21 request");
+  }
+  if (
+    sealedEntry.source.sourceId !== candidate.source.sourceId ||
+    sealedEntry.source.sha256 !== candidate.source.sha256 ||
+    sealedEntry.source.size !== candidate.source.size ||
+    sealedEntry.source.artifactPath !== candidate.source.path ||
+    sealedEntry.render.sha256 !== candidate.render.sha256 ||
+    sealedEntry.render.size !== candidate.render.size ||
+    sealedEntry.render.artifactPath !== candidate.render.path ||
+    sealedEntry.renderExport.digest !== candidate.renderExport.digest ||
+    sealedEntry.renderExport.fileSha256 !== candidate.renderExport.fileSha256 ||
+    sealedEntry.renderExport.artifactPath !== candidate.renderExport.path ||
+    sealedEntry.renderProducerSha !== candidate.renderProducerSha
+  ) {
+    fail("live_review_artifact_lineage_drift", "R21 sealed render/source lineage differs from exact R21 request");
+  }
+
+  const sourcePath = safePath(sandboxRoot, candidate.source.path, "request source");
+  const renderPath = safePath(sandboxRoot, candidate.render.path, "request render");
+  const renderExportPath = safePath(sandboxRoot, candidate.renderExport.path, "request render export");
 
   const sourceBytes = hashFile(sourcePath.absolute);
-  if (sourceBytes.sha256 !== entry.source.sha256 || sourceBytes.size !== entry.source.size) {
-    fail("live_review_artifact_stale_source", "sealed source bytes drifted");
+  if (sourceBytes.sha256 !== candidate.source.sha256 || sourceBytes.size !== candidate.source.size) {
+    fail("live_review_artifact_stale_source", "R21 request source bytes drifted");
   }
   const renderBytes = hashFile(renderPath.absolute);
-  if (renderBytes.sha256 !== entry.render.sha256 || renderBytes.size !== entry.render.size) {
-    fail("live_review_artifact_stale_render", "sealed render bytes drifted");
+  if (renderBytes.sha256 !== candidate.render.sha256 || renderBytes.size !== candidate.render.size) {
+    fail("live_review_artifact_stale_render", "R21 request render bytes drifted");
   }
   const renderExportBytes = hashFile(renderExportPath.absolute);
-  if (renderExportBytes.sha256 !== entry.renderExport.fileSha256) {
-    fail("live_review_artifact_stale_render_export", "sealed R15 render-export file drifted");
+  if (renderExportBytes.sha256 !== candidate.renderExport.fileSha256) {
+    fail("live_review_artifact_stale_render_export", "R21 request R15 render-export file drifted");
   }
   const renderExport = validateRenderExportAgainstFinal(
     JSON.parse(readFileSync(renderExportPath.absolute, "utf8")),
     renderPath.absolute
   );
   if (
-    renderExportDigest(renderExport) !== entry.renderExport.digest ||
-    renderExport.producer.sha !== entry.renderProducerSha ||
-    renderExport.artifact.sha256 !== entry.render.sha256 ||
-    renderExport.artifact.size !== entry.render.size
+    renderExportDigest(renderExport) !== candidate.renderExport.digest ||
+    renderExport.producer.sha !== candidate.renderProducerSha ||
+    renderExport.artifact.sha256 !== candidate.render.sha256 ||
+    renderExport.artifact.size !== candidate.render.size
   ) {
-    fail("live_review_artifact_stale_render_export", "sealed R15 render-export semantic lineage drifted");
+    fail("live_review_artifact_stale_render_export", "R21 request R15 semantic lineage drifted");
   }
 
   let editorialApplication = null;
-  if (entry.editorialApplication != null) {
+  if (candidate.editorialApplication !== null) {
     const applicationPath = safePath(
       sandboxRoot,
-      entry.editorialApplication.artifactPath,
-      "sealed editorial application"
+      candidate.editorialApplication.path,
+      "request editorial application"
     );
     const applicationBytes = hashFile(applicationPath.absolute);
-    if (applicationBytes.sha256 !== entry.editorialApplication.fileSha256) {
-      fail("live_review_artifact_stale_editorial_application", "sealed R19 application file drifted");
+    if (applicationBytes.sha256 !== candidate.editorialApplication.fileSha256) {
+      fail("live_review_artifact_stale_editorial_application", "R21 request R19 application file drifted");
     }
     editorialApplication = validateEditorialReeditApplicationSidecar(
       JSON.parse(readFileSync(applicationPath.absolute, "utf8"))
     );
     if (
-      fingerprint(editorialApplication) !== entry.editorialApplication.digest ||
-      editorialApplication.output.sha256 !== entry.render.sha256 ||
-      editorialApplication.output.size !== entry.render.size ||
-      editorialApplication.output.renderExportSha256 !== entry.renderExport.fileSha256
+      fingerprint(editorialApplication) !== candidate.editorialApplication.digest ||
+      editorialApplication.output.sha256 !== candidate.render.sha256 ||
+      editorialApplication.output.size !== candidate.render.size ||
+      editorialApplication.output.renderExportSha256 !== candidate.renderExport.fileSha256
     ) {
-      fail("live_review_artifact_stale_editorial_application", "sealed R19 application semantic lineage drifted");
+      fail("live_review_artifact_stale_editorial_application", "R21 request R19 semantic lineage drifted");
     }
+    if (
+      sealedEntry.mediaApplicationDigest !== candidate.editorialApplication.digest ||
+      bundle.roundLineage?.mediaApplicationDigest !== candidate.editorialApplication.digest ||
+      bundle.roundLineage?.mediaApplicationFileSha256 !== candidate.editorialApplication.fileSha256 ||
+      sealedEntry.growthHandoffDigest !== editorialApplication.handoff.digest ||
+      bundle.roundLineage?.growthHandoffDigest !== editorialApplication.handoff.digest
+    ) {
+      fail("live_review_artifact_lineage_drift", "R21 sealed round lineage differs from exact R19 application");
+    }
+  } else if (
+    sealedEntry.mediaApplicationDigest !== null ||
+    sealedEntry.growthHandoffDigest !== null
+  ) {
+    fail("live_review_artifact_lineage_drift", "R21 sealed entry claims re-edit lineage absent from exact request");
   }
+
   return {
-    entry,
+    participant,
+    role,
+    sealedEntry,
     sourcePath,
     renderPath,
     renderExportPath,
@@ -261,10 +317,14 @@ function verifySourceLineageEntry(entry, sandboxRoot) {
   };
 }
 
-function validateRoundBundleForExport(bundleInput, sandboxRoot) {
+function validateRoundBundleForExport(bundleInput, requestInput, sandboxRoot) {
   const bundle = validateReviewRoundBundle(bundleInput);
+  const request = validateReviewRoundRequest(requestInput);
   if (bundle.state !== ROUND_PAIR_PACKAGE_READY) {
     fail("live_review_artifact_invalid", "R21 bundle is not ROUND_PAIR_PACKAGE_READY");
+  }
+  if (bundle.mode !== request.mode) {
+    fail("live_review_artifact_lineage_drift", "R21 request mode differs from bundle mode");
   }
   if (
     bundle.modelReviewPerformed !== false ||
@@ -281,39 +341,49 @@ function validateRoundBundleForExport(bundleInput, sandboxRoot) {
     fail("live_review_artifact_mapping_drift", "R21 sealed mapping digest mismatch");
   }
 
-  const verified = bundle.sealedMapping.entries.map((entry) =>
-    verifySourceLineageEntry(entry, sandboxRoot)
-  );
-  const renderHashes = new Set(verified.map((row) => row.entry.render.sha256));
+  const sealedById = new Map(bundle.sealedMapping.entries.map((entry) => [entry.candidateId, entry]));
+  const participants = requestParticipants(request);
+  const verified = participants.map(({ role, participant }) => {
+    const sealedEntry = sealedById.get(participant.candidate.candidateId);
+    if (!sealedEntry) {
+      fail("live_review_artifact_lineage_drift", "exact R21 request candidate missing from sealed mapping");
+    }
+    return verifyCandidateEvidence({ participant, role, sealedEntry, bundle, sandboxRoot });
+  });
+  if (sealedById.size !== verified.length) {
+    fail("live_review_artifact_lineage_drift", "sealed mapping contains candidate absent from exact R21 request");
+  }
+
+  const renderHashes = new Set(verified.map((row) => row.sealedEntry.render.sha256));
   if (renderHashes.size !== 2) {
     fail("live_review_artifact_duplicate_render", "byte-identical review candidates are forbidden");
   }
   const sourceKeys = new Set(verified.map((row) =>
     stableStringify({
-      sourceId: row.entry.source.sourceId,
-      sha256: row.entry.source.sha256,
-      size: row.entry.source.size,
-      briefLineageDigest: row.entry.briefLineageDigest
+      sourceId: row.sealedEntry.source.sourceId,
+      sha256: row.sealedEntry.source.sha256,
+      size: row.sealedEntry.source.size,
+      briefLineageDigest: row.sealedEntry.briefLineageDigest
     })
   ));
   if (sourceKeys.size !== 1) {
     fail("live_review_artifact_unrelated_lineage", "review pair source/brief lineage differs");
   }
 
-  const mapping = new Map(verified.map((row) => [row.entry.blindLabel, row]));
+  const mapping = new Map(verified.map((row) => [row.sealedEntry.blindLabel, row]));
   for (const attachment of bundle.attachments) {
     const row = mapping.get(attachment.blindLabel);
     if (!row) fail("live_review_artifact_mapping_drift", "attachment label missing from sealed mapping");
     if (
       attachment.derivative_for_model_review === false &&
-      (attachment.sha256 !== row.entry.render.sha256 || attachment.size !== row.entry.render.size)
+      (attachment.sha256 !== row.sealedEntry.render.sha256 || attachment.size !== row.sealedEntry.render.size)
     ) {
       fail("live_review_artifact_mapping_drift", "original attachment does not equal sealed render identity");
     }
   }
 
   if (bundle.mode === "targeted_reedit") {
-    const child = verified.find((row) => row.entry.roundNumber === bundle.reviewRound);
+    const child = verified.find((row) => row.role === "challenger");
     if (!child?.editorialApplication) {
       fail("live_review_artifact_stale_editorial_application", "targeted challenger lacks validated R19 application");
     }
@@ -335,17 +405,20 @@ function validateRoundBundleForExport(bundleInput, sandboxRoot) {
     }
   }
   for (const row of verified) {
+    const entry = row.sealedEntry;
+    const candidate = row.participant.candidate;
     const secrets = [
-      row.entry.candidateId,
-      row.entry.source.sourceId,
-      row.entry.source.sha256,
-      row.entry.render.sha256,
-      row.entry.renderExport.digest,
-      row.entry.renderExport.fileSha256,
-      row.entry.renderProducerSha,
-      row.entry.editorialApplication?.digest,
-      row.entry.editorialApplication?.fileSha256,
-      row.entry.editorialApplication?.handoffDigest
+      entry.candidateId,
+      entry.source.sourceId,
+      entry.source.sha256,
+      entry.render.sha256,
+      entry.renderExport.digest,
+      entry.renderExport.fileSha256,
+      entry.renderProducerSha,
+      entry.mediaApplicationDigest,
+      entry.growthHandoffDigest,
+      candidate.editorialApplication?.digest,
+      candidate.editorialApplication?.fileSha256
     ].filter(Boolean);
     for (const secret of secrets) {
       if (prompt.includes(secret)) {
@@ -354,7 +427,7 @@ function validateRoundBundleForExport(bundleInput, sandboxRoot) {
     }
   }
 
-  return { bundle, verified };
+  return { bundle, request, verified };
 }
 
 function gitBlobIdentity(repoRoot, ref, relativePath) {
@@ -742,6 +815,7 @@ export function validateLiveReviewArtifactDirectory(bundleRoot, {
 
 export function buildLiveReviewArtifact({
   sourceBundleRoot,
+  sourceRequestPath,
   sandboxRoot,
   outputRoot,
   producerSha,
@@ -765,7 +839,16 @@ export function buildLiveReviewArtifact({
   const sourceHandoffPath = path.join(sourceRoot, "media.review_round_transport_handoff.r21.v1.json");
   const sourceSealedPath = path.join(sourceRoot, "media.review_round_sealed_mapping.r21.v1.json");
   const sourceBundle = JSON.parse(readFileSync(sourceBundlePath, "utf8"));
-  const { bundle } = validateRoundBundleForExport(sourceBundle, sandboxRoot);
+  const requestAbsolute = path.resolve(sourceRequestPath ?? "");
+  const requestRel = path.relative(sandboxRoot, requestAbsolute);
+  if (!sourceRequestPath || !requestRel || requestRel.startsWith("..") || path.isAbsolute(requestRel)) {
+    fail("live_review_artifact_path_escape", "sourceRequestPath must be confined to sandboxRoot");
+  }
+  const requestWrapper = JSON.parse(readFileSync(requestAbsolute, "utf8"));
+  if (requestWrapper.contractVersion !== "media.review_round_request.r21.v1") {
+    fail("live_review_artifact_invalid", "source request must use media.review_round_request.r21.v1");
+  }
+  const { bundle } = validateRoundBundleForExport(sourceBundle, requestWrapper.review, sandboxRoot);
 
   const sourceHandoff = JSON.parse(readFileSync(sourceHandoffPath, "utf8"));
   if (stableStringify(sourceHandoff) !== stableStringify(bundle.transportHandoff)) {
