@@ -243,20 +243,22 @@ function targetedLineageFromR20(request, r20Package) {
   }
   const app = challengerEntry.editorialApplication;
   if (
-    app.inputCandidateId !== baseline.candidateId ||
+    typeof app.inputCandidateId !== "string" ||
+    !app.inputCandidateId ||
     app.inputRenderSha256 !== baseline.render.sha256 ||
     app.reeditRound !== baseline.roundNumber ||
     challenger.roundNumber !== app.reeditRound + 1 ||
     app.digest !== challenger.editorialApplication.digest
   ) {
-    fail("review_round_parent_child_mismatch", "R19 application does not prove baseline -> challenger lineage");
+    fail("review_round_parent_child_mismatch", "R19 application does not prove baseline-render -> challenger lineage");
   }
   sha256(app.handoffDigest, "challenger Growth handoff digest");
   return {
-    parentCandidateId: baseline.candidateId,
+    baselineReviewCandidateId: baseline.candidateId,
+    applicationParentCandidateId: app.inputCandidateId,
     parentRenderSha256: baseline.render.sha256,
     parentRound: baseline.roundNumber,
-    childCandidateId: challenger.candidateId,
+    childReviewCandidateId: challenger.candidateId,
     childRenderSha256: challenger.render.sha256,
     childRound: challenger.roundNumber,
     growthHandoffDigest: app.handoffDigest,
@@ -347,7 +349,7 @@ export function validateReviewRoundBundle(input) {
     sha256(bundle.roundLineage.growthHandoffDigest, "roundLineage.growthHandoffDigest");
     sha256(bundle.roundLineage.mediaApplicationDigest, "roundLineage.mediaApplicationDigest");
     validatePriorReviewSelection(bundle.roundLineage.priorReview, {
-      baselineCandidateId: bundle.roundLineage.parentCandidateId,
+      baselineCandidateId: bundle.roundLineage.baselineReviewCandidateId,
       baselineRound: bundle.roundLineage.parentRound
     });
   } else if (bundle.roundLineage !== null) {
@@ -480,7 +482,8 @@ export function buildReviewRoundBundle({
       render: clone(entry.render),
       renderExport: clone(entry.renderExport),
       renderProducerSha: entry.renderProducerSha,
-      parentCandidateId: targeted && isChallenger ? roundLineage.parentCandidateId : null,
+      baselineReviewCandidateId: targeted && isChallenger ? roundLineage.baselineReviewCandidateId : null,
+      applicationParentCandidateId: targeted && isChallenger ? roundLineage.applicationParentCandidateId : null,
       parentRenderSha256: targeted && isChallenger ? roundLineage.parentRenderSha256 : null,
       growthHandoffDigest: targeted && isChallenger ? roundLineage.growthHandoffDigest : null,
       mediaApplicationDigest: targeted && isChallenger ? roundLineage.mediaApplicationDigest : null,
