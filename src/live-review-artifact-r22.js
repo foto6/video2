@@ -226,7 +226,7 @@ function verifySourceLineageEntry(entry, sandboxRoot) {
   }
 
   let editorialApplication = null;
-  if (entry.editorialApplication !== null) {
+  if (entry.editorialApplication != null) {
     const applicationPath = safePath(
       sandboxRoot,
       entry.editorialApplication.artifactPath,
