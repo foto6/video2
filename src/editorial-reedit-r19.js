@@ -251,6 +251,36 @@ export function validateGrowthR23Handoff(input) {
   return handoff;
 }
 
+export function validateEditorialDirectiveSet(handoffInput, durationMs) {
+  const handoff = validateGrowthR23Handoff(handoffInput);
+  if (!Number.isInteger(durationMs) || durationMs <= 0) {
+    fail("editorial_reedit_invalid", "durationMs must be positive integer");
+  }
+  for (const directive of handoff.directives) {
+    if (directive.end_ms > durationMs) {
+      fail("editorial_reedit_interval_invalid", "directive interval exceeds candidate timeline duration");
+    }
+  }
+  for (let i = 0; i < handoff.directives.length; i += 1) {
+    for (let j = i + 1; j < handoff.directives.length; j += 1) {
+      const a = handoff.directives[i];
+      const b = handoff.directives[j];
+      if (!overlaps(a, b)) continue;
+      if (a.operation === b.operation) {
+        fail("editorial_reedit_conflict", `overlapping duplicate operation: ${a.operation}`);
+      }
+      if (["trim", "cut"].includes(a.operation) || ["trim", "cut"].includes(b.operation)) {
+        fail("editorial_reedit_conflict", "cut/trim interval cannot overlap another directive");
+      }
+      if (
+        (a.operation === "speed_change" && b.operation === "speed_change") ||
+        (a.operation === "crop_scale_reframe" && b.operation === "crop_scale_reframe")
+      ) fail("editorial_reedit_conflict", "conflicting structural operations overlap");
+    }
+  }
+  return handoff.directives.map(clone);
+}
+
 export function validateEditorialReeditInput({
   handoff,
   candidate,
@@ -330,28 +360,7 @@ export function validateEditorialReeditInput({
     sourceBytes.size !== candidate.source.size
   ) fail("editorial_reedit_wrong_source", "primary source bytes do not match Growth binding");
 
-  for (const directive of parsed.directives) {
-    if (directive.end_ms > canonicalTimeline.canvas.durationMs) {
-      fail("editorial_reedit_interval_invalid", "directive interval exceeds candidate timeline duration");
-    }
-  }
-  for (let i = 0; i < parsed.directives.length; i += 1) {
-    for (let j = i + 1; j < parsed.directives.length; j += 1) {
-      const a = parsed.directives[i];
-      const b = parsed.directives[j];
-      if (!overlaps(a, b)) continue;
-      if (a.operation === b.operation) {
-        fail("editorial_reedit_conflict", `overlapping duplicate operation: ${a.operation}`);
-      }
-      if (["trim", "cut"].includes(a.operation) || ["trim", "cut"].includes(b.operation)) {
-        fail("editorial_reedit_conflict", "cut/trim interval cannot overlap another directive");
-      }
-      if (
-        (a.operation === "speed_change" && b.operation === "speed_change") ||
-        (a.operation === "crop_scale_reframe" && b.operation === "crop_scale_reframe")
-      ) fail("editorial_reedit_conflict", "conflicting structural operations overlap");
-    }
-  }
+  validateEditorialDirectiveSet(parsed, canonicalTimeline.canvas.durationMs);
 
   return {
     handoff: parsed,
