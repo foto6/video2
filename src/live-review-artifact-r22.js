@@ -66,6 +66,10 @@ export const R22_BRIDGE_R31_AUTHORITY = Object.freeze({
   packageDigestAlgorithm: "bridge.dynamic_review_package.sha256.v1",
   maxFileBytes: 500_000_000,
   r31WireFormatDivergedFromR30: false,
+  implementationBlobSha: "c5bd2f95a6d58a86cddd9a6fdc127e68e3346c20",
+  verifierBlobSha: "343ee5cb41a443932a0a944eac2957dd36836dec",
+  handoffSchemaBlobSha: "93968dc1fb65a334493acdb587b20753f0a8494a",
+  documentationBlobSha: "b2108090701d8df261bdfa37cd9c63ec4d3cdec1",
   modelCallPerformed: false
 });
 
@@ -391,6 +395,34 @@ function authorityProfile({ producerSha, ciRunId, repoRoot }) {
       contractIdentity: gitBlobIdentity(repoRoot, R22_R21_AUTHORITY.producerSha, R22_R21_AUTHORITY.contract.path),
       schemaIdentity: gitBlobIdentity(repoRoot, R22_R21_AUTHORITY.producerSha, R22_R21_AUTHORITY.schema.path),
       implementationIdentity: gitBlobIdentity(repoRoot, R22_R21_AUTHORITY.producerSha, R22_R21_AUTHORITY.implementation.path)
+    },
+    r22Authority: {
+      contractVersion: MEDIA_LIVE_REVIEW_ARTIFACT_VERSION,
+      contractIdentity: gitBlobIdentity(
+        repoRoot,
+        producerSha,
+        "conformance/media.live_review_artifact.r22.v1/contract.json"
+      ),
+      schemaIdentity: gitBlobIdentity(
+        repoRoot,
+        producerSha,
+        "conformance/media.live_review_artifact.r22.v1/schema.json"
+      ),
+      implementationIdentity: gitBlobIdentity(
+        repoRoot,
+        producerSha,
+        "src/live-review-artifact-r22.js"
+      ),
+      exporterIdentity: gitBlobIdentity(
+        repoRoot,
+        producerSha,
+        "tools/export-r22-live-review-artifact.mjs"
+      ),
+      verifierIdentity: gitBlobIdentity(
+        repoRoot,
+        producerSha,
+        "tools/verify-r22-live-review-artifact.mjs"
+      )
     },
     bridgeR31Authority: clone(R22_BRIDGE_R31_AUTHORITY),
     boundary: {
