@@ -1,0 +1,59 @@
+{
+  "contractVersion": "media.review_round_bundle.r21.v1",
+  "requestVersion": "media.review_round_request.r21.v1",
+  "transportHandoffVersion": "media.review_round_transport_handoff.r21.v1",
+  "priorSelectionVersion": "media.prior_review_selection.r21.v1",
+  "state": "ROUND_PAIR_PACKAGE_READY",
+  "purpose": "Deterministically package either an initial same-lineage candidate pair or a reviewed baseline versus its exact R19 N+1 challenger for blinded model review.",
+  "initialReview": {
+    "candidateCount": 2,
+    "requiredRound": 0,
+    "sameExactSource": true,
+    "sameBriefLineageDigest": true,
+    "byteIdenticalRendersRejected": true,
+    "R15RenderExportMustValidate": true,
+    "R19ApplicationAllowed": false
+  },
+  "targetedReeditReview": {
+    "participantRoles": ["baseline", "challenger"],
+    "challengerRoundRule": "baseline.round + 1",
+    "maxChallengerRound": 2,
+    "sameExactSource": true,
+    "sameBriefLineageDigest": true,
+    "priorSelectionRequired": true,
+    "R19ApplicationRequiredOnChallenger": true,
+    "R19InputCandidateMustEqualBaseline": true,
+    "R19InputRenderMustEqualBaselineRender": true,
+    "GrowthHandoffDigestPreserved": true,
+    "MediaApplicationDigestPreserved": true
+  },
+  "blinding": {
+    "assignmentAuthority": "R20 deterministic provenance-derived A/B assignment",
+    "genericNames": ["review-A.mp4", "review-B.mp4"],
+    "baselineChallengerRoleForbiddenInPrompt": true,
+    "candidateIdsForbiddenInPrompt": true,
+    "lineageHashesForbiddenInPrompt": true,
+    "sealedMappingMachineSide": true
+  },
+  "transportNeutralHandoff": {
+    "containsTargetRouting": false,
+    "attachmentIdentity": ["path", "sha256", "size", "mimeType"],
+    "promptIdentity": ["promptText", "promptBytes", "promptDigest"],
+    "bundleIdentity": ["packageDigest", "sealedMappingDigest"],
+    "lineageIdentity": ["sourceLineage", "roundLineage"]
+  },
+  "bridgeR30Authority": {
+    "repository": "foto6/WebAIBridge",
+    "branch": "agent/bridge-r30-dynamic-review-transport-20261002",
+    "branchHeadSha": "ed9a35290f94607d7577f1ee9301de1bb44334f2",
+    "provenImplementationBranch": "agent/bridge-r29-isolated-live-video-review-20261002",
+    "provenImplementationCiRunId": 36989658042,
+    "nativeR30RoundPairConsumerPresentAtPin": false
+  },
+  "evidenceBoundary": {
+    "modelReviewPerformed": false,
+    "liveModelReviewed": false,
+    "providerPublish": false,
+    "humanQuality": false
+  }
+}
