@@ -619,3 +619,36 @@ test("R25 restart after candidate 2 of 4 reuses completed hashes and resumes onl
   assert.equal(result.manifest.status, "succeeded");
   assert.equal(seeded.requestDigest, result.state.requestDigest);
 });
+
+
+test("R25 external umbrella conformance manifest pins exact mappings and implementation blobs", () => {
+  const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.multicandidate_round.r25.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, MEDIA_MULTICANDIDATE_ROUND_VERSION);
+  assert.equal(manifest.internalContractMap.request, MEDIA_TOURNAMENT_REQUEST_VERSION);
+  assert.equal(manifest.internalContractMap.candidateManifest, MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION);
+  assert.equal(manifest.acceptedR24Authority.artifactId, 11301055747);
+  assert.equal(
+    manifest.acceptedR24Authority.artifactDigest,
+    "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228"
+  );
+  assert.equal(manifest.externalAuthorityOnly, true);
+  assert.equal(manifest.internalContractMayMasqueradeAsUmbrella, false);
+  assert.equal(manifest.ciReliability.expensiveMaterializationsPerEvidenceJob, 1);
+  assert.equal(manifest.ciReliability.postMaterializationVerificationRerenders, 0);
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    if (name === "tests") continue;
+    const actual = execFileSync("git", ["hash-object", pin.path], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
+  assert.throws(
+    () => validateMulticandidateRoundAuthority({ contractVersion: MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION }),
+    /cannot masquerade as external umbrella authority/
+  );
+});
