@@ -41,7 +41,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "3c2f7c869301ec858229bf5396b8744e5756845c"
+      "gitBlobSha": "d69108698d478ed283e1453dab2a5b1448e19195"
     },
     "externalContract": {
       "path": "conformance/media.multicandidate_round.r25.v1/contract.json",
@@ -53,7 +53,7 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "44732a927adbaeab2ed1e51226e13e6789b70211"
+      "gitBlobSha": "eadbb46389fca21ee910bb06d4c19fb6cc7f4756"
     },
     "package": {
       "path": "package.json",
@@ -61,7 +61,7 @@
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "b9d52aecfea0c5461b54b18707a5de749a90c50b"
+      "gitBlobSha": "01ea3242fab5e5b8359097cbb42af04bc5dadf05"
     },
     "internalContract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
