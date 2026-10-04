@@ -290,7 +290,16 @@ jobs:
           LD_LIBRARY_PATH="$root/lib" "$root/bin/ffmpeg" -version
           LD_LIBRARY_PATH="$root/lib" "$root/bin/ffprobe" -version
       - name: Resume R25 candidate 4 from three-of-four checkpoint
-        run: npm run r25:candidate4
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run r25:candidate4 &
+          pid=$!
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "R25_HEARTBEAT candidate-4 pid=$pid"
+            sleep 10
+          done
+          wait "$pid"
       - uses: actions/upload-artifact@v4
         with:
           name: media-r25-checkpoint-candidate-4
@@ -351,7 +360,16 @@ jobs:
       - name: Materialize one real targeted re-edit from finalized initial round
         env:
           R25_INITIAL_PREMATERIALIZED: "1"
-        run: npm run r25:targeted
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run r25:targeted &
+          pid=$!
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "R25_HEARTBEAT targeted-reedit pid=$pid"
+            sleep 10
+          done
+          wait "$pid"
       - name: Remove CI-only FFmpeg runtime before final evidence upload
         run: rm -rf .artifacts/r25-demo/ci-ffmpeg-runtime
       - uses: actions/upload-artifact@v4
