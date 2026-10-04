@@ -174,16 +174,58 @@ if (existsSync(phasedCheckpointPath)) {
   ) throw new Error("R25 phased checkpoint summary mismatch");
   const seen = new Set();
   const completedHashes = [];
-  const expectedPhaseSizes = new Map([
-    ["pair-1", 2],
-    ["candidate-3", 1],
-    ["candidate-4", 1]
+  const orderedCandidateIds = candidateEvidence.map((entry) => entry.candidateId);
+  const expectedPhases = new Map([
+    ["pair-1", {
+      checkpointSize: 2,
+      batchCandidateIds: orderedCandidateIds.slice(0, 2),
+      targetCandidateIds: orderedCandidateIds.slice(0, 2),
+      anchorCandidateId: null,
+      cacheHits: 0,
+      renderCalls: 2
+    }],
+    ["candidate-3", {
+      checkpointSize: 1,
+      batchCandidateIds: orderedCandidateIds.slice(1, 3),
+      targetCandidateIds: orderedCandidateIds.slice(2, 3),
+      anchorCandidateId: orderedCandidateIds[1],
+      cacheHits: 1,
+      renderCalls: 1
+    }],
+    ["candidate-4", {
+      checkpointSize: 1,
+      batchCandidateIds: orderedCandidateIds.slice(2, 4),
+      targetCandidateIds: orderedCandidateIds.slice(3, 4),
+      anchorCandidateId: orderedCandidateIds[2],
+      cacheHits: 1,
+      renderCalls: 1
+    }]
   ]);
+  const continuationPhases = [];
   for (const phase of phased.phases) {
-    const expectedSize = expectedPhaseSizes.get(phase.phase);
-    if (!expectedSize || !Array.isArray(phase.candidates) || phase.candidates.length !== expectedSize) {
+    const expected = expectedPhases.get(phase.phase);
+    if (!expected || !Array.isArray(phase.candidates) || phase.candidates.length !== expected.checkpointSize) {
       throw new Error("R25 phased checkpoint shape mismatch");
     }
+    if (
+      stableStringify(phase.batchCandidateIds) !== stableStringify(expected.batchCandidateIds) ||
+      stableStringify(phase.targetCandidateIds) !== stableStringify(expected.targetCandidateIds) ||
+      phase.anchorCandidateId !== expected.anchorCandidateId ||
+      phase.metrics?.cacheHits !== expected.cacheHits ||
+      phase.metrics?.renderCalls !== expected.renderCalls ||
+      phase.completedCandidateRerendered !== false
+    ) {
+      throw new Error(`R25 phased continuation/cache semantics mismatch: ${phase.phase}`);
+    }
+    continuationPhases.push({
+      phase: phase.phase,
+      batchCandidateIds: phase.batchCandidateIds,
+      targetCandidateIds: phase.targetCandidateIds,
+      anchorCandidateId: phase.anchorCandidateId,
+      cacheHits: phase.metrics.cacheHits,
+      renderCalls: phase.metrics.renderCalls,
+      completedCandidateRerendered: phase.completedCandidateRerendered
+    });
     for (const entry of phase.candidates) {
       if (seen.has(entry.candidateId)) throw new Error("R25 phased checkpoint duplicate candidate");
       seen.add(entry.candidateId);
@@ -204,6 +246,9 @@ if (existsSync(phasedCheckpointPath)) {
   checkpointReplay = {
     method: "phased-r16-checkpoint-and-output-validation",
     completedCandidates: completedHashes,
+    continuationPhases,
+    r16CandidateCountInvariant: "2-4",
+    completedCandidateRerenderedOnContinuation: false,
     cacheHitsOnExactReplay: 4,
     renderCallsOnExactReplay: 0,
     duplicateWorkAuthorized: false
