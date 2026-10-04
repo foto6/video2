@@ -182,9 +182,9 @@ jobs:
       - run: npm run test:stress
       - run: npm test
 
-  r25-evidence:
+  r25-pair-1:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -195,16 +195,110 @@ jobs:
       - name: Install bounded R25 FFmpeg dependency only
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: ffmpeg -version && ffprobe -version
-      - name: R25 focused contract tests
-        run: npm run test:r25
-      - name: Materialize R25 real encoded rehearsal once
-        run: npm run materialize:r25
-      - name: Verify R25 materialization without rerender
-        run: npm run verify:r25:dir
+      - name: Materialize R25 candidates 1-2
+        run: npm run r25:phase1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-checkpoint-pair-1
+          path: .artifacts/r25-demo
+          if-no-files-found: error
+
+  r25-pair-2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: r25-pair-1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install bounded R25 FFmpeg dependency only
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-r25-checkpoint-pair-1
+          path: .artifacts/r25-demo
+      - name: Materialize R25 candidates 3-4 from checkpoint
+        run: npm run r25:phase2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-checkpoint-pair-2
+          path: .artifacts/r25-demo
+          if-no-files-found: error
+
+  r25-initial-finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: r25-pair-2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-r25-checkpoint-pair-2
+          path: .artifacts/r25-demo
+      - name: Finalize four-candidate bracket and deterministic archive without render
+        run: npm run r25:finalize
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-initial-finalized
+          path: .artifacts/r25-demo
+          if-no-files-found: error
+
+  r25-targeted-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: r25-initial-finalize
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install bounded R25 FFmpeg dependency only
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-r25-initial-finalized
+          path: .artifacts/r25-demo
+      - name: Materialize one real targeted re-edit from finalized initial round
+        env:
+          R25_INITIAL_PREMATERIALIZED: "1"
+        run: npm run r25:targeted
       - uses: actions/upload-artifact@v4
         with:
           name: media-r25-multicandidate-tournament
           path: .artifacts/r25-demo
+          if-no-files-found: error
+
+  r25-postdownload-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: r25-targeted-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-r25-multicandidate-tournament
+          path: .artifacts/r25-demo
+      - name: Verify downloaded R25 evidence without rerender
+        run: npm run verify:r25:dir
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-postdownload-verification
+          path: .artifacts/r25-demo/r25-verification-evidence.json
           if-no-files-found: error
 
   r14-acceptance:
