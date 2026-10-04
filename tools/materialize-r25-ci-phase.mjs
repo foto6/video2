@@ -183,7 +183,7 @@ if (phase === "pair-1") {
   if (!existsSync(sourcePath)) {
     execFileSync("ffmpeg", [
       "-hide_banner", "-nostdin", "-y",
-      "-f", "lavfi", "-i", "testsrc2=s=360x640:r=30:d=6",
+      "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=6",
       "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=6",
       "-map", "0:v:0", "-map", "1:a:0", "-t", "6",
       "-map_metadata", "-1",
