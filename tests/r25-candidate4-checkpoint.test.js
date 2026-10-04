@@ -131,55 +131,67 @@ function checkpoint(dec, index, output) {
   });
 }
 
-test("R25 candidate-4 decomposition uses an existing motion-safe item boundary", () => {
+test("R25 candidate-4 decomposition bounds kinetic motion into deterministic global-progress chunks", () => {
   const dec = decomposition();
-  assert.equal(dec.splitMs, 1200);
+  assert.equal(dec.maxMotionChunkMs, 800);
   assert.deepEqual(dec.segments.map((x) => [x.phase, x.startMs, x.endMs]), [
-    ["segment-1", 0, 1200],
-    ["segment-2", 1200, 5000]
+    ["segment-1", 0, 800],
+    ["segment-2", 800, 1200],
+    ["segment-3", 1200, 5000]
   ]);
-  const one = sliceTimelineForR25Checkpoint(timeline(), 0, 1200);
-  const two = sliceTimelineForR25Checkpoint(timeline(), 1200, 5000);
-  assert.equal(one.canvas.durationMs, 1200);
-  assert.equal(two.canvas.durationMs, 3800);
+  const one = sliceTimelineForR25Checkpoint(timeline(), 0, 800);
+  const two = sliceTimelineForR25Checkpoint(timeline(), 800, 1200);
+  assert.equal(one.canvas.durationMs, 800);
+  assert.equal(two.canvas.durationMs, 400);
   assert.equal(one.profileVersion, undefined);
   assert.equal(two.profileVersion, undefined);
-  assert.equal(one.tracks.find((x) => x.kind === "video").items[0].motion.type, "slow_push");
+  const firstMotion = one.tracks.find((x) => x.kind === "video").items[0].motion;
+  const secondMotion = two.tracks.find((x) => x.kind === "video").items[0].motion;
+  assert.equal(firstMotion.type, "slow_push");
+  assert.equal(firstMotion.checkpointProgressStartFrame, 0);
+  assert.equal(firstMotion.checkpointProgressTotalFrames, 36);
+  assert.equal(secondMotion.checkpointProgressStartFrame, 24);
+  assert.equal(secondMotion.checkpointProgressTotalFrames, 36);
   assert.equal(timeline().profileVersion, "media.shortform_profile.r11.v1");
 });
 
-test("R25 checkpoint slicer refuses a boundary through kinetic motion", () => {
-  assert.throws(
-    () => sliceTimelineForR25Checkpoint(timeline(), 0, 600),
-    /cannot split a motion-bearing item/
-  );
+test("R25 checkpoint slicer preserves global motion progress instead of restarting motion", () => {
+  const clipped = sliceTimelineForR25Checkpoint(timeline(), 400, 800);
+  const motion = clipped.tracks.find((x) => x.kind === "video").items[0].motion;
+  assert.equal(motion.checkpointProgressStartFrame, 12);
+  assert.equal(motion.checkpointProgressTotalFrames, 36);
 });
 
 test("R25 simulates SIGTERM after each expensive subphase and resumes only the next phase", () => {
   const dec = decomposition();
-  const c1 = checkpoint(dec, 0, { sha256: SHA("d"), size: 10 });
-  const c2 = checkpoint(dec, 1, { sha256: SHA("e"), size: 11 });
+  const cps = dec.segments.map((segment, index) =>
+    checkpoint(dec, index, { sha256: String(index + 4).repeat(64), size: 10 + index })
+  );
 
   assert.deepEqual(r25Candidate4ResumeState({ decomposition: dec }), {
     nextPhase: "segment-1",
     reused: []
   });
-  assert.deepEqual(r25Candidate4ResumeState({ decomposition: dec, checkpoint1: c1 }), {
-    nextPhase: "segment-2",
-    reused: ["segment-1"]
-  });
-  assert.deepEqual(r25Candidate4ResumeState({ decomposition: dec, checkpoint1: c1, checkpoint2: c2 }), {
+  for (let count = 1; count < cps.length; count += 1) {
+    assert.deepEqual(r25Candidate4ResumeState({
+      decomposition: dec,
+      checkpoints: cps.slice(0, count)
+    }), {
+      nextPhase: dec.segments[count].phase,
+      reused: dec.segments.slice(0, count).map((x) => x.phase)
+    });
+  }
+  assert.deepEqual(r25Candidate4ResumeState({ decomposition: dec, checkpoints: cps }), {
     nextPhase: "assemble",
-    reused: ["segment-1", "segment-2"]
+    reused: dec.segments.map((x) => x.phase)
   });
   assert.deepEqual(r25Candidate4ResumeState({
     decomposition: dec,
-    checkpoint1: c1,
-    checkpoint2: c2,
+    checkpoints: cps,
     final: { sha256: SHA("f"), size: 12 }
   }), {
     nextPhase: "complete",
-    reused: ["segment-1", "segment-2", "assemble"]
+    reused: [...dec.segments.map((x) => x.phase), "assemble"]
   });
 });
 
