@@ -218,7 +218,8 @@ export function buildTournamentCandidatePlans(requestInput) {
     };
   });
   const graphDigests = new Set(plans.map((p) => p.operationGraphDigest));
-  if (graphDigests.size !== plans.length) {
+  const structuralDigests = new Set(plans.map((p) => fingerprint(p.operationGraph.operations)));
+  if (graphDigests.size !== plans.length || structuralDigests.size !== plans.length) {
     fail("tournament_diversity_failure", "candidate operation graphs are not structurally distinct");
   }
   return plans;
