@@ -17,45 +17,88 @@
     "humanQuality"
   ],
   "properties": {
-    "contractVersion": { "const": "media.multicandidate_round.r25.v1" },
+    "contractVersion": {
+      "const": "media.multicandidate_round.r25.v1"
+    },
     "producer": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repository", "sha"],
+      "required": [
+        "repository",
+        "sha"
+      ],
       "properties": {
-        "repository": { "const": "foto6/video2" },
-        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+        "repository": {
+          "const": "foto6/video2"
+        },
+        "sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        }
       }
     },
     "internalContracts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["request","candidateManifest","bracket","targetedReedit","evidence"],
+      "required": [
+        "request",
+        "candidateManifest",
+        "bracket",
+        "targetedReedit",
+        "evidence"
+      ],
       "properties": {
-        "request": { "const": "media.edit_tournament_request.r25.v1" },
-        "candidateManifest": { "const": "media.tournament_candidate_manifest.r25.v1" },
-        "bracket": { "const": "media.review_tournament_bracket.r25.v1" },
-        "targetedReedit": { "const": "media.tournament_targeted_reedit.r25.v1" },
-        "evidence": { "const": "media.edit_tournament.r25.evidence.v1" }
+        "request": {
+          "const": "media.edit_tournament_request.r25.v1"
+        },
+        "candidateManifest": {
+          "const": "media.tournament_candidate_manifest.r25.v1"
+        },
+        "bracket": {
+          "const": "media.review_tournament_bracket.r25.v1"
+        },
+        "targetedReedit": {
+          "const": "media.tournament_targeted_reedit.r25.v1"
+        },
+        "evidence": {
+          "const": "media.edit_tournament.r25.evidence.v1"
+        }
       }
     },
-    "acceptedR24Authority": { "type": "object" },
+    "acceptedR24Authority": {
+      "type": "object"
+    },
     "implementationBlobs": {
       "type": "object",
       "required": [
         "tournamentImplementation",
+        "umbrellaImplementation",
         "runner",
+        "phaseMaterializer",
         "rehearsal",
         "verifier",
         "externalContract",
         "externalSchema"
       ],
-      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{40}$"
+      }
     },
-    "externalAuthorityOnly": { "const": true },
-    "internalContractMayMasqueradeAsUmbrella": { "const": false },
-    "modelReviewPerformed": { "const": false },
-    "providerPublish": { "const": false },
-    "humanQuality": { "const": false }
+    "externalAuthorityOnly": {
+      "const": true
+    },
+    "internalContractMayMasqueradeAsUmbrella": {
+      "const": false
+    },
+    "modelReviewPerformed": {
+      "const": false
+    },
+    "providerPublish": {
+      "const": false
+    },
+    "humanQuality": {
+      "const": false
+    }
   }
 }
