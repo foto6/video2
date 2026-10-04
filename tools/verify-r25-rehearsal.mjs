@@ -158,33 +158,79 @@ for (const pkg of firstEvidence.bracket.reviewPackages) {
   }
 }
 
-const state = readJson(path.join(batchRoot, "candidate-batch-state.json"));
-const cache = readJson(path.join(initialRoot, "candidate-cache.json"));
-const orderedState = Object.values(state.candidates ?? {}).sort((a, b) => a.order - b.order);
-if (orderedState.length !== 4) throw new Error("R25 checkpoint candidate count mismatch");
-const completedHashes = [];
-for (const entry of orderedState) {
-  if (entry.status !== "succeeded") throw new Error(`R25 checkpoint not terminal: ${entry.candidateId}`);
-  const cached = cache.entries?.[entry.cacheIdentityDigest];
-  if (!cached) throw new Error(`R25 checkpoint cache missing: ${entry.candidateId}`);
+let checkpointReplay;
+const phasedCheckpointPath = path.join(initialRoot, "phased-checkpoints.json");
+if (existsSync(phasedCheckpointPath)) {
+  const phased = readJson(phasedCheckpointPath);
   if (
-    cached.final?.sha256 !== entry.result?.final?.sha256 ||
-    cached.final?.size !== entry.result?.final?.size
-  ) throw new Error(`R25 checkpoint result/cache mismatch: ${entry.candidateId}`);
-  completedHashes.push({
-    candidateId: entry.candidateId,
-    cacheIdentityDigest: entry.cacheIdentityDigest,
-    renderSha256: entry.result.final.sha256,
-    renderSize: entry.result.final.size
-  });
+    phased.contractVersion !== "media.r25.rehearsal_checkpoints.v1" ||
+    !Array.isArray(phased.phases) ||
+    phased.phases.length !== 2 ||
+    !Array.isArray(phased.completedCandidates) ||
+    phased.completedCandidates.length !== 4 ||
+    phased.exactReplayProjection?.cacheHits !== 4 ||
+    phased.exactReplayProjection?.renderCalls !== 0 ||
+    phased.exactReplayProjection?.duplicateWorkAuthorized !== false
+  ) throw new Error("R25 phased checkpoint summary mismatch");
+  const seen = new Set();
+  const completedHashes = [];
+  for (const phase of phased.phases) {
+    if (!["pair-1", "pair-2"].includes(phase.phase) || !Array.isArray(phase.candidates) || phase.candidates.length !== 2) {
+      throw new Error("R25 phased checkpoint shape mismatch");
+    }
+    for (const entry of phase.candidates) {
+      if (seen.has(entry.candidateId)) throw new Error("R25 phased checkpoint duplicate candidate");
+      seen.add(entry.candidateId);
+      const manifest = candidateEvidence.find((x) => x.candidateId === entry.candidateId);
+      if (
+        !manifest ||
+        manifest.renderSha256 !== entry.renderSha256 ||
+        manifest.renderSize !== entry.renderSize ||
+        manifest.manifestDigest !== entry.manifestDigest
+      ) throw new Error(`R25 phased checkpoint candidate mismatch: ${entry.candidateId}`);
+      completedHashes.push({
+        candidateId: entry.candidateId,
+        renderSha256: entry.renderSha256,
+        renderSize: entry.renderSize
+      });
+    }
+  }
+  checkpointReplay = {
+    method: "phased-r16-checkpoint-and-output-validation",
+    completedCandidates: completedHashes,
+    cacheHitsOnExactReplay: 4,
+    renderCallsOnExactReplay: 0,
+    duplicateWorkAuthorized: false
+  };
+} else {
+  const state = readJson(path.join(batchRoot, "candidate-batch-state.json"));
+  const cache = readJson(path.join(initialRoot, "candidate-cache.json"));
+  const orderedState = Object.values(state.candidates ?? {}).sort((a, b) => a.order - b.order);
+  if (orderedState.length !== 4) throw new Error("R25 checkpoint candidate count mismatch");
+  const completedHashes = [];
+  for (const entry of orderedState) {
+    if (entry.status !== "succeeded") throw new Error(`R25 checkpoint not terminal: ${entry.candidateId}`);
+    const cached = cache.entries?.[entry.cacheIdentityDigest];
+    if (!cached) throw new Error(`R25 checkpoint cache missing: ${entry.candidateId}`);
+    if (
+      cached.final?.sha256 !== entry.result?.final?.sha256 ||
+      cached.final?.size !== entry.result?.final?.size
+    ) throw new Error(`R25 checkpoint result/cache mismatch: ${entry.candidateId}`);
+    completedHashes.push({
+      candidateId: entry.candidateId,
+      cacheIdentityDigest: entry.cacheIdentityDigest,
+      renderSha256: entry.result.final.sha256,
+      renderSize: entry.result.final.size
+    });
+  }
+  checkpointReplay = {
+    method: "persistent-r16-state-cache-and-output-validation",
+    completedCandidates: completedHashes,
+    cacheHitsOnExactReplay: 4,
+    renderCallsOnExactReplay: 0,
+    duplicateWorkAuthorized: false
+  };
 }
-const checkpointReplay = {
-  method: "persistent-r16-state-cache-and-output-validation",
-  completedCandidates: completedHashes,
-  cacheHitsOnExactReplay: 4,
-  renderCallsOnExactReplay: 0,
-  duplicateWorkAuthorized: false
-};
 
 const initialArchive = verifyArchive(
   path.join(initialRoot, "payload"),
@@ -253,6 +299,7 @@ for (const [name, relativePath] of Object.entries({
   tournamentImplementation: "src/tournament-r25.js",
   umbrellaImplementation: "src/multicandidate-round-r25.js",
   runner: "tools/run-r25-tournament.mjs",
+  phaseMaterializer: "tools/materialize-r25-ci-phase.mjs",
   rehearsal: "tools/demo-r25-tournament.mjs",
   verifier: "tools/verify-r25-rehearsal.mjs",
   externalContract: "conformance/media.multicandidate_round.r25.v1/contract.json",
