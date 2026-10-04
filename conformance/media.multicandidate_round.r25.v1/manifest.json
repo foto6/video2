@@ -61,7 +61,7 @@
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "fc4cf7bfadff9ef21845f6be2f301f4b9b59b9b4"
+      "gitBlobSha": "2a5036cdde3fe47318b7cd5b222d8ffb772ab9fc"
     },
     "internalContract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
