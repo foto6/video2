@@ -197,6 +197,53 @@ function kineticVariant(timelineInput) {
   return canonicalizeTimeline(timeline);
 }
 
+export function buildTournamentCiPhaseSelection(plansInput, phase) {
+  if (!Array.isArray(plansInput) || plansInput.length !== 4) {
+    fail("tournament_ci_phase_invalid", "R25 phased CI requires exactly four candidate plans");
+  }
+  const plans = plansInput.map((entry) => {
+    if (!entry || typeof entry.candidateId !== "string" || !entry.plan) {
+      fail("tournament_ci_phase_invalid", "R25 phased CI candidate plan is invalid");
+    }
+    return entry;
+  });
+  const table = {
+    "pair-1": {
+      batchIndexes: [0, 1],
+      targetIndexes: [0, 1],
+      anchorIndex: null,
+      expectedCacheHits: 0,
+      expectedRenderCalls: 2
+    },
+    "candidate-3": {
+      batchIndexes: [1, 2],
+      targetIndexes: [2],
+      anchorIndex: 1,
+      expectedCacheHits: 1,
+      expectedRenderCalls: 1
+    },
+    "candidate-4": {
+      batchIndexes: [2, 3],
+      targetIndexes: [3],
+      anchorIndex: 2,
+      expectedCacheHits: 1,
+      expectedRenderCalls: 1
+    }
+  };
+  const selected = table[phase];
+  if (!selected) {
+    fail("tournament_ci_phase_invalid", "phase must be pair-1, candidate-3 or candidate-4");
+  }
+  return {
+    phase,
+    batchCandidates: selected.batchIndexes.map((index) => plans[index]),
+    targetCandidates: selected.targetIndexes.map((index) => plans[index]),
+    anchorCandidateId: selected.anchorIndex === null ? null : plans[selected.anchorIndex].candidateId,
+    expectedCacheHits: selected.expectedCacheHits,
+    expectedRenderCalls: selected.expectedRenderCalls
+  };
+}
+
 export function buildTournamentCandidatePlans(requestInput) {
   const request = validateTournamentRequest(requestInput);
   if (request.roundNumber !== 0) fail("tournament_round_invalid", "initial candidate generation is round 0 only");
