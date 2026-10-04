@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import os from "node:os";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 
 import {
@@ -468,4 +469,27 @@ test("R25 unaffected-region evidence explicitly avoids pixel-identity claims", (
     }]
   });
   assert.match(evidence.limitation, /does not claim pixel identity/);
+});
+
+
+test("R25 conformance manifest pins exact implementation and accepted R24 authority", () => {
+  const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+  const manifest = JSON.parse(readFileSync(
+    new URL("../conformance/media.edit_tournament.r25.v1/manifest.json", import.meta.url),
+    "utf8"
+  ));
+  assert.equal(manifest.contractVersion, "media.edit_tournament.r25.v1");
+  assert.equal(manifest.acceptedR24Authority.producerSha, "244acdf154741e669991b17df3ef2a47e2dfdfa9");
+  assert.equal(manifest.acceptedR24Authority.ciRunId, 37195239582);
+  assert.equal(manifest.acceptedR24Authority.artifactId, 11301055747);
+  assert.equal(manifest.acceptedR24Authority.artifactDigest, "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228");
+  for (const [name, pin] of Object.entries(manifest.pins)) {
+    if (name === "tests") continue;
+    const actual = execFileSync("git", ["hash-object", pin.path], { cwd: repoRoot, encoding: "utf8" }).trim();
+    assert.equal(actual, pin.gitBlobSha, name);
+  }
+  assert.match(manifest.pins.tests.gitBlobSha, /^[a-f0-9]{40}$/);
+  assert.equal(manifest.modelReviewPerformed, false);
+  assert.equal(manifest.providerPublish, false);
+  assert.equal(manifest.humanQuality, false);
 });
