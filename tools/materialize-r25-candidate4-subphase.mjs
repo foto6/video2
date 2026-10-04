@@ -136,8 +136,8 @@ function runFfmpeg(command) {
 
 const args = parseArgs(process.argv.slice(2));
 const phase = args.phase;
-if (!["segment-1", "segment-2", "assemble"].includes(phase)) {
-  throw new Error("--phase must be segment-1, segment-2 or assemble");
+if (!(phase === "assemble" || /^segment-[1-9][0-9]*$/.test(phase))) {
+  throw new Error("--phase must be segment-N or assemble");
 }
 const root = path.resolve(args.root ?? path.join(repoRoot, ".artifacts", "r25-demo"));
 const requestPath = path.join(root, "request.json");
@@ -187,20 +187,27 @@ function loadCheckpoint(name, segment) {
   );
 }
 
-if (phase === "segment-1" || phase === "segment-2") {
-  const segment = decomposition.segments.find((entry) => entry.phase === phase);
-  if (!segment) throw new Error(`decomposition segment missing: ${phase}`);
+if (phase !== "assemble") {
+  const segmentIndex = decomposition.segments.findIndex((entry) => entry.phase === phase);
+  if (segmentIndex < 0) throw new Error(`decomposition segment missing: ${phase}`);
+  const segment = decomposition.segments[segmentIndex];
 
   const inputs = [{
     kind: "source",
     sha256: sourceIdentity.sha256,
     size: sourceIdentity.size
   }];
-  if (phase === "segment-2") {
-    const first = loadCheckpoint("segment-1", decomposition.segments[0]);
-    if (!first) throw new Error("segment-2 requires verified segment-1 checkpoint");
-    const firstFile = hashFile(checkpointPath("segment-1"));
-    inputs.push({ kind: "checkpoint", sha256: firstFile.sha256, size: firstFile.size });
+  for (let index = 0; index < segmentIndex; index += 1) {
+    const priorSegment = decomposition.segments[index];
+    const prior = loadCheckpoint(priorSegment.phase, priorSegment);
+    if (!prior) throw new Error(`${phase} requires verified ${priorSegment.phase} checkpoint`);
+    const priorFile = hashFile(checkpointPath(priorSegment.phase));
+    inputs.push({
+      kind: "checkpoint",
+      phase: priorSegment.phase,
+      sha256: priorFile.sha256,
+      size: priorFile.size
+    });
   }
 
   const existing = loadCheckpoint(phase, segment);
@@ -254,9 +261,11 @@ if (phase === "segment-1" || phase === "segment-2") {
   process.exit(0);
 }
 
-const first = loadCheckpoint("segment-1", decomposition.segments[0]);
-const second = loadCheckpoint("segment-2", decomposition.segments[1]);
-if (!first || !second) throw new Error("assemble requires both verified candidate-4 segment checkpoints");
+const verifiedSegments = decomposition.segments.map((segment) => {
+  const checkpoint = loadCheckpoint(segment.phase, segment);
+  if (!checkpoint) throw new Error(`assemble requires verified ${segment.phase} checkpoint`);
+  return checkpoint;
+});
 
 const candidateDir = path.join(root, "initial", "render-batch", "candidates", "candidate-4");
 mkdirSync(candidateDir, { recursive: true });
@@ -285,7 +294,7 @@ if (existingPhase && existsSync(finalPath) && existsSync(sidecarPath) && existsS
 const concatList = path.join(subRoot, "concat.txt");
 writeFileSync(
   concatList,
-  [outputPath("segment-1"), outputPath("segment-2")]
+  decomposition.segments.map((segment) => outputPath(segment.phase))
     .map((value) => `file '${value.replaceAll("'", "'\\''")}'`)
     .join("\n") + "\n",
   "utf8"
@@ -447,8 +456,15 @@ cache.put(cacheIdentityDigest, {
   }
 });
 
-const firstCheckpointFile = hashFile(checkpointPath("segment-1"));
-const secondCheckpointFile = hashFile(checkpointPath("segment-2"));
+const segmentCheckpointEvidence = decomposition.segments.map((segment, index) => {
+  const checkpointFile = hashFile(checkpointPath(segment.phase));
+  return {
+    phase: segment.phase,
+    sha256: checkpointFile.sha256,
+    output: verifiedSegments[index].output,
+    elapsedMs: verifiedSegments[index].elapsedMs
+  };
+});
 const phaseCheckpoint = {
   phase: "candidate-4",
   producerSha,
@@ -472,10 +488,7 @@ const phaseCheckpoint = {
     runtimeManifestSha256,
     semanticOutputContract: "same frozen candidate-4 timeline/operation graph; segmented encoding at motion-safe existing video-item boundary; final byte hash frozen by this method",
     byteIdentityToLegacyUnsegmentedRenderClaimed: false,
-    segmentCheckpoints: [
-      { phase: "segment-1", sha256: firstCheckpointFile.sha256, output: first.output },
-      { phase: "segment-2", sha256: secondCheckpointFile.sha256, output: second.output }
-    ],
+    segmentCheckpoints: segmentCheckpointEvidence,
     final: finalId,
     assemblyElapsedMs
   },
@@ -500,10 +513,9 @@ console.log("R25_CANDIDATE4_ASSEMBLE", stableStringify({
   decompositionDigest: decomposition.decompositionDigest,
   runtimeManifestSha256,
   assemblyElapsedMs,
-  segmentElapsedMs: {
-    segment1: first.elapsedMs,
-    segment2: second.elapsedMs
-  },
+  segmentElapsedMs: Object.fromEntries(
+    verifiedSegments.map((checkpoint) => [checkpoint.phase, checkpoint.elapsedMs])
+  ),
   completedCandidateRerendered: false,
   byteIdentityToLegacyUnsegmentedRenderClaimed: false
 }));
