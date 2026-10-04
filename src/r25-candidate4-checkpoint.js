@@ -53,10 +53,16 @@ export function sliceTimelineForR25Checkpoint(timelineInput, startMs, endMs) {
       if (!overlap(item, startMs, endMs)) continue;
       const clippedStart = Math.max(item.startMs, startMs);
       const clippedEnd = Math.min(item.endMs, endMs);
-      if (item.motion && (clippedStart !== item.startMs || clippedEnd !== item.endMs)) {
-        fail("r25_checkpoint_motion_split", "checkpoint boundary cannot split a motion-bearing item", { itemId: item.id });
-      }
       const copy = clone(item);
+      if (item.motion && (clippedStart !== item.startMs || clippedEnd !== item.endMs)) {
+        const totalFrames = Math.max(2, Math.round(((item.endMs - item.startMs) / 1000) * timeline.canvas.fps));
+        const progressStartFrame = Math.round(((clippedStart - item.startMs) / 1000) * timeline.canvas.fps);
+        copy.motion = {
+          ...copy.motion,
+          checkpointProgressStartFrame: progressStartFrame,
+          checkpointProgressTotalFrames: totalFrames
+        };
+      }
       copy.id = `${item.id}__r25seg_${startMs}_${endMs}`;
       copy.startMs = clippedStart - startMs;
       copy.endMs = clippedEnd - startMs;
@@ -98,17 +104,26 @@ export function buildR25Candidate4Decomposition({
     .filter((track) => track.kind === "video")
     .flatMap((track) => track.items)
     .sort((a, b) => a.startMs - b.startMs || a.endMs - b.endMs || a.id.localeCompare(b.id));
-  const boundaries = [...new Set(videoItems.map((item) => item.endMs))]
-    .filter((value) => value > 0 && value < canonical.canvas.durationMs)
-    .filter((value) => !videoItems.some((item) => item.motion && item.startMs < value && value < item.endMs))
-    .sort((a, b) => {
-      const half = canonical.canvas.durationMs / 2;
-      return Math.abs(a - half) - Math.abs(b - half) || a - b;
-    });
-  if (!boundaries.length) {
-    fail("r25_checkpoint_no_safe_split", "candidate-4 has no motion-safe video-item boundary");
+  if (!videoItems.length) fail("r25_checkpoint_no_video", "candidate-4 has no video items");
+  const maxMotionChunkMs = 800;
+  const rawSegments = [];
+  for (const item of videoItems) {
+    if (item.motion && item.endMs - item.startMs > maxMotionChunkMs) {
+      for (let start = item.startMs; start < item.endMs; start += maxMotionChunkMs) {
+        rawSegments.push({ startMs: start, endMs: Math.min(item.endMs, start + maxMotionChunkMs) });
+      }
+    } else {
+      rawSegments.push({ startMs: item.startMs, endMs: item.endMs });
+    }
   }
-  const splitMs = boundaries[0];
+  if (rawSegments[0].startMs !== 0 || rawSegments.at(-1).endMs !== canonical.canvas.durationMs) {
+    fail("r25_checkpoint_video_coverage", "candidate-4 video segments must cover full output duration");
+  }
+  for (let i = 1; i < rawSegments.length; i += 1) {
+    if (rawSegments[i - 1].endMs !== rawSegments[i].startMs) {
+      fail("r25_checkpoint_video_coverage", "candidate-4 durable segments must be contiguous");
+    }
+  }
   const common = {
     contractVersion: MEDIA_R25_CANDIDATE4_SUBPHASE_VERSION,
     tournamentId,
@@ -119,10 +134,10 @@ export function buildR25Candidate4Decomposition({
     timelineDigest: fingerprint(canonical),
     runtimeManifestSha256
   };
-  const segments = [
-    { phase: "segment-1", startMs: 0, endMs: splitMs },
-    { phase: "segment-2", startMs: splitMs, endMs: canonical.canvas.durationMs }
-  ].map((segment) => {
+  const segments = rawSegments.map((range, index) => ({
+    phase: `segment-${index + 1}`,
+    ...range
+  })).map((segment) => {
     const sliced = sliceTimelineForR25Checkpoint(canonical, segment.startMs, segment.endMs);
     const input = { ...common, ...segment, segmentTimelineDigest: fingerprint(sliced) };
     return {
@@ -133,9 +148,10 @@ export function buildR25Candidate4Decomposition({
   });
   return {
     ...common,
-    splitMs,
+    splitMs: segments[0]?.endMs ?? null,
     durationMs: canonical.canvas.durationMs,
-    decompositionDigest: fingerprint({ ...common, splitMs, segments }),
+    maxMotionChunkMs,
+    decompositionDigest: fingerprint({ ...common, maxMotionChunkMs, segments }),
     segments
   };
 }
@@ -223,13 +239,27 @@ export function validateR25Candidate4Checkpoint(input, { decomposition, segment,
   return checkpoint;
 }
 
-export function r25Candidate4ResumeState({ decomposition, checkpoint1 = null, checkpoint2 = null, final = null } = {}) {
+export function r25Candidate4ResumeState({
+  decomposition,
+  checkpoints = null,
+  checkpoint1 = null,
+  checkpoint2 = null,
+  final = null
+} = {}) {
   const segments = decomposition?.segments ?? [];
-  if (segments.length !== 2) fail("r25_checkpoint_invalid", "two-segment decomposition required");
-  if (!checkpoint1) return { nextPhase: "segment-1", reused: [] };
-  validateR25Candidate4Checkpoint(checkpoint1, { decomposition, segment: segments[0] });
-  if (!checkpoint2) return { nextPhase: "segment-2", reused: ["segment-1"] };
-  validateR25Candidate4Checkpoint(checkpoint2, { decomposition, segment: segments[1] });
-  if (!final) return { nextPhase: "assemble", reused: ["segment-1", "segment-2"] };
-  return { nextPhase: "complete", reused: ["segment-1", "segment-2", "assemble"] };
+  if (segments.length < 2) fail("r25_checkpoint_invalid", "multi-segment decomposition required");
+  const supplied = Array.isArray(checkpoints)
+    ? checkpoints
+    : [checkpoint1, checkpoint2].filter(Boolean);
+  const reused = [];
+  for (let index = 0; index < supplied.length; index += 1) {
+    if (index >= segments.length) fail("r25_checkpoint_invalid", "too many segment checkpoints supplied");
+    validateR25Candidate4Checkpoint(supplied[index], { decomposition, segment: segments[index] });
+    reused.push(segments[index].phase);
+  }
+  if (supplied.length < segments.length) {
+    return { nextPhase: segments[supplied.length].phase, reused };
+  }
+  if (!final) return { nextPhase: "assemble", reused };
+  return { nextPhase: "complete", reused: [...reused, "assemble"] };
 }
