@@ -121,12 +121,7 @@ jobs:
           name: media-r24-ci-readiness
           path: .artifacts/r24-actions-readiness.json
           if-no-files-found: error
-      - run: npm run verify:r25
-      - uses: actions/upload-artifact@v4
-        with:
-          name: media-r25-multicandidate-tournament
-          path: .artifacts/r25-demo
-          if-no-files-found: error
+      - run: npm run test:r25
       - name: Verify accepted R17 Actions authority
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -186,6 +181,30 @@ jobs:
       - run: npm run test:artifact
       - run: npm run test:stress
       - run: npm test
+
+  r25-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+      - run: ffmpeg -version && ffprobe -version
+      - name: R25 focused contract tests
+        run: npm run test:r25
+      - name: Materialize R25 real encoded rehearsal once
+        run: npm run materialize:r25
+      - name: Verify R25 materialization without rerender
+        run: npm run verify:r25:dir
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-multicandidate-tournament
+          path: .artifacts/r25-demo
+          if-no-files-found: error
 
   r14-acceptance:
     runs-on: ubuntu-latest
