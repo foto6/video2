@@ -142,7 +142,10 @@ test("R25 candidate-4 decomposition uses an existing motion-safe item boundary",
   const two = sliceTimelineForR25Checkpoint(timeline(), 1200, 5000);
   assert.equal(one.canvas.durationMs, 1200);
   assert.equal(two.canvas.durationMs, 3800);
+  assert.equal(one.profileVersion, undefined);
+  assert.equal(two.profileVersion, undefined);
   assert.equal(one.tracks.find((x) => x.kind === "video").items[0].motion.type, "slow_push");
+  assert.equal(timeline().profileVersion, "media.shortform_profile.r11.v1");
 });
 
 test("R25 checkpoint slicer refuses a boundary through kinetic motion", () => {
