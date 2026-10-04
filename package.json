@@ -70,7 +70,9 @@
     "record:r24:ci": "node tools/record-r24-actions-readiness.mjs",
     "test:r25": "node --test tests/tournament-r25.test.js",
     "run:r25": "node tools/run-r25-tournament.mjs",
-    "demo:r25": "node tools/demo-r25-tournament.mjs",
-    "verify:r25": "npm run test:r25 && npm run demo:r25"
+    "demo:r25": "npm run materialize:r25",
+    "verify:r25": "npm run test:r25 && npm run materialize:r25 && npm run verify:r25:dir",
+    "materialize:r25": "node tools/demo-r25-tournament.mjs",
+    "verify:r25:dir": "node tools/verify-r25-rehearsal.mjs"
   }
 }
