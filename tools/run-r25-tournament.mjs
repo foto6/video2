@@ -474,5 +474,5 @@ const evidence = {
   providerPublish: false,
   humanQuality: false
 };
-writeStable(path.join(outputRoot, "media.edit_tournament.r25.evidence.json"), evidence);
+writeFileSync(path.join(outputRoot, "media.edit_tournament.r25.evidence.json"), stableStringify(evidence) + "\n");
 console.log("R25_TOURNAMENT", stableStringify(evidence));
