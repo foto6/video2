@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.tournament_candidate_manifest.r25.v1",
+  "title": "Media R25 tournament candidate manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","tournamentId","candidateId","roundNumber","strategy",
+    "source","briefDigest","producerSha","operationGraph","operationGraphDigest",
+    "declaredOperationTypes","render","renderExport","ffprobe","technicalGate",
+    "captionSidecar","blindSeed","humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.tournament_candidate_manifest.r25.v1" },
+    "tournamentId": { "type": "string", "minLength": 1 },
+    "candidateId": { "type": "string", "minLength": 1 },
+    "roundNumber": { "type": "integer", "minimum": 0, "maximum": 2 },
+    "strategy": { "type": "string", "minLength": 1 },
+    "briefDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "producerSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "operationGraphDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "declaredOperationTypes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "render": {
+      "type": "object",
+      "required": ["path","sha256","size"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "renderExport": {
+      "type": "object",
+      "required": ["path","fileSha256","digest"]
+    },
+    "technicalGate": {
+      "type": "object",
+      "required": ["passed","checks"],
+      "properties": { "passed": { "const": true } }
+    },
+    "captionSidecar": {
+      "type": "object",
+      "required": ["path","sha256","size","mime"]
+    },
+    "blindSeed": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "humanQuality": { "const": false },
+    "source": { "type": "object" },
+    "operationGraph": { "type": "object" },
+    "ffprobe": { "type": "object" }
+  }
+}
