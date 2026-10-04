@@ -1,0 +1,47 @@
+{
+  "manifestVersion": "media.multicandidate_round.r25.v1.manifest.1",
+  "contractVersion": "media.multicandidate_round.r25.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "244acdf154741e669991b17df3ef2a47e2dfdfa9",
+  "acceptedR24Authority": {
+    "producerSha": "244acdf154741e669991b17df3ef2a47e2dfdfa9",
+    "ciRunId": 37195239582,
+    "artifactId": 11301055747,
+    "artifactName": "media-r24-canonical-live-review-export",
+    "artifactDigest": "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228",
+    "contractVersion": "media.canonical_live_review_export.r24.v1"
+  },
+  "internalContractMap": {
+    "request": "media.edit_tournament_request.r25.v1",
+    "candidateManifest": "media.tournament_candidate_manifest.r25.v1",
+    "bracket": "media.review_tournament_bracket.r25.v1",
+    "targetedReedit": "media.tournament_targeted_reedit.r25.v1",
+    "evidence": "media.edit_tournament.r25.evidence.v1"
+  },
+  "pins": {
+    "umbrellaImplementation": {"path":"src/multicandidate-round-r25.js","gitBlobSha":"86a9ef07f61d0e514832bd5b6e11514d2048b475"},
+    "tournamentImplementation": {"path":"src/tournament-r25.js","gitBlobSha":"ddbb27a90a191d096b500304fd03bac6b9bca99c"},
+    "runner": {"path":"tools/run-r25-tournament.mjs","gitBlobSha":"e242a092d7d48f661b2713bebf59ad910f7505c5"},
+    "rehearsal": {"path":"tools/demo-r25-tournament.mjs","gitBlobSha":"ddc989a70e5b430e861244dd36c0ab800654ac5a"},
+    "verifier": {"path":"tools/verify-r25-rehearsal.mjs","gitBlobSha":"95cbdf3a418bc6e86bfbb7a2d0bf9cdba411e0ae"},
+    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"efc9921aa130244b2876da024d05ffc75caabcf5"},
+    "externalContract": {"path":"conformance/media.multicandidate_round.r25.v1/contract.json","gitBlobSha":"95d958248dbeaf92c072cd3af98a5b1eb06e613e"},
+    "externalSchema": {"path":"conformance/media.multicandidate_round.r25.v1/schema.json","gitBlobSha":"0c2885a3842b2c72a8545b274eeb6f781d1150e2"},
+    "internalManifest": {"path":"conformance/media.edit_tournament.r25.v1/manifest.json","gitBlobSha":"732d978c1a9fdfc96136c381cbd939e61da939c2"},
+    "package": {"path":"package.json","gitBlobSha":"72ac963ad1c1f0a9f051f4c27fd9a223a72335cf"},
+    "workflow": {"path":".github/workflows/test.yml","gitBlobSha":"fc4cf7bfadff9ef21845f6be2f301f4b9b59b9b4"}
+  },
+  "ciReliability": {
+    "focusedTestsInMainRegressionJob": true,
+    "realMaterializationDedicatedJob": "r25-evidence",
+    "expensiveMaterializationsPerEvidenceJob": 1,
+    "postMaterializationVerificationRerenders": 0,
+    "checkpointAuthority": "media.candidate_batch.v1 persistent state/cache",
+    "restartSimulation": "candidate 1-2 succeeded; candidate 3 running -> pending; only candidate 3-4 execute"
+  },
+  "externalAuthorityOnly": true,
+  "internalContractMayMasqueradeAsUmbrella": false,
+  "modelReviewPerformed": false,
+  "providerPublish": false,
+  "humanQuality": false
+}
