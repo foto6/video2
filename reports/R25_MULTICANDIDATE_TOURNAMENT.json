@@ -49,7 +49,8 @@
     "mainRegressionStep": "npm run test:r25",
     "phasedJobs": [
       "r25-pair-1",
-      "r25-pair-2",
+      "r25-candidate-3",
+      "r25-candidate-4",
       "r25-initial-finalize",
       "r25-targeted-evidence",
       "r25-postdownload-verify"
@@ -59,12 +60,25 @@
     "verificationRerenders": 0,
     "phaseCommands": [
       "npm run r25:phase1",
-      "npm run r25:phase2",
+      "npm run r25:candidate3",
+      "npm run r25:candidate4",
       "npm run r25:finalize",
       "R25_INITIAL_PREMATERIALIZED=1 npm run r25:targeted",
       "npm run verify:r25:dir"
     ],
-    "checkpointAuthority": "Actions phase artifacts + R16 exact output/cache identities",
-    "resumeTest": "interrupt after 2/4 completed; reuse completed exact hashes; execute only unfinished candidates"
+    "checkpointAuthority": "Actions phase artifacts + R16 exact cache-anchor/output identities",
+    "resumeTest": "interrupt after 2/4 completed; candidate-3 batch exact-reuses candidate-2 anchor and renders candidate-3 only; candidate-4 batch exact-reuses candidate-3 anchor and renders candidate-4 only",
+    "r16CandidateCountInvariant": "2-4 unchanged",
+    "continuationExpectedMetrics": {
+      "cacheHits": 1,
+      "renderCalls": 1,
+      "completedCandidateRerendered": false
+    },
+    "rehearsalSource": {
+      "generator": "ffmpeg testsrc",
+      "durationMs": 6000,
+      "actualEncodedMp4": true,
+      "rationale": "bound hosted-runner CPU pressure without changing edit/product semantics or QA gates"
+    }
   }
 }
