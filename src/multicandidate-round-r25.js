@@ -54,7 +54,9 @@ export function buildMulticandidateRoundAuthority({
   }
   const requiredBlobs = [
     "tournamentImplementation",
+    "umbrellaImplementation",
     "runner",
+    "phaseMaterializer",
     "rehearsal",
     "verifier",
     "externalContract",
