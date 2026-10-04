@@ -144,6 +144,13 @@ function directoryIdentity(root) {
   const records = allFiles(root).map((name) => fileRecord(root, name));
   return { digest: fingerprint(records), records };
 }
+function frozenR23DirectoryIdentity(root) {
+  const records = allFiles(root).map((relativePath) => {
+    const id = hashFile(path.join(root, relativePath));
+    return { path: relativePath, sha256: id.sha256, size: id.size };
+  });
+  return { digest: fingerprint(records), records };
+}
 function copyStable(source, target) {
   const expected = hashFile(source);
   mkdirSync(path.dirname(target), { recursive: true });
@@ -259,7 +266,7 @@ function verifyR23SessionSource(sessionDir) {
     r22.reviewRound !== session.reviewRound
   ) fail("canonical_live_review_lineage_mismatch", "R22 nested operator evidence differs from R23 session");
 
-  const operatorIdentity = directoryIdentity(operatorRoot);
+  const operatorIdentity = frozenR23DirectoryIdentity(operatorRoot);
   if (operatorIdentity.digest !== session.r22.directoryDigest) {
     fail("canonical_live_review_lineage_mismatch", "R22 operator directory digest differs from R23 session");
   }
