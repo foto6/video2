@@ -111,3 +111,25 @@ The real rehearsal runs the same tournament twice and requires:
 Outputs live under `.artifacts/r25-demo`.
 
 No model/browser/provider call, social publish, human-quality assertion, or merge occurs.
+
+
+## R25 external umbrella authority
+
+External consumers MUST use `media.multicandidate_round.r25.v1` as the R25 authority. The older `media.edit_tournament.r25.v1`, `media.edit_tournament_request.r25.v1`, candidate-manifest, bracket, targeted-reedit and evidence contracts remain internal nested contracts and are exact-mapped by the umbrella. They are not valid substitutes for the external authority.
+
+The umbrella pins the accepted R24 authority (producer `244acdf154741e669991b17df3ef2a47e2dfdfa9`, CI `37195239582`, artifact `11301055747`, digest `sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228`) and exact Git blob identities for the tournament implementation, runner, rehearsal, read-only verifier, external contract/schema and internal mapping files.
+
+## CI reliability and restart closure
+
+R25 no longer proves replay by immediately running the complete four-candidate tournament a second time. The real rehearsal materializes once, records persistent R16 candidate state/cache checkpoints, and then `npm run verify:r25:dir` independently verifies the encoded candidate files, manifests, bracket packages, targeted re-edit lineage and deterministic archives without invoking a render path.
+
+The main regression job runs the fast focused R25 contract suite. A separate `r25-evidence` job performs exactly one expensive real-MP4 materialization and then the read-only verifier. This prevents the R25 evidence workload from inheriting the lifetime of the R19-R24 demo chain while preserving all existing regression gates.
+
+The focused restart test simulates an interruption after candidates 1 and 2 have succeeded and candidate 3 is marked running. On reconstruction the running entry becomes pending, candidates 1-2 are validated/reused with their exact completed hashes, and only candidates 3-4 execute.
+
+Commands:
+
+- `npm run test:r25` — focused contracts/adversarial/restart tests.
+- `npm run materialize:r25` — one real encoded four-candidate + targeted-reedit rehearsal.
+- `npm run verify:r25:dir` — read-only verification; no rerender.
+- `npm run verify:r25` — local convenience composition of the three steps.
