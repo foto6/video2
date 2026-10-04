@@ -771,5 +771,7 @@ test("R25 CI checkpoints FFmpeg once and continuation jobs reuse it without apt 
     assert.match(body, /test -x "\$root\/bin\/ffmpeg"/);
     assert.match(body, /test -x "\$root\/bin\/ffprobe"/);
   }
+  assert.match(candidate4, /R25_HEARTBEAT candidate-4/);
+  assert.match(targeted, /R25_HEARTBEAT targeted-reedit/);
   assert.match(targeted, /Remove CI-only FFmpeg runtime before final evidence upload/);
 });
