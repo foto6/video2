@@ -763,7 +763,7 @@ test("R25 stale conformance blob pins fail closed instead of being tolerated", (
 });
 
 
-test("R25 CI checkpoints FFmpeg once and continuation jobs reuse it without apt reinstall", () => {
+test("R25 CI checkpoints FFmpeg once and candidate-4 durable subphases reuse it without apt reinstall", () => {
   const workflow = readFileSync(
     new URL("../.github/workflows/test.yml", import.meta.url),
     "utf8"
@@ -775,7 +775,9 @@ test("R25 CI checkpoints FFmpeg once and continuation jobs reuse it without apt 
     return workflow.slice(start, end === -1 ? workflow.length : end);
   };
   const pair1 = section("r25-pair-1", "r25-candidate-3");
-  const candidate3 = section("r25-candidate-3", "r25-candidate-4");
+  const candidate3 = section("r25-candidate-3", "r25-candidate-4-segment-1");
+  const segment1 = section("r25-candidate-4-segment-1", "r25-candidate-4-segment-2");
+  const segment2 = section("r25-candidate-4-segment-2", "r25-candidate-4");
   const candidate4 = section("r25-candidate-4", "r25-initial-finalize");
   const targeted = section("r25-targeted-evidence", "r25-postdownload-verify");
 
@@ -783,21 +785,28 @@ test("R25 CI checkpoints FFmpeg once and continuation jobs reuse it without apt 
   assert.match(pair1, /Checkpoint exact FFmpeg runtime for continuation jobs/);
   for (const [name, body] of [
     ["candidate-3", candidate3],
-    ["candidate-4", candidate4],
+    ["candidate-4-segment-1", segment1],
+    ["candidate-4-segment-2", segment2],
+    ["candidate-4-assemble", candidate4],
     ["targeted-evidence", targeted]
   ]) {
     assert.doesNotMatch(body, /apt-get install/, `${name} must use checkpointed runtime`);
     assert.match(body, /Activate checkpointed FFmpeg runtime/);
     const verifyIndex = body.indexOf('sha256sum -c runtime.manifest.sha256');
-    const chmodIndex = body.indexOf('chmod 0755 "$root\/bin\/ffmpeg" "$root\/bin\/ffprobe"');
-    const executeIndex = body.indexOf('"$root\/bin\/ffmpeg" -version');
+    const chmodIndex = body.indexOf('chmod 0755 "$root/bin/ffmpeg" "$root/bin/ffprobe"');
+    const executeIndex = body.indexOf('"$root/bin/ffmpeg" -version');
     assert.ok(verifyIndex >= 0, `${name} must verify runtime manifest`);
     assert.ok(chmodIndex > verifyIndex, `${name} must restore execute bits only after digest verification`);
     assert.ok(executeIndex > chmodIndex, `${name} must execute only after permission restoration`);
     assert.match(body, /test -x "\$root\/bin\/ffmpeg"/);
     assert.match(body, /test -x "\$root\/bin\/ffprobe"/);
   }
-  assert.match(candidate4, /R25_HEARTBEAT candidate-4/);
+  assert.match(segment1, /r25:candidate4:segment1/);
+  assert.match(segment2, /r25:candidate4:segment2/);
+  assert.match(candidate4, /r25:candidate4:assemble/);
+  assert.match(segment1, /media-r25-checkpoint-candidate-4-segment-1/);
+  assert.match(segment2, /media-r25-checkpoint-candidate-4-segment-2/);
+  assert.match(candidate4, /media-r25-checkpoint-candidate-4/);
   assert.match(targeted, /R25_HEARTBEAT targeted-reedit/);
   assert.match(targeted, /Remove CI-only FFmpeg runtime before final evidence upload/);
 });
