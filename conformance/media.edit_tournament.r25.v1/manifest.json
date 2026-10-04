@@ -21,7 +21,7 @@
     },
     "demo": {
       "path": "tools/demo-r25-tournament.mjs",
-      "gitBlobSha": "5386998103eb354b478e80ab430610525aa81cf2"
+      "gitBlobSha": "09ca6de485ab5a3e00c469513e0bb117e098e5ea"
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
@@ -61,7 +61,7 @@
     },
     "phaseMaterializer": {
       "path": "tools/materialize-r25-ci-phase.mjs",
-      "gitBlobSha": "9fa3d3c40a509a7c8f6087c667a3103abd0003d3"
+      "gitBlobSha": "e4babd8b13784c9385fcbeb21eb32410b0e58599"
     },
     "verifier": {
       "path": "tools/verify-r25-rehearsal.mjs",
