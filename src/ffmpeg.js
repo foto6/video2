@@ -59,16 +59,23 @@ function motionFilter(item, canvas, durationMs) {
     ].join(",");
   }
   const frames = Math.max(2, Math.round((durationMs / 1000) * canvas.fps));
-  const last = Math.max(1, frames - 1);
+  const checkpointTotalFrames = Number.isInteger(item.motion.checkpointProgressTotalFrames)
+    ? item.motion.checkpointProgressTotalFrames
+    : frames;
+  const checkpointStartFrame = Number.isInteger(item.motion.checkpointProgressStartFrame)
+    ? item.motion.checkpointProgressStartFrame
+    : 0;
+  const last = Math.max(1, checkpointTotalFrames - 1);
+  const progressFrame = checkpointStartFrame === 0 ? "on" : `(on+${checkpointStartFrame})`;
   if (item.motion.type === "slow_push") {
     const delta = Math.max(0, zoom - 1);
-    return `zoompan=z='min(1+on/${last}*${delta.toFixed(5)},${zoom})':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
+    return `zoompan=z='min(1+${progressFrame}/${last}*${delta.toFixed(5)},${zoom})':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
   }
   if (item.motion.type === "pan_left") {
-    return `zoompan=z='${zoom}':x='(iw-iw/zoom)*(1-on/${last})':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
+    return `zoompan=z='${zoom}':x='(iw-iw/zoom)*(1-${progressFrame}/${last})':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
   }
   if (item.motion.type === "pan_right") {
-    return `zoompan=z='${zoom}':x='(iw-iw/zoom)*on/${last}':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
+    return `zoompan=z='${zoom}':x='(iw-iw/zoom)*${progressFrame}/${last}':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
   }
   return `zoompan=z='${zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
 }
