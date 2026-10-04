@@ -13,6 +13,18 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_CANONICAL_LIVE_REVIEW_EXPORT_VERSION,
+  MEDIA_CANONICAL_LIVE_REVIEW_MANIFEST_VERSION,
+  MEDIA_CANONICAL_LIVE_REVIEW_AUTHORITY_VERSION,
+  MEDIA_CANONICAL_LIVE_REVIEW_HANDOFF_VERSION,
+  MEDIA_CANONICAL_LIVE_REVIEW_VERIFICATION_VERSION,
+  CANONICAL_LIVE_REVIEW_ARTIFACT_READY,
+  R24_R23_AUTHORITY,
+  materializeCanonicalLiveReviewExport,
+  verifyCanonicalLiveReviewExport
+} from "./canonical-live-review-r24.js";
+
+export {
   MEDIA_LIVE_REVIEW_ARTIFACT_VERSION,
   MEDIA_LIVE_REVIEW_PACKAGE_MANIFEST_VERSION,
   MEDIA_LIVE_REVIEW_AUTHORITY_PROFILE_VERSION,
