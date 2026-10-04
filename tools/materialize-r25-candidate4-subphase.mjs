@@ -125,7 +125,7 @@ function verifyRuntimeManifest(root) {
 function runFfmpeg(command) {
   const started = Date.now();
   execFileSync(command.binary, command.args, {
-    cwd: process.cwd(),
+    cwd: root,
     env: process.env,
     stdio: ["ignore", "ignore", "pipe"],
     windowsHide: true,
