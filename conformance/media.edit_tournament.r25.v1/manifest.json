@@ -1,0 +1,34 @@
+{
+  "manifestVersion": "media.edit_tournament.r25.v1.manifest.1",
+  "contractVersion": "media.edit_tournament.r25.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "244acdf154741e669991b17df3ef2a47e2dfdfa9",
+  "acceptedR24Authority": {
+    "producerSha": "244acdf154741e669991b17df3ef2a47e2dfdfa9",
+    "ciRunId": 37195239582,
+    "artifactId": 11301055747,
+    "artifactName": "media-r24-canonical-live-review-export",
+    "artifactDigest": "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228"
+  },
+  "pins": {
+    "implementation": {"path":"src/tournament-r25.js","gitBlobSha":"ddbb27a90a191d096b500304fd03bac6b9bca99c"},
+    "runner": {"path":"tools/run-r25-tournament.mjs","gitBlobSha":"e242a092d7d48f661b2713bebf59ad910f7505c5"},
+    "demo": {"path":"tools/demo-r25-tournament.mjs","gitBlobSha":"08ce8842c29f3ac557a2d3f8ceeb2cc3bc3e08bd"},
+    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"f4eb9b81b811470220d89ec4e2e75fbaef4ea3c7"},
+    "contract": {"path":"conformance/media.edit_tournament.r25.v1/contract.json","gitBlobSha":"09ff8f8a8c52edc11e7a1f8b0b7dfd2bb834a7b5"},
+    "candidateSchema": {"path":"conformance/media.edit_tournament.r25.v1/candidate-manifest.schema.json","gitBlobSha":"b0f1a5c5e717e37733b8249635eaef23221ca74c"},
+    "package": {"path":"package.json","gitBlobSha":"b36f1be9f111ee00359b6a865a5e33b26e328518"},
+    "workflow": {"path":".github/workflows/test.yml","gitBlobSha":"b0f69307f22a7424f14552109bcc52a08a0f2527"},
+    "r16BatchRuntime": {"path":"src/candidate-batch-r16.js","gitBlobSha":"47b4950d85cfcd15a1c0eaf952bdd57ea99505fb"},
+    "r19EditorialRuntime": {"path":"src/editorial-reedit-r19.js","gitBlobSha":"8110a086b5b319bd2601860845c6afbf97681921"},
+    "r21RoundPackaging": {"path":"src/review-round-r21.js","gitBlobSha":"c6f556b8a177b6182d787356625094cdcad5a58e"},
+    "r24CanonicalVerifier": {"path":"src/canonical-live-review-r24.js","gitBlobSha":"6ac715d57cb5ec37792a84190ec481c0f7194a77"}
+  },
+  "reproductionCommand": "npm run verify:r25",
+  "artifactRoot": ".artifacts/r25-demo",
+  "actualEncodedFourCandidateRound": true,
+  "actualEncodedTargetedReeditRound": true,
+  "modelReviewPerformed": false,
+  "providerPublish": false,
+  "humanQuality": false
+}
