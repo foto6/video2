@@ -1,0 +1,64 @@
+{
+  "contractVersion": "media.canonical_live_review_export.r24.v1",
+  "packageManifestVersion": "media.canonical_live_review_package_manifest.r24.v1",
+  "authorityProfileVersion": "media.canonical_live_review_authority.r24.v1",
+  "bridgeHandoffVersion": "media.bridge_live_review_handoff.r24.v1",
+  "verificationVersion": "media.canonical_live_review_verification.r24.v1",
+  "purpose": "Export one exact R23 review session into a self-contained payload directory plus deterministic tar archive that can be independently verified before any Bridge browser mutation.",
+  "acceptedR23Authority": {
+    "repository": "foto6/video2",
+    "branch": "agent/media-r23-next-round-export-20261002",
+    "producerSha": "78c6982a91d7e3e8c037cd9ce740ee077babdccc",
+    "ciRunId": 37007419237,
+    "artifactId": 11226183002,
+    "artifactName": "media-r23-review-session-package",
+    "artifactDigest": "sha256:5170ada97f8c86421f4bee34c97fbfa5701bef74ef406f18889a1a790ae3ac66"
+  },
+  "payload": {
+    "modelFacingFiles": [
+      "review-A.mp4",
+      "review-B.mp4",
+      "model-facing-prompt.txt"
+    ],
+    "machineFiles": [
+      "r23/media.review_session_package.r23.v1.json",
+      "r23/media.review_session_package.r23.evidence.json",
+      "r21/media.review_round_bundle.r21.v1.json",
+      "r21/media.review_round_transport_handoff.r21.v1.json",
+      "r21/media.review_round_bundle.r21.evidence.json",
+      "machine/r21/media.review_round_sealed_mapping.r21.v1.json",
+      "nested/r22-operator/**",
+      "media.canonical_live_review_authority.r24.v1.json",
+      "media.bridge_live_review_handoff.r24.v1.json",
+      "media.canonical_live_review_package_manifest.r24.v1.json"
+    ],
+    "sealedMappingMachineSideOnly": true,
+    "modelFacingCandidateRoleLeakForbidden": true
+  },
+  "archive": {
+    "file": "media-r24-canonical-live-review.tar",
+    "format": "ustar",
+    "deterministic": true,
+    "sortedEntries": true,
+    "mtime": 0,
+    "uid": 0,
+    "gid": 0,
+    "indexFile": "media.canonical_live_review_export.r24.v1.json",
+    "independentPostDownloadVerificationRequired": true
+  },
+  "bridge": {
+    "handoff": "media.bridge_live_review_handoff.r24.v1",
+    "nestedR22OperatorPreserved": true,
+    "attachmentIdentityFields": ["relativePath","sha256","size","mime"],
+    "promptIdentityFields": ["relativePath","sha256","size","mime"],
+    "sealedMappingContentsExcluded": true
+  },
+  "evidenceBoundary": {
+    "nonHumanGroundTruthDemo": true,
+    "modelReviewPerformed": false,
+    "liveModelReviewed": false,
+    "browserMutationPerformed": false,
+    "providerPublish": false,
+    "humanQuality": false
+  }
+}
