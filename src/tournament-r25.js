@@ -151,6 +151,29 @@ export function validateTournamentRequest(input) {
   };
 }
 
+export function tournamentRequestIdentityDigest(requestInput) {
+  const request = validateTournamentRequest(requestInput);
+  return fingerprint({
+    tournamentId: request.tournamentId,
+    source: {
+      sourceId: request.source.sourceId,
+      sha256: request.source.sha256,
+      size: request.source.size
+    },
+    briefDigest: request.brief.digest,
+    roundNumber: request.roundNumber,
+    candidateCount: request.candidateCount
+  });
+}
+
+export function validateTournamentReplayBinding(state, requestInput) {
+  const digest = tournamentRequestIdentityDigest(requestInput);
+  if (!plain(state) || state.requestIdentityDigest !== digest) {
+    fail("tournament_replay_conflict", "same tournament identity is bound to changed source/brief/round/count");
+  }
+  return { requestIdentityDigest: digest, replayCompatible: true };
+}
+
 function kineticVariant(timelineInput) {
   const timeline = clone(timelineInput);
   const videos = timeline.tracks.filter((t) => t.kind === "video").flatMap((t) => t.items);
@@ -281,13 +304,37 @@ export function buildOperationGraph(timelineInput) {
       sourceWindows: videoItems.map((item) => sourceRef(item))
     });
   }
+  const primary = videoItems.filter((item) => item.source && !["broll", "insert", "loop_bridge"].includes(item.role));
+  const primarySourceId = primary[0]?.source?.id ?? null;
+  const windows = primary
+    .filter((item) => (item.source?.id ?? null) === primarySourceId)
+    .map((item) => ({
+      inMs: item.source?.inMs ?? 0,
+      outMs: item.source?.outMs ?? null
+    }))
+    .filter((x) => Number.isInteger(x.inMs) && Number.isInteger(x.outMs) && x.outMs > x.inMs)
+    .sort((a, b) => a.inMs - b.inMs || a.outMs - b.outMs);
+  const gaps = [];
+  if (windows.length) {
+    let cursor = windows[0].inMs;
+    for (const window of windows) {
+      if (window.inMs > cursor) gaps.push({ startMs: cursor, endMs: window.inMs });
+      cursor = Math.max(cursor, window.outMs);
+    }
+  }
   return {
     timelineDigest: fingerprint(timeline),
     durationMs: timeline.canvas.durationMs,
     operations: operations.sort((a, b) =>
       String(a.type).localeCompare(String(b.type)) ||
       String(a.itemId ?? "").localeCompare(String(b.itemId ?? ""))
-    )
+    ),
+    sourceCoverage: {
+      primarySourceId,
+      windows,
+      gaps,
+      declaredOmissions: clone(timeline.creativePlan?.removedDeadAir ?? [])
+    }
   };
 }
 
@@ -344,6 +391,18 @@ export function validateTournamentCandidateManifest(input) {
   if (fingerprint(input.operationGraph) !== input.operationGraphDigest) fail("tournament_candidate_invalid", "operation graph digest mismatch");
   const observedTypes = [...new Set(input.operationGraph.operations.map((x) => x.type))].sort();
   for (const type of observedTypes) if (!OP_TYPES.has(type)) fail("tournament_candidate_invalid", `unknown operation type: ${type}`);
+  const coverage = input.operationGraph.sourceCoverage;
+  if (!plain(coverage) || !Array.isArray(coverage.gaps) || !Array.isArray(coverage.declaredOmissions)) {
+    fail("tournament_candidate_invalid", "operation graph sourceCoverage is required");
+  }
+  for (const gap of coverage.gaps) {
+    const declaredGap = coverage.declaredOmissions.some((range) =>
+      range.startMs <= gap.startMs && range.endMs >= gap.endMs
+    );
+    if (!declaredGap && !observedTypes.includes("broll_insert")) {
+      fail("tournament_undeclared_source_omission", "candidate omits a primary-source segment without a declared edit");
+    }
+  }
   const declared = [...new Set(input.declaredOperationTypes)].sort();
   if (stableStringify(observedTypes) !== stableStringify(declared)) {
     fail("tournament_undeclared_operation", "operation graph includes undeclared or missing operation types", { observedTypes, declared });
@@ -431,7 +490,7 @@ export function buildTournamentBracket(candidateManifestsInput, {
     digest: fingerprint(seeded),
     entries: seeded
   };
-  return {
+  return validateTournamentBracket({
     contractVersion: MEDIA_TOURNAMENT_BRACKET_VERSION,
     state: TOURNAMENT_ROUND_READY,
     tournamentId,
@@ -446,7 +505,32 @@ export function buildTournamentBracket(candidateManifestsInput, {
     liveModelReviewed: false,
     providerPublish: false,
     humanQuality: false
-  };
+  });
+}
+
+export function validateTournamentBracket(input) {
+  if (!plain(input)) fail("tournament_bracket_invalid", "bracket must be object");
+  if (input.contractVersion !== MEDIA_TOURNAMENT_BRACKET_VERSION || input.state !== TOURNAMENT_ROUND_READY) {
+    fail("tournament_bracket_invalid", "bracket contract/state mismatch");
+  }
+  if (!Array.isArray(input.seedOrder) || !Array.isArray(input.matches)) fail("tournament_bracket_invalid", "bracket seeds/matches required");
+  if (!plain(input.sealedMapping) || fingerprint(input.sealedMapping.entries ?? []) !== input.sealedMapping.digest) {
+    fail("tournament_sealed_mapping_mismatch", "bracket sealed mapping digest mismatch");
+  }
+  if (input.candidateCount < 2 || input.candidateCount > 4 || input.seedOrder.length !== input.candidateCount) {
+    fail("tournament_bracket_invalid", "candidate count/seed order mismatch");
+  }
+  const expectedStages = input.candidateCount === 2 ? ["final"] : ["semifinal", "final"];
+  for (const stage of expectedStages) {
+    if (!input.matches.some((m) => m.stage === stage)) fail("tournament_bracket_invalid", `missing ${stage} stage`);
+  }
+  if (
+    input.modelReviewPerformed !== false ||
+    input.liveModelReviewed !== false ||
+    input.providerPublish !== false ||
+    input.humanQuality !== false
+  ) fail("tournament_bracket_invalid", "evidence boundary violated");
+  return clone(input);
 }
 
 function sourceWindows(timelineInput) {
