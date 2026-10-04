@@ -14,7 +14,7 @@
     "implementation": {"path":"src/tournament-r25.js","gitBlobSha":"ddbb27a90a191d096b500304fd03bac6b9bca99c"},
     "runner": {"path":"tools/run-r25-tournament.mjs","gitBlobSha":"e242a092d7d48f661b2713bebf59ad910f7505c5"},
     "demo": {"path":"tools/demo-r25-tournament.mjs","gitBlobSha":"08ce8842c29f3ac557a2d3f8ceeb2cc3bc3e08bd"},
-    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"f4eb9b81b811470220d89ec4e2e75fbaef4ea3c7"},
+    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"f03a4af1531bd584ea92d489441a3f843f96e3fa"},
     "contract": {"path":"conformance/media.edit_tournament.r25.v1/contract.json","gitBlobSha":"09ff8f8a8c52edc11e7a1f8b0b7dfd2bb834a7b5"},
     "candidateSchema": {"path":"conformance/media.edit_tournament.r25.v1/candidate-manifest.schema.json","gitBlobSha":"b0f1a5c5e717e37733b8249635eaef23221ca74c"},
     "package": {"path":"package.json","gitBlobSha":"b36f1be9f111ee00359b6a865a5e33b26e328518"},
