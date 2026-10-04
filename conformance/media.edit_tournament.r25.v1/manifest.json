@@ -25,7 +25,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "b88dd2d8e1ac04c854b634f4cc8fbe2bfce36a2d"
+      "gitBlobSha": "3cff71eb8d854c992dc3944bf6cbdee2cd83f75e"
     },
     "contract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -66,6 +66,10 @@
     "verifier": {
       "path": "tools/verify-r25-rehearsal.mjs",
       "gitBlobSha": "64a0c801ef678c934bd1f354caf3f90d6a02e5a2"
+    },
+    "ffmpegRuntime": {
+      "path": "src/ffmpeg.js",
+      "gitBlobSha": "78275404f1608e51ac7ca825e4152f480da6171c"
     }
   },
   "reproductionCommand": "npm run verify:r25",
