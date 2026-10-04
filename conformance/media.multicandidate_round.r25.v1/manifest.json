@@ -33,7 +33,7 @@
     },
     "rehearsal": {
       "path": "tools/demo-r25-tournament.mjs",
-      "gitBlobSha": "ec94d3698584b3c10f114785cd4c518a30b39108"
+      "gitBlobSha": "5386998103eb354b478e80ab430610525aa81cf2"
     },
     "verifier": {
       "path": "tools/verify-r25-rehearsal.mjs",
@@ -53,7 +53,7 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "e1a9db044357f372475346e131cc784ab96d90f6"
+      "gitBlobSha": "16e2cc9a68f8e19098ea88c4750c92655b3f062a"
     },
     "package": {
       "path": "package.json",
@@ -73,7 +73,7 @@
     },
     "phaseMaterializer": {
       "path": "tools/materialize-r25-ci-phase.mjs",
-      "gitBlobSha": "7a0a3dcf655dfcdd3394d2411304012547b79b2b"
+      "gitBlobSha": "9fa3d3c40a509a7c8f6087c667a3103abd0003d3"
     }
   },
   "ciReliability": {
