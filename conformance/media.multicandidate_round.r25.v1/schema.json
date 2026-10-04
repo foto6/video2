@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.multicandidate_round.r25.v1",
+  "title": "Media R25 external multicandidate round authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "producer",
+    "internalContracts",
+    "acceptedR24Authority",
+    "implementationBlobs",
+    "externalAuthorityOnly",
+    "internalContractMayMasqueradeAsUmbrella",
+    "modelReviewPerformed",
+    "providerPublish",
+    "humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.multicandidate_round.r25.v1" },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "sha"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "internalContracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request","candidateManifest","bracket","targetedReedit","evidence"],
+      "properties": {
+        "request": { "const": "media.edit_tournament_request.r25.v1" },
+        "candidateManifest": { "const": "media.tournament_candidate_manifest.r25.v1" },
+        "bracket": { "const": "media.review_tournament_bracket.r25.v1" },
+        "targetedReedit": { "const": "media.tournament_targeted_reedit.r25.v1" },
+        "evidence": { "const": "media.edit_tournament.r25.evidence.v1" }
+      }
+    },
+    "acceptedR24Authority": { "type": "object" },
+    "implementationBlobs": {
+      "type": "object",
+      "required": [
+        "tournamentImplementation",
+        "runner",
+        "rehearsal",
+        "verifier",
+        "externalContract",
+        "externalSchema"
+      ],
+      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+    },
+    "externalAuthorityOnly": { "const": true },
+    "internalContractMayMasqueradeAsUmbrella": { "const": false },
+    "modelReviewPerformed": { "const": false },
+    "providerPublish": { "const": false },
+    "humanQuality": { "const": false }
+  }
+}
