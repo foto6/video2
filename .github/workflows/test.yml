@@ -19,6 +19,7 @@ on:
       - agent/media-r21-round-pair-review-bundle-20261002
       - agent/media-r22-live-package-materializer-20261002
       - agent/media-r23-next-round-export-20261002
+      - agent/media-r24-canonical-live-artifact-20261002
   pull_request:
 
 permissions:
@@ -88,6 +89,36 @@ jobs:
         with:
           name: media-r23-review-session-package
           path: .artifacts/r23-demo
+          if-no-files-found: error
+      - name: Verify exact accepted R23 Actions authority for R24
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/verify-r24-upstream-r23-artifact.mjs
+      - name: Download exact accepted R23 session artifact for R24
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: 11226183002
+          github-token: ${{ github.token }}
+          repository: foto6/video2
+          run-id: 37007419237
+          path: .artifacts/r23-accepted
+          merge-multiple: true
+      - run: npm run verify:r24
+        env:
+          R24_UPSTREAM_ROOT: .artifacts/r23-accepted
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r24-canonical-live-review-export
+          path: .artifacts/r24-demo
+          if-no-files-found: error
+      - name: Record R24 Actions artifact readiness
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run record:r24:ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r24-ci-readiness
+          path: .artifacts/r24-actions-readiness.json
           if-no-files-found: error
       - name: Verify accepted R17 Actions authority
         env:
