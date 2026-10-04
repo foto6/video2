@@ -450,7 +450,7 @@ test("R25 targeted re-edit binds exact R19 application and emits unaffected-regi
   assert.equal(result.parentRound, 0);
   assert.equal(result.childRound, 1);
   assert.equal(result.humanQuality, false);
-  assert.equal(result.unaffectedRegionEvidence.method, "source-window-lineage-outside-declared-edit-intervals");
+  assert.equal(result.unaffectedRegionEvidence.method, "normalized-source-window-lineage-outside-declared-edit-intervals");
 });
 
 test("R25 rejects candidate round above two", () => {
