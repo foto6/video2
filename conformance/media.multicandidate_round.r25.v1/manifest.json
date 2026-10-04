@@ -53,7 +53,7 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "7009f2b7f660b721a89f807990da71790a7e5d2f"
+      "gitBlobSha": "b5bb9aac1dc9eb7f6bba491c02ef302477dfac26"
     },
     "package": {
       "path": "package.json",
