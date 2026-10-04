@@ -12,7 +12,10 @@
     "artifactName": "media-r24-canonical-live-review-export",
     "artifactDigest": "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228"
   },
-  "candidateCount": { "minimum": 2, "maximum": 4 },
+  "candidateCount": {
+    "minimum": 2,
+    "maximum": 4
+  },
   "candidateDiversity": {
     "operationGraphMustDiffer": true,
     "renderBytesMustDiffer": true,
@@ -23,7 +26,10 @@
     "requiresTechnicalQa": true,
     "requiresCreativeQa": true,
     "requiresVerticalProfile": "1080x1920@30",
-    "durationMs": { "minimum": 5000, "maximum": 90000 },
+    "durationMs": {
+      "minimum": 5000,
+      "maximum": 90000
+    },
     "audioRequiredWhenExpected": true,
     "avSyncToleranceMs": 120,
     "blackFreezeAndSourceQaPreserved": true,
@@ -58,5 +64,7 @@
     "providerPublish": false,
     "humanQuality": false,
     "merge": false
-  }
+  },
+  "externalUmbrellaAuthority": "media.multicandidate_round.r25.v1",
+  "externalAuthority": false
 }
