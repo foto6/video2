@@ -1,0 +1,47 @@
+{
+  "reportVersion": "media.r24.canonical_live_review_export.readiness.v1",
+  "branch": "agent/media-r24-canonical-live-artifact-20261002",
+  "baselineSha": "78c6982a91d7e3e8c037cd9ce740ee077babdccc",
+  "baselineCiRunId": 37007419237,
+  "contractVersion": "media.canonical_live_review_export.r24.v1",
+  "state": "CANONICAL_LIVE_REVIEW_ARTIFACT_READY",
+  "acceptedR23": {
+    "producerSha": "78c6982a91d7e3e8c037cd9ce740ee077babdccc",
+    "ciRunId": 37007419237,
+    "artifactId": 11226183002,
+    "artifactName": "media-r23-review-session-package",
+    "artifactDigest": "sha256:5170ada97f8c86421f4bee34c97fbfa5701bef74ef406f18889a1a790ae3ac66"
+  },
+  "canonicalShape": {
+    "payloadDirectory": "payload",
+    "archive": "media-r24-canonical-live-review.tar",
+    "exportIndex": "media.canonical_live_review_export.r24.v1.json",
+    "bridgeHandoff": "payload/media.bridge_live_review_handoff.r24.v1.json",
+    "sealedMapping": "payload/machine/r21/media.review_round_sealed_mapping.r21.v1.json",
+    "nestedR22Operator": "payload/nested/r22-operator"
+  },
+  "reproduction": {
+    "focused": "npm run test:r24",
+    "demo": "npm run demo:r24",
+    "verify": "npm run verify:r24",
+    "verifyDownloaded": "npm run verify:r24:dir -- --export-dir <downloaded-export-dir>",
+    "artifactRoot": ".artifacts/r24-demo",
+    "runtimeActionsReadiness": ".artifacts/r24-actions-readiness.json"
+  },
+  "realRehearsalRounds": [0,1],
+  "actualEncodedMp4Bytes": true,
+  "deterministicArchive": true,
+  "exactReplayByteStableRequired": true,
+  "postDownloadIndependentVerificationRequired": true,
+  "sealedMappingMachineSideOnly": true,
+  "sanitizedBridgeHandoff": true,
+  "actionsArtifactName": "media-r24-canonical-live-review-export",
+  "actionsArtifactIdentityRecordedAtWorkflowRuntime": true,
+  "nonHumanGroundTruthDemo": true,
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "browserMutationPerformed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "merge": false
+}
