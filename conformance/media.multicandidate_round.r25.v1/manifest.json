@@ -41,7 +41,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "53954bca1e1ad4213868656937b1937c2668ad0c"
+      "gitBlobSha": "99213824764c53b6c301319b1559e39ac19b0429"
     },
     "externalContract": {
       "path": "conformance/media.multicandidate_round.r25.v1/contract.json",
@@ -53,15 +53,15 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "29bad7548e69e21683578bec12f0b9115a15cc0d"
+      "gitBlobSha": "68cb0b26bb23f7650f80c3031226962a91f29315"
     },
     "package": {
       "path": "package.json",
-      "gitBlobSha": "0a0e0fc8725992d0ece5ceb3ca305509b2459dec"
+      "gitBlobSha": "a5abf4cc8fd5b64355d0ad1d6d168ad97a6c3fe4"
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "3c6127284c1004b5835448c5fd4e58218a0326c9"
+      "gitBlobSha": "d5b12c42ed56ba7943ed4bf346915da83473c1f2"
     },
     "internalContract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -77,19 +77,19 @@
     },
     "ffmpegRuntime": {
       "path": "src/ffmpeg.js",
-      "gitBlobSha": "78275404f1608e51ac7ca825e4152f480da6171c"
+      "gitBlobSha": "d4b29dc95f2cd1c88e26f0db7d794bd45edf19f0"
     },
     "candidate4CheckpointImplementation": {
       "path": "src/r25-candidate4-checkpoint.js",
-      "gitBlobSha": "c1dfcdb529c845bc509bacbdee48e68ae4aee063"
+      "gitBlobSha": "15244fc9ba74f518a46a216aed64ba7a845a949a"
     },
     "candidate4SubphaseMaterializer": {
       "path": "tools/materialize-r25-candidate4-subphase.mjs",
-      "gitBlobSha": "79531d2522224d616fd39ddbbb994d7600bbb1e4"
+      "gitBlobSha": "076ecb063576b082332eecd7649957431ea47826"
     },
     "candidate4CheckpointTests": {
       "path": "tests/r25-candidate4-checkpoint.test.js",
-      "gitBlobSha": "ce577da05e97c945762607addf8480c26119e1a2"
+      "gitBlobSha": "7782e5e3f39f064c38ad403c33e818bfaf0afaa0"
     }
   },
   "ciReliability": {
@@ -99,6 +99,8 @@
       "r25-candidate-3",
       "r25-candidate-4-segment-1",
       "r25-candidate-4-segment-2",
+      "r25-candidate-4-segment-3",
+      "r25-candidate-4-segment-4",
       "r25-candidate-4",
       "r25-initial-finalize",
       "r25-targeted-evidence",
@@ -108,7 +110,7 @@
     "targetedCandidateRendersPerJob": 1,
     "postMaterializationVerificationRerenders": 0,
     "checkpointAuthority": "media.candidate_batch.v1 exact cache anchors plus media.r25.candidate4_checkpoint.v1 content-addressed segment checkpoints",
-    "restartSimulation": "candidate 1-2 succeeded; candidate 3 exact-reuses candidate-2 anchor; candidate 4 segment-1 and segment-2 are independently checkpointed at a motion-safe existing video-item boundary; assembly reuses both exact segment hashes and seeds the frozen R16 cache identity",
+    "restartSimulation": "candidate 1-2 succeeded; candidate 3 exact-reuses candidate-2 anchor; candidate-4 motion interval is split into two 800ms chunks with global 48-frame progress, followed by existing 1600-3400 and 3400-5000 video-item chunks; each checkpoint is verified/reused before the next phase",
     "ffmpegRuntimeCheckpoint": {
       "sourceJob": "r25-pair-1",
       "runtimeManifest": "ci-ffmpeg-runtime/runtime.manifest.sha256",
@@ -117,6 +119,8 @@
         "r25-candidate-3",
         "r25-candidate-4-segment-1",
         "r25-candidate-4-segment-2",
+        "r25-candidate-4-segment-3",
+        "r25-candidate-4-segment-4",
         "r25-candidate-4",
         "r25-targeted-evidence"
       ],
@@ -125,12 +129,13 @@
     },
     "candidate4Preemption": {
       "observedLegacyShutdownWindowSeconds": "30-40",
-      "strategy": "two durable render segments + no-rerender assembly/QA",
+      "strategy": "four durable render chunks + no-rerender assembly/QA; kinetic chunks preserve global motion frame progress",
       "phaseContract": "media.r25.candidate4_checkpoint.v1",
       "runtimeDigestBound": true,
       "sourceGraphRuntimeConflictClosed": true,
       "exactCompletedPhaseReplay": true,
-      "legacyByteIdentityClaimed": false
+      "legacyByteIdentityClaimed": false,
+      "measuredLegacySegment1ActiveSeconds": 28.7
     }
   },
   "externalAuthorityOnly": true,
