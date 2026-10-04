@@ -13,6 +13,16 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_R25_CANDIDATE4_SUBPHASE_VERSION,
+  MEDIA_R25_CANDIDATE4_CHECKPOINT_VERSION,
+  sliceTimelineForR25Checkpoint,
+  buildR25Candidate4Decomposition,
+  buildR25Candidate4Checkpoint,
+  validateR25Candidate4Checkpoint,
+  r25Candidate4ResumeState
+} from "./r25-candidate4-checkpoint.js";
+
+export {
   MEDIA_MULTICANDIDATE_ROUND_VERSION,
   R25_EXTERNAL_UMBRELLA_MAP,
   buildMulticandidateRoundAuthority,
