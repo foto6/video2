@@ -1,0 +1,62 @@
+{
+  "contractVersion": "media.edit_tournament.r25.v1",
+  "requestVersion": "media.edit_tournament_request.r25.v1",
+  "candidateManifestVersion": "media.tournament_candidate_manifest.r25.v1",
+  "bracketVersion": "media.review_tournament_bracket.r25.v1",
+  "targetedReeditVersion": "media.tournament_targeted_reedit.r25.v1",
+  "state": "TOURNAMENT_ROUND_READY",
+  "acceptedR24Authority": {
+    "producerSha": "244acdf154741e669991b17df3ef2a47e2dfdfa9",
+    "ciRunId": 37195239582,
+    "artifactId": 11301055747,
+    "artifactName": "media-r24-canonical-live-review-export",
+    "artifactDigest": "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228"
+  },
+  "candidateCount": { "minimum": 2, "maximum": 4 },
+  "candidateDiversity": {
+    "operationGraphMustDiffer": true,
+    "renderBytesMustDiffer": true,
+    "filenameOnlyDifferenceForbidden": true
+  },
+  "hardTechnicalGate": {
+    "requiresSucceededR15RenderExport": true,
+    "requiresTechnicalQa": true,
+    "requiresCreativeQa": true,
+    "requiresVerticalProfile": "1080x1920@30",
+    "durationMs": { "minimum": 5000, "maximum": 90000 },
+    "audioRequiredWhenExpected": true,
+    "avSyncToleranceMs": 120,
+    "blackFreezeAndSourceQaPreserved": true,
+    "undeclaredSourceOmissionForbidden": true
+  },
+  "bracket": {
+    "twoCandidates": "one final A/B",
+    "threeCandidates": "one semifinal plus deterministic bye and final slot",
+    "fourCandidates": "two deterministic semifinals plus final winner slots",
+    "sealedCandidateMappingMachineSideOnly": true,
+    "reviewPackagesUseR21BlindTransport": true
+  },
+  "targetedReedit": {
+    "requiresR19Application": true,
+    "requiresExactGrowthHandoffDigest": true,
+    "requiresExactDirectiveDigest": true,
+    "requiresParentRenderMatch": true,
+    "maximumChildRound": 2,
+    "unaffectedRegionEvidence": "normalized source-window lineage outside declared edit intervals"
+  },
+  "restartReplay": {
+    "delegatesBoundedRenderResumeAndCacheTo": "media.candidate_batch.v1",
+    "runningCandidateResetsPendingAfterRestart": true,
+    "completedMatchingCandidatesRemainReusable": true,
+    "changedSourceOrBriefUnderSameTournamentIdentity": "conflict",
+    "exactReplayArchiveByteStable": true,
+    "duplicateRenderAuthorizationOnExactReplay": false
+  },
+  "evidenceBoundary": {
+    "modelReviewPerformed": false,
+    "liveModelReviewed": false,
+    "providerPublish": false,
+    "humanQuality": false,
+    "merge": false
+  }
+}
