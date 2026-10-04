@@ -68,7 +68,7 @@
     "export:r24": "node tools/export-r24-canonical-live-review.mjs",
     "verify:r24:dir": "node tools/verify-r24-canonical-live-review.mjs",
     "record:r24:ci": "node tools/record-r24-actions-readiness.mjs",
-    "test:r25": "node --test tests/tournament-r25.test.js",
+    "test:r25": "node --test tests/tournament-r25.test.js tests/r25-candidate4-checkpoint.test.js",
     "run:r25": "node tools/run-r25-tournament.mjs",
     "demo:r25": "npm run materialize:r25",
     "verify:r25": "npm run test:r25 && npm run materialize:r25 && npm run verify:r25:dir",
@@ -78,6 +78,9 @@
     "r25:finalize": "node tools/materialize-r25-ci-phase.mjs --phase finalize",
     "r25:targeted": "node tools/demo-r25-tournament.mjs",
     "r25:candidate3": "node tools/materialize-r25-ci-phase.mjs --phase candidate-3",
-    "r25:candidate4": "node tools/materialize-r25-ci-phase.mjs --phase candidate-4"
+    "r25:candidate4": "npm run r25:candidate4:assemble",
+    "r25:candidate4:segment1": "node tools/materialize-r25-candidate4-subphase.mjs --phase segment-1",
+    "r25:candidate4:segment2": "node tools/materialize-r25-candidate4-subphase.mjs --phase segment-2",
+    "r25:candidate4:assemble": "node tools/materialize-r25-candidate4-subphase.mjs --phase assemble"
   }
 }
