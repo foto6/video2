@@ -13,6 +13,25 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_TOURNAMENT_REQUEST_VERSION,
+  MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION,
+  MEDIA_TOURNAMENT_BRACKET_VERSION,
+  MEDIA_TOURNAMENT_EVIDENCE_VERSION,
+  MEDIA_TOURNAMENT_TARGETED_REEDIT_VERSION,
+  TOURNAMENT_ROUND_READY,
+  R25_R24_AUTHORITY,
+  validateTournamentRequest,
+  buildTournamentCandidatePlans,
+  buildOperationGraph,
+  evaluateTournamentTechnicalGate,
+  validateTournamentCandidateManifest,
+  candidateManifestDigest,
+  buildTournamentBracket,
+  buildUnaffectedRegionEvidence,
+  validateTargetedTournamentReedit
+} from "./tournament-r25.js";
+
+export {
   MEDIA_CANONICAL_LIVE_REVIEW_EXPORT_VERSION,
   MEDIA_CANONICAL_LIVE_REVIEW_MANIFEST_VERSION,
   MEDIA_CANONICAL_LIVE_REVIEW_AUTHORITY_VERSION,
