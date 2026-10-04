@@ -192,7 +192,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+      - name: Install bounded R25 FFmpeg dependency only
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: ffmpeg -version && ffprobe -version
       - name: R25 focused contract tests
         run: npm run test:r25
