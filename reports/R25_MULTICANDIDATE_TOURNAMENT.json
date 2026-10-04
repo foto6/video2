@@ -15,7 +15,7 @@
     "targetedReedit": "media.tournament_targeted_reedit.r25.v1"
   },
   "rehearsal": {
-    "command": "npm run materialize:r25",
+    "command": "artifact-chained R25 phased CI",
     "artifactRoot": ".artifacts/r25-demo",
     "candidateCount": 4,
     "actualEncodedMp4": true,
@@ -47,12 +47,24 @@
   },
   "ciReliability": {
     "mainRegressionStep": "npm run test:r25",
-    "evidenceJob": "r25-evidence",
-    "materializationCommand": "npm run materialize:r25",
-    "verificationCommand": "npm run verify:r25:dir",
-    "expensiveMaterializationsPerEvidenceJob": 1,
+    "phasedJobs": [
+      "r25-pair-1",
+      "r25-pair-2",
+      "r25-initial-finalize",
+      "r25-targeted-evidence",
+      "r25-postdownload-verify"
+    ],
+    "maxInitialCandidateRendersPerJob": 2,
+    "targetedCandidateRendersPerJob": 1,
     "verificationRerenders": 0,
-    "persistentCheckpoint": "media.candidate_batch.v1 state + cache",
-    "resumeTest": "interrupt after 2/4 completed; reuse 2 exact hashes; execute only 3/4 and 4/4"
+    "phaseCommands": [
+      "npm run r25:phase1",
+      "npm run r25:phase2",
+      "npm run r25:finalize",
+      "R25_INITIAL_PREMATERIALIZED=1 npm run r25:targeted",
+      "npm run verify:r25:dir"
+    ],
+    "checkpointAuthority": "Actions phase artifacts + R16 exact output/cache identities",
+    "resumeTest": "interrupt after 2/4 completed; reuse completed exact hashes; execute only unfinished candidates"
   }
 }
