@@ -41,6 +41,11 @@ export function sliceTimelineForR25Checkpoint(timelineInput, startMs, endMs) {
   const sliced = clone(timeline);
   sliced.id = `${timeline.id}-r25-checkpoint-${startMs}-${endMs}`;
   sliced.canvas.durationMs = endMs - startMs;
+  // Checkpoint segments are internal render intermediates, not reviewable R11
+  // final artifacts. Keep the frozen full candidate timeline/profile for final
+  // assembly QA, but do not apply the R11 >=5s final-output duration invariant
+  // to a deliberately shorter durable segment.
+  delete sliced.profileVersion;
   delete sliced.creativePlan;
   sliced.tracks = timeline.tracks.map((track) => {
     const items = [];
