@@ -1,0 +1,38 @@
+{
+  "contractVersion": "media.multicandidate_round.r25.v1",
+  "purpose": "External umbrella authority for Media R25 deterministic 2-4 candidate tournament rounds.",
+  "internalContracts": {
+    "request": "media.edit_tournament_request.r25.v1",
+    "candidateManifest": "media.tournament_candidate_manifest.r25.v1",
+    "bracket": "media.review_tournament_bracket.r25.v1",
+    "targetedReedit": "media.tournament_targeted_reedit.r25.v1",
+    "evidence": "media.edit_tournament.r25.evidence.v1"
+  },
+  "acceptedR24Authority": {
+    "producerSha": "244acdf154741e669991b17df3ef2a47e2dfdfa9",
+    "ciRunId": 37195239582,
+    "artifactId": 11301055747,
+    "artifactName": "media-r24-canonical-live-review-export",
+    "artifactDigest": "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228",
+    "contractVersion": "media.canonical_live_review_export.r24.v1"
+  },
+  "authorityRules": {
+    "externalAuthorityOnly": true,
+    "internalContractMayMasqueradeAsUmbrella": false,
+    "mappingMustBeExact": true,
+    "implementationBlobsMustBeExactGitBlobs": true
+  },
+  "rehearsal": {
+    "candidateCount": 4,
+    "actualEncodedMp4": true,
+    "targetedReeditRound": true,
+    "materializeOnceThenVerifyWithoutRerender": true,
+    "persistentCandidateCheckpointReuse": true
+  },
+  "evidenceBoundary": {
+    "modelReviewPerformed": false,
+    "providerPublish": false,
+    "humanQuality": false,
+    "merge": false
+  }
+}
