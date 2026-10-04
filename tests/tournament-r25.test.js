@@ -6,20 +6,27 @@ import { execFileSync } from "node:child_process";
 import path from "node:path";
 
 import {
+  CandidateBatchRuntime,
   MEDIA_CANDIDATE_BATCH_VERSION,
+  MEDIA_MULTICANDIDATE_ROUND_VERSION,
   MEDIA_SHORTFORM_PROFILE_VERSION,
   MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION,
   MEDIA_TOURNAMENT_REQUEST_VERSION,
   PersistentCandidateBatchStore,
+  PersistentCandidateCache,
   R15_BOSS_BENCHMARK_BINDING,
   R19_GROWTH_R23_AUTHORITY,
+  buildMulticandidateRoundAuthority,
   buildTournamentBracket,
   buildTournamentCandidatePlans,
   buildUnaffectedRegionEvidence,
+  candidateCacheIdentity,
+  candidatePlanDigest,
   candidateRendererConfigDigest,
   evaluateTournamentTechnicalGate,
   fingerprint,
   tournamentRequestIdentityDigest,
+  validateMulticandidateRoundAuthority,
   validateTargetedTournamentReedit,
   validateTournamentBracket,
   validateTournamentCandidateManifest,
@@ -492,4 +499,123 @@ test("R25 conformance manifest pins exact implementation and accepted R24 author
   assert.equal(manifest.modelReviewPerformed, false);
   assert.equal(manifest.providerPublish, false);
   assert.equal(manifest.humanQuality, false);
+});
+
+
+test("R25 external umbrella is the only Hard Wave authority and exact-maps internal contracts", () => {
+  const authority = buildMulticandidateRoundAuthority({
+    producerSha: GIT("1"),
+    implementationBlobs: {
+      tournamentImplementation: GIT("2"),
+      umbrellaImplementation: GIT("3"),
+      runner: GIT("4"),
+      rehearsal: GIT("5"),
+      verifier: GIT("6"),
+      externalContract: GIT("7"),
+      externalSchema: GIT("8")
+    }
+  });
+  assert.equal(authority.contractVersion, MEDIA_MULTICANDIDATE_ROUND_VERSION);
+  assert.equal(authority.internalContracts.request, MEDIA_TOURNAMENT_REQUEST_VERSION);
+  assert.equal(authority.internalContracts.candidateManifest, MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION);
+  assert.equal(authority.externalAuthorityOnly, true);
+  assert.equal(authority.internalContractMayMasqueradeAsUmbrella, false);
+
+  const tamperedMap = structuredClone(authority);
+  tamperedMap.internalContracts.request = "media.candidate_batch.v1";
+  assert.throws(() => validateMulticandidateRoundAuthority(tamperedMap), /map exactly/);
+
+  const tamperedR24 = structuredClone(authority);
+  tamperedR24.acceptedR24Authority.artifactDigest = "sha256:" + SHA("9");
+  assert.throws(() => validateMulticandidateRoundAuthority(tamperedR24), /R24 authority mismatch/);
+
+  assert.throws(
+    () => validateMulticandidateRoundAuthority({ contractVersion: MEDIA_TOURNAMENT_REQUEST_VERSION }),
+    /cannot masquerade as external umbrella authority/
+  );
+});
+
+test("R25 restart after candidate 2 of 4 reuses completed hashes and resumes only unfinished candidates", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "r25-resume-"));
+  const tournament = baseRequest();
+  const plans = buildTournamentCandidatePlans(tournament);
+  const request = {
+    contractVersion: MEDIA_CANDIDATE_BATCH_VERSION,
+    batchId: "r25-resume-four",
+    source: {
+      sourceId: tournament.source.sourceId,
+      sha256: tournament.source.sha256,
+      size: tournament.source.size
+    },
+    renderer: { configDigest: candidateRendererConfigDigest({ maxParallel: 2 }) },
+    candidates: plans.map((entry) => ({
+      candidateId: entry.candidateId,
+      plan: entry.plan
+    }))
+  };
+  const storePath = path.join(root, "candidate-batch-state.json");
+  const cachePath = path.join(root, "candidate-cache.json");
+  const producerSha = GIT("1");
+  const seedStore = new PersistentCandidateBatchStore({ filePath: storePath });
+  const seeded = seedStore.initialize(request, producerSha);
+
+  const seededHashes = new Map();
+  for (let i = 0; i < 2; i += 1) {
+    const candidate = request.candidates[i];
+    const renderSha256 = String(i + 1).repeat(64);
+    seededHashes.set(candidate.candidateId, renderSha256);
+    seedStore.putCandidate(candidate.candidateId, {
+      status: "succeeded",
+      reused: false,
+      failure: null,
+      result: {
+        status: "succeeded",
+        final: {
+          sha256: renderSha256,
+          size: 1000 + i,
+          renderExportSha256: String(i + 5).repeat(64)
+        }
+      }
+    });
+  }
+  seedStore.putCandidate(request.candidates[2].candidateId, { status: "running", attempts: 1 });
+  seedStore.putCandidate(request.candidates[3].candidateId, { status: "pending" });
+
+  const recovered = new PersistentCandidateBatchStore({ filePath: storePath });
+  assert.equal(recovered.get().candidates[request.candidates[2].candidateId].status, "pending");
+
+  const executed = [];
+  const runtime = new CandidateBatchRuntime({
+    store: recovered,
+    cache: new PersistentCandidateCache({ filePath: cachePath }),
+    producerSha,
+    maxParallel: 2,
+    detectSource: async () => ({
+      sha256: tournament.source.sha256,
+      size: tournament.source.size
+    }),
+    validateCachedCandidate: async (result) => result,
+    executeCandidate: async ({ candidate }) => {
+      executed.push(candidate.candidateId);
+      const index = request.candidates.findIndex((entry) => entry.candidateId === candidate.candidateId);
+      return {
+        status: "succeeded",
+        final: {
+          sha256: String(index + 1).repeat(64),
+          size: 1000 + index,
+          renderExportSha256: String(index + 5).repeat(64)
+        }
+      };
+    }
+  });
+  const result = await runtime.run(request);
+  assert.equal(result.metrics.cacheHits, 2);
+  assert.equal(result.metrics.renderCalls, 2);
+  assert.deepEqual(executed.sort(), request.candidates.slice(2).map((x) => x.candidateId).sort());
+  for (const [candidateId, renderSha256] of seededHashes) {
+    const terminal = result.manifest.candidates.find((entry) => entry.candidateId === candidateId);
+    assert.equal(terminal.final.sha256, renderSha256);
+  }
+  assert.equal(result.manifest.status, "succeeded");
+  assert.equal(seeded.requestDigest, result.state.requestDigest);
 });
