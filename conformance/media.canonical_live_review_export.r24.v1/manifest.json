@@ -1,0 +1,50 @@
+{
+  "manifestVersion": "media.canonical_live_review_export.r24.v1.manifest.1",
+  "contractVersion": "media.canonical_live_review_export.r24.v1",
+  "producerRepository": "foto6/video2",
+  "baselineSha": "78c6982a91d7e3e8c037cd9ce740ee077babdccc",
+  "baselineCiRunId": 37007419237,
+  "acceptedR23Authority": {
+    "producerSha": "78c6982a91d7e3e8c037cd9ce740ee077babdccc",
+    "ciRunId": 37007419237,
+    "artifactId": 11226183002,
+    "artifactName": "media-r23-review-session-package",
+    "artifactDigest": "sha256:5170ada97f8c86421f4bee34c97fbfa5701bef74ef406f18889a1a790ae3ac66"
+  },
+  "pins": {
+    "implementation": {"path":"src/canonical-live-review-r24.js","gitBlobSha":"6ac715d57cb5ec37792a84190ec481c0f7194a77"},
+    "exporter": {"path":"tools/export-r24-canonical-live-review.mjs","gitBlobSha":"13552bc37ce752b3980396f49ed503c0c744c587"},
+    "verifier": {"path":"tools/verify-r24-canonical-live-review.mjs","gitBlobSha":"b01cfab99ffb6a39a6edcc3a29af491d7fb42e9c"},
+    "upstreamVerifier": {"path":"tools/verify-r24-upstream-r23-artifact.mjs","gitBlobSha":"3fa2c45764e5c3baad4627143b0548980dfe44d9"},
+    "demo": {"path":"tools/demo-r24-canonical-live-review.mjs","gitBlobSha":"8af588531c6dc31541e32e6ba64af5679d8e1df4"},
+    "actionsReadinessRecorder": {"path":"tools/record-r24-actions-readiness.mjs","gitBlobSha":"240e98ad363e04a4386d3fba2621fc27d53ae4bb"},
+    "tests": {"path":"tests/canonical-live-review-r24.test.js","gitBlobSha":"97b8539633fdc773744c29cb651ceefbdfe1a2d7"},
+    "contract": {"path":"conformance/media.canonical_live_review_export.r24.v1/contract.json","gitBlobSha":"e63a7d712f85ad5335e89c9a23c617d178baf2ea"},
+    "schema": {"path":"conformance/media.canonical_live_review_export.r24.v1/schema.json","gitBlobSha":"79ab876b27143fe9939c90ea7e075b42243285ba"},
+    "package": {"path":"package.json","gitBlobSha":"aa2d65c729623102ee785f5f5c1c56574b57e0bf"},
+    "workflow": {"path":".github/workflows/test.yml","gitBlobSha":"830cf4ac5976460c7217574860ebb4ef06287c99"},
+    "r23Implementation": {"path":"src/review-session-r23.js","gitBlobSha":"442ca6a46cbf107d29e6cd320fbb1a4cb38951b0"},
+    "r22Implementation": {"path":"src/live-review-artifact-r22.js","gitBlobSha":"31845333a6919364d81a7c2bc52aad1cb3ae82ed"},
+    "r21Implementation": {"path":"src/review-round-r21.js","gitBlobSha":"c6f556b8a177b6182d787356625094cdcad5a58e"}
+  },
+  "reproduction": {
+    "verifyUpstream": "node tools/verify-r24-upstream-r23-artifact.mjs",
+    "focused": "npm run test:r24",
+    "demo": "npm run demo:r24",
+    "verify": "npm run verify:r24",
+    "export": "npm run export:r24 -- --session-dir <r23-session-dir> --output-dir <export-dir> --producer-ci-run-id <ci-run-id>",
+    "verifyDownloaded": "npm run verify:r24:dir -- --export-dir <downloaded-export-dir>"
+  },
+  "actionsArtifact": {
+    "name": "media-r24-canonical-live-review-export",
+    "runtimeIdentityReport": ".artifacts/r24-actions-readiness.json"
+  },
+  "realRehearsalRounds": [0,1],
+  "requiredState": "CANONICAL_LIVE_REVIEW_ARTIFACT_READY",
+  "nonHumanGroundTruthDemo": true,
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "failClosed": true
+}
