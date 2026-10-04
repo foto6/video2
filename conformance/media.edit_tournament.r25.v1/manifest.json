@@ -25,7 +25,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "3cff71eb8d854c992dc3944bf6cbdee2cd83f75e"
+      "gitBlobSha": "53954bca1e1ad4213868656937b1937c2668ad0c"
     },
     "contract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -37,11 +37,11 @@
     },
     "package": {
       "path": "package.json",
-      "gitBlobSha": "c21aabe64f7b65973281ba5a6c2154bdfcb97ac8"
+      "gitBlobSha": "0a0e0fc8725992d0ece5ceb3ca305509b2459dec"
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "d772ac62de271226b1e1c3ced2317fd863dae2e3"
+      "gitBlobSha": "3c6127284c1004b5835448c5fd4e58218a0326c9"
     },
     "r16BatchRuntime": {
       "path": "src/candidate-batch-r16.js",
@@ -70,6 +70,18 @@
     "ffmpegRuntime": {
       "path": "src/ffmpeg.js",
       "gitBlobSha": "78275404f1608e51ac7ca825e4152f480da6171c"
+    },
+    "candidate4CheckpointImplementation": {
+      "path": "src/r25-candidate4-checkpoint.js",
+      "gitBlobSha": "b5b8c13a92bedf05bea9f25c10f714e3f82523ba"
+    },
+    "candidate4SubphaseMaterializer": {
+      "path": "tools/materialize-r25-candidate4-subphase.mjs",
+      "gitBlobSha": "79531d2522224d616fd39ddbbb994d7600bbb1e4"
+    },
+    "candidate4CheckpointTests": {
+      "path": "tests/r25-candidate4-checkpoint.test.js",
+      "gitBlobSha": "8d6d65b56fceceada3e1d34ded5c845c8c0cb18a"
     }
   },
   "reproductionCommand": "npm run verify:r25",
@@ -78,5 +90,14 @@
   "actualEncodedTargetedReeditRound": true,
   "modelReviewPerformed": false,
   "providerPublish": false,
-  "humanQuality": false
+  "humanQuality": false,
+  "candidate4Durability": {
+    "contractVersion": "media.r25.candidate4_checkpoint.v1",
+    "decomposition": "two motion-safe existing-video-item segments plus stream-copy assembly and full final QA",
+    "verifyRuntimeDigestBeforeExecute": true,
+    "completedSegmentReplay": "verify_and_reuse",
+    "changedSourceGraphRuntime": "conflict",
+    "byteIdentityToLegacyUnsegmentedRenderClaimed": false,
+    "finalSemanticAuthority": "frozen candidate-4 timeline and operation graph"
+  }
 }
