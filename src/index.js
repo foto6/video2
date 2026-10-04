@@ -32,6 +32,7 @@ export {
   tournamentRequestIdentityDigest,
   validateTournamentReplayBinding,
   buildTournamentCandidatePlans,
+  buildTournamentCiPhaseSelection,
   buildOperationGraph,
   evaluateTournamentTechnicalGate,
   validateTournamentCandidateManifest,
