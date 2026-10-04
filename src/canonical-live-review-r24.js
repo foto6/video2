@@ -668,17 +668,11 @@ export function verifyCanonicalLiveReviewExport(exportDir) {
       session.sessionIdentity !== index.sourceLineage?.sessionIdentity ||
       session.reviewRound !== index.sourceLineage?.reviewRound ||
       session.briefLineageDigest !== index.sourceLineage?.briefLineageDigest ||
-      session.source.sha256 !== index.sourceLineage?.source?.sha256 ||
-      session.r21.packageDigest !== index.packageDigest && manifest.packageDigest === session.r21.packageDigest
-    ) {
-      // packageDigest is R24-specific; the last condition only guards accidental R21/R24 digest aliasing.
-      if (
-        hashFile(sessionPath).sha256 !== index.nestedR23?.sessionPackageSha256 ||
-        session.sessionIdentity !== index.sourceLineage?.sessionIdentity ||
-        session.reviewRound !== index.sourceLineage?.reviewRound ||
-        session.briefLineageDigest !== index.sourceLineage?.briefLineageDigest ||
-        session.source.sha256 !== index.sourceLineage?.source?.sha256
-      ) errors.push("r23_session_lineage_mismatch");
+      session.source.sha256 !== index.sourceLineage?.source?.sha256
+    ) errors.push("r23_session_lineage_mismatch");
+    const sessionEvidencePath = safeChild(payloadRoot, `r23/${SESSION_EVIDENCE_FILE}`, "R23 evidence").absolute;
+    if (hashFile(sessionEvidencePath).sha256 !== index.nestedR23?.sessionEvidenceSha256) {
+      errors.push("r23_session_evidence_sha_mismatch");
     }
     if (
       session.promptDigest !== index.promptDigest ||
@@ -762,9 +756,24 @@ export function verifyCanonicalLiveReviewExport(exportDir) {
       authority.contractVersion !== MEDIA_CANONICAL_LIVE_REVIEW_AUTHORITY_VERSION ||
       authority.acceptedR23?.producerSha !== R24_R23_AUTHORITY.producerSha ||
       authority.acceptedR23?.ciRunId !== R24_R23_AUTHORITY.ciRunId ||
+      authority.inputSession?.producerSha !== R24_R23_AUTHORITY.producerSha ||
+      authority.inputSession?.ciRunId !== R24_R23_AUTHORITY.ciRunId ||
       authority.evidenceBoundary?.modelReviewPerformed !== false ||
       authority.evidenceBoundary?.humanQuality !== false
     ) errors.push("authority_profile_mismatch");
+
+    const recomputedPackageDigest = fingerprint(canonicalPackageCore({
+      producer: index.producer,
+      source: session.source,
+      session,
+      attachments: index.attachments,
+      promptDigest: index.promptDigest,
+      sealedMappingDigest: index.sealedMappingDigest,
+      authorityProfileDigest: index.authorityProfile?.digest
+    }));
+    if (recomputedPackageDigest !== index.packageDigest || recomputedPackageDigest !== manifest.packageDigest) {
+      errors.push("canonical_package_digest_mismatch");
+    }
 
     return {
       contractVersion: MEDIA_CANONICAL_LIVE_REVIEW_VERIFICATION_VERSION,
