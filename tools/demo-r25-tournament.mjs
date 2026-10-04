@@ -5,6 +5,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   rmSync,
   statSync,
   writeFileSync
@@ -564,20 +565,13 @@ copyFileSync(path.join(root, "targeted-reedit", "media.tournament_targeted_reedi
 copyFileSync(path.join(reeditRoot, "media.tournament_candidate_manifest.r25.v1.json"),
   path.join(rehearsalPayload, "targeted-reedit", "challenger-manifest.json"));
 
-function filesUnder(dir) {
-  const out = [];
-  const walk = (d) => {
-    for (const name of require("node:fs").readdirSync(d)) {}
-  };
-  return out;
-}
 const payloadFiles = [];
 function walk(dir) {
-  for (const name of execFileSync("find", [dir, "-maxdepth", "1", "-mindepth", "1", "-printf", "%f\n"], { encoding: "utf8" }).trim().split("\n").filter(Boolean).sort()) {
+  for (const name of readdirSync(dir).sort()) {
     const full = path.join(dir, name);
     const st = statSync(full);
     if (st.isDirectory()) walk(full);
-    else payloadFiles.push(path.relative(rehearsalPayload, full).split(path.sep).join("/"));
+    else if (st.isFile()) payloadFiles.push(path.relative(rehearsalPayload, full).split(path.sep).join("/"));
   }
 }
 walk(rehearsalPayload);
