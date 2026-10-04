@@ -41,7 +41,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "91cf61545d3df79e70a571676cda3715b8647aac"
+      "gitBlobSha": "3c2f7c869301ec858229bf5396b8744e5756845c"
     },
     "externalContract": {
       "path": "conformance/media.multicandidate_round.r25.v1/contract.json",
@@ -53,7 +53,7 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "16e2cc9a68f8e19098ea88c4750c92655b3f062a"
+      "gitBlobSha": "44732a927adbaeab2ed1e51226e13e6789b70211"
     },
     "package": {
       "path": "package.json",
@@ -61,7 +61,7 @@
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "1c44a4f7cd7e6ef2d37a63dfd4351317307aceb6"
+      "gitBlobSha": "b9d52aecfea0c5461b54b18707a5de749a90c50b"
     },
     "internalContract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -90,7 +90,19 @@
     "targetedCandidateRendersPerJob": 1,
     "postMaterializationVerificationRerenders": 0,
     "checkpointAuthority": "media.candidate_batch.v1 exact cache anchors plus target-only R25 phase checkpoints and output hashes",
-    "restartSimulation": "candidate 1-2 succeeded; candidate 3 continuation batches [candidate-2 cache anchor,candidate-3 target]; candidate 4 continuation batches [candidate-3 cache anchor,candidate-4 target]; only unfinished targets render"
+    "restartSimulation": "candidate 1-2 succeeded; candidate 3 continuation batches [candidate-2 cache anchor,candidate-3 target]; candidate 4 continuation batches [candidate-3 cache anchor,candidate-4 target]; only unfinished targets render",
+    "ffmpegRuntimeCheckpoint": {
+      "sourceJob": "r25-pair-1",
+      "runtimeManifest": "ci-ffmpeg-runtime/runtime.manifest.sha256",
+      "verifyBeforeContinuation": true,
+      "continuationJobs": [
+        "r25-candidate-3",
+        "r25-candidate-4",
+        "r25-targeted-evidence"
+      ],
+      "repeatedAptInstall": false,
+      "removedBeforeFinalArtifact": true
+    }
   },
   "externalAuthorityOnly": true,
   "internalContractMayMasqueradeAsUmbrella": false,
