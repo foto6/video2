@@ -21,12 +21,15 @@ export {
   TOURNAMENT_ROUND_READY,
   R25_R24_AUTHORITY,
   validateTournamentRequest,
+  tournamentRequestIdentityDigest,
+  validateTournamentReplayBinding,
   buildTournamentCandidatePlans,
   buildOperationGraph,
   evaluateTournamentTechnicalGate,
   validateTournamentCandidateManifest,
   candidateManifestDigest,
   buildTournamentBracket,
+  validateTournamentBracket,
   buildUnaffectedRegionEvidence,
   validateTargetedTournamentReedit
 } from "./tournament-r25.js";
