@@ -148,3 +148,8 @@ Commands:
 ### Hosted-runner reliability fixture
 
 The CI rehearsal source is still a real encoded six-second H.264/AAC MP4, but uses FFmpeg's moving `testsrc` generator rather than the higher-entropy `testsrc2`. This bounds hosted-runner CPU pressure for the kinetic candidate without changing candidate plans, operation graphs, source duration, 1080x1920/30fps output profile, R16/R15 execution paths, or any technical/creative gate. Production edit semantics are unchanged.
+
+
+### Continuation FFmpeg runtime checkpoint
+
+The pair-1 job is the only R25 phase job that installs FFmpeg from apt. After candidates 1-2 finish, it snapshots the exact `ffmpeg`/`ffprobe` binaries and their resolved shared libraries into the checkpoint artifact with a SHA-256 manifest. Candidate-3, candidate-4 and targeted-reedit jobs independently verify that manifest and activate the checkpointed runtime through `PATH`/`LD_LIBRARY_PATH`. This removes repeated package-install wall time from the runner-shutdown window without changing any rendered timeline, FFmpeg argument graph, codec/profile setting or QA threshold. The CI-only runtime is deleted before the final `media-r25-multicandidate-tournament` artifact is uploaded.
