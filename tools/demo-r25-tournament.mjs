@@ -549,6 +549,7 @@ if (targetedReviewEvidence.reviewRound !== 1 || targetedReviewEvidence.mode !== 
 
 const rehearsalPayload = path.join(root, "rehearsal-payload");
 mkdirSync(rehearsalPayload, { recursive: true });
+mkdirSync(path.join(rehearsalPayload, "targeted-reedit"), { recursive: true });
 copyFileSync(path.join(initialRoot, "media-r25-tournament.tar"), path.join(rehearsalPayload, "initial-four-candidate-tournament.tar"));
 for (const name of [
   "review-A.mp4", "review-B.mp4",
