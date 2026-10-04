@@ -1,0 +1,34 @@
+{
+  "reportVersion": "media.r25.multicandidate_round_engine.readiness.v1",
+  "branch": "agent/media-r25-multicandidate-round-engine-20261004",
+  "baselineSha": "244acdf154741e669991b17df3ef2a47e2dfdfa9",
+  "acceptedR24": {
+    "ciRunId": 37195239582,
+    "artifactId": 11301055747,
+    "artifactName": "media-r24-canonical-live-review-export",
+    "artifactDigest": "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228"
+  },
+  "contracts": {
+    "request": "media.edit_tournament_request.r25.v1",
+    "candidateManifest": "media.tournament_candidate_manifest.r25.v1",
+    "bracket": "media.review_tournament_bracket.r25.v1",
+    "targetedReedit": "media.tournament_targeted_reedit.r25.v1"
+  },
+  "rehearsal": {
+    "command": "npm run verify:r25",
+    "artifactRoot": ".artifacts/r25-demo",
+    "candidateCount": 4,
+    "actualEncodedMp4": true,
+    "targetedRoundOne": true,
+    "exactReplayRequired": true,
+    "deterministicArchives": true
+  },
+  "hardTechnicalGatesPreserved": true,
+  "r14R15ThresholdsWeakened": false,
+  "maxReeditRound": 2,
+  "modelReviewPerformed": false,
+  "liveModelReviewed": false,
+  "providerPublish": false,
+  "humanQuality": false,
+  "merge": false
+}
