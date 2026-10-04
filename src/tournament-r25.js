@@ -384,6 +384,9 @@ export function validateTournamentCandidateManifest(input) {
   ];
   for (const key of required) if (!Object.hasOwn(input, key)) fail("tournament_candidate_invalid", `missing ${key}`);
   if (input.contractVersion !== MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION) fail("tournament_candidate_invalid", "contractVersion mismatch");
+  if (!Number.isInteger(input.roundNumber) || input.roundNumber < 0 || input.roundNumber > 2) {
+    fail("tournament_round_invalid", "candidate roundNumber must be 0, 1 or 2");
+  }
   gitSha(input.producerSha, "producerSha");
   sha256(input.source.sha256, "source.sha256");
   sha256(input.briefDigest, "briefDigest");
