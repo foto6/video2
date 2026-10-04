@@ -75,8 +75,9 @@
     "materialize:r25": "node tools/demo-r25-tournament.mjs",
     "verify:r25:dir": "node tools/verify-r25-rehearsal.mjs",
     "r25:phase1": "node tools/materialize-r25-ci-phase.mjs --phase pair-1",
-    "r25:phase2": "node tools/materialize-r25-ci-phase.mjs --phase pair-2",
     "r25:finalize": "node tools/materialize-r25-ci-phase.mjs --phase finalize",
-    "r25:targeted": "node tools/demo-r25-tournament.mjs"
+    "r25:targeted": "node tools/demo-r25-tournament.mjs",
+    "r25:candidate3": "node tools/materialize-r25-ci-phase.mjs --phase candidate-3",
+    "r25:candidate4": "node tools/materialize-r25-ci-phase.mjs --phase candidate-4"
   }
 }
