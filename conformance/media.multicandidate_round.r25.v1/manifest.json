@@ -41,7 +41,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "b88dd2d8e1ac04c854b634f4cc8fbe2bfce36a2d"
+      "gitBlobSha": "3cff71eb8d854c992dc3944bf6cbdee2cd83f75e"
     },
     "externalContract": {
       "path": "conformance/media.multicandidate_round.r25.v1/contract.json",
@@ -53,7 +53,7 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "9dc41f30e04bb4b172281e9e769007f51a020470"
+      "gitBlobSha": "1e4775a88acfe67007ae69471d47c053fcb0c709"
     },
     "package": {
       "path": "package.json",
@@ -74,6 +74,10 @@
     "phaseMaterializer": {
       "path": "tools/materialize-r25-ci-phase.mjs",
       "gitBlobSha": "e4babd8b13784c9385fcbeb21eb32410b0e58599"
+    },
+    "ffmpegRuntime": {
+      "path": "src/ffmpeg.js",
+      "gitBlobSha": "78275404f1608e51ac7ca825e4152f480da6171c"
     }
   },
   "ciReliability": {
