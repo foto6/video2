@@ -50,6 +50,8 @@
     "phasedJobs": [
       "r25-pair-1",
       "r25-candidate-3",
+      "r25-candidate-4-segment-1",
+      "r25-candidate-4-segment-2",
       "r25-candidate-4",
       "r25-initial-finalize",
       "r25-targeted-evidence",
@@ -61,7 +63,9 @@
     "phaseCommands": [
       "npm run r25:phase1",
       "npm run r25:candidate3",
-      "npm run r25:candidate4",
+      "npm run r25:candidate4:segment1",
+      "npm run r25:candidate4:segment2",
+      "npm run r25:candidate4:assemble",
       "npm run r25:finalize",
       "R25_INITIAL_PREMATERIALIZED=1 npm run r25:targeted",
       "npm run verify:r25:dir"
@@ -86,12 +90,34 @@
       "verifiedBeforeContinuation": true,
       "reusedBy": [
         "r25-candidate-3",
+        "r25-candidate-4-segment-1",
+        "r25-candidate-4-segment-2",
         "r25-candidate-4",
         "r25-targeted-evidence"
       ],
       "repeatedAptInstallOnContinuation": false,
       "removedBeforeFinalArtifact": true,
       "productRenderSemanticsChanged": false
+    },
+    "candidate4Preemption": {
+      "observedRunId": 37212319175,
+      "observedExitCode": 143,
+      "observedActiveWindowSecondsApprox": 32,
+      "strategy": "two deterministic motion-safe render segments followed by stream-copy assembly and full final QA",
+      "phaseContract": "media.r25.candidate4_checkpoint.v1",
+      "phaseJobs": [
+        "r25-candidate-4-segment-1",
+        "r25-candidate-4-segment-2",
+        "r25-candidate-4"
+      ],
+      "runtimeManifestVerifiedBeforeChmodAndExecute": true,
+      "repeatedAptInstall": false,
+      "exactCompletedPhaseReplay": true,
+      "changedSourceGraphRuntimeConflict": true,
+      "legacyUnsegmentedByteIdentityClaimed": false,
+      "finalOperationGraphChanged": false,
+      "finalTechnicalGatesWeakened": false,
+      "measuredDurationsEvidence": "initial/phases/candidate-4/r25-phase-checkpoint.json"
     }
   }
 }
