@@ -73,6 +73,10 @@
     "demo:r25": "npm run materialize:r25",
     "verify:r25": "npm run test:r25 && npm run materialize:r25 && npm run verify:r25:dir",
     "materialize:r25": "node tools/demo-r25-tournament.mjs",
-    "verify:r25:dir": "node tools/verify-r25-rehearsal.mjs"
+    "verify:r25:dir": "node tools/verify-r25-rehearsal.mjs",
+    "r25:phase1": "node tools/materialize-r25-ci-phase.mjs --phase pair-1",
+    "r25:phase2": "node tools/materialize-r25-ci-phase.mjs --phase pair-2",
+    "r25:finalize": "node tools/materialize-r25-ci-phase.mjs --phase finalize",
+    "r25:targeted": "node tools/demo-r25-tournament.mjs"
   }
 }
