@@ -15,13 +15,15 @@
     "targetedReedit": "media.tournament_targeted_reedit.r25.v1"
   },
   "rehearsal": {
-    "command": "npm run verify:r25",
+    "command": "npm run materialize:r25",
     "artifactRoot": ".artifacts/r25-demo",
     "candidateCount": 4,
     "actualEncodedMp4": true,
     "targetedRoundOne": true,
     "exactReplayRequired": true,
-    "deterministicArchives": true
+    "deterministicArchives": true,
+    "verificationCommand": "npm run verify:r25:dir",
+    "readOnlyVerification": true
   },
   "hardTechnicalGatesPreserved": true,
   "r14R15ThresholdsWeakened": false,
@@ -30,5 +32,27 @@
   "liveModelReviewed": false,
   "providerPublish": false,
   "humanQuality": false,
-  "merge": false
+  "merge": false,
+  "externalAuthority": {
+    "contractVersion": "media.multicandidate_round.r25.v1",
+    "externalAuthorityOnly": true,
+    "internalContractMayMasqueradeAsUmbrella": false,
+    "internalContracts": {
+      "request": "media.edit_tournament_request.r25.v1",
+      "candidateManifest": "media.tournament_candidate_manifest.r25.v1",
+      "bracket": "media.review_tournament_bracket.r25.v1",
+      "targetedReedit": "media.tournament_targeted_reedit.r25.v1",
+      "evidence": "media.edit_tournament.r25.evidence.v1"
+    }
+  },
+  "ciReliability": {
+    "mainRegressionStep": "npm run test:r25",
+    "evidenceJob": "r25-evidence",
+    "materializationCommand": "npm run materialize:r25",
+    "verificationCommand": "npm run verify:r25:dir",
+    "expensiveMaterializationsPerEvidenceJob": 1,
+    "verificationRerenders": 0,
+    "persistentCheckpoint": "media.candidate_batch.v1 state + cache",
+    "resumeTest": "interrupt after 2/4 completed; reuse 2 exact hashes; execute only 3/4 and 4/4"
+  }
 }
