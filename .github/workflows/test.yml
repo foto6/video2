@@ -261,7 +261,7 @@ jobs:
           path: .artifacts/r25-demo
           if-no-files-found: error
 
-  r25-candidate-4:
+  r25-candidate-4-segment-1:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: r25-candidate-3
@@ -289,17 +289,80 @@ jobs:
           echo "LD_LIBRARY_PATH=$root/lib" >> "$GITHUB_ENV"
           LD_LIBRARY_PATH="$root/lib" "$root/bin/ffmpeg" -version
           LD_LIBRARY_PATH="$root/lib" "$root/bin/ffprobe" -version
-      - name: Resume R25 candidate 4 from three-of-four checkpoint
+      - name: Render durable candidate-4 segment 1
+        run: npm run r25:candidate4:segment1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-checkpoint-candidate-4-segment-1
+          path: .artifacts/r25-demo
+          if-no-files-found: error
+
+  r25-candidate-4-segment-2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: r25-candidate-4-segment-1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-r25-checkpoint-candidate-4-segment-1
+          path: .artifacts/r25-demo
+      - name: Activate checkpointed FFmpeg runtime
         shell: bash
         run: |
           set -euo pipefail
-          npm run r25:candidate4 &
-          pid=$!
-          while kill -0 "$pid" 2>/dev/null; do
-            echo "R25_HEARTBEAT candidate-4 pid=$pid"
-            sleep 10
-          done
-          wait "$pid"
+          root="$GITHUB_WORKSPACE/.artifacts/r25-demo/ci-ffmpeg-runtime"
+          (cd "$root" && sha256sum -c runtime.manifest.sha256)
+          chmod 0755 "$root/bin/ffmpeg" "$root/bin/ffprobe"
+          test -x "$root/bin/ffmpeg"
+          test -x "$root/bin/ffprobe"
+          echo "$root/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$root/lib" >> "$GITHUB_ENV"
+          LD_LIBRARY_PATH="$root/lib" "$root/bin/ffmpeg" -version
+          LD_LIBRARY_PATH="$root/lib" "$root/bin/ffprobe" -version
+      - name: Render durable candidate-4 segment 2
+        run: npm run r25:candidate4:segment2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-checkpoint-candidate-4-segment-2
+          path: .artifacts/r25-demo
+          if-no-files-found: error
+
+  r25-candidate-4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: r25-candidate-4-segment-2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-r25-checkpoint-candidate-4-segment-2
+          path: .artifacts/r25-demo
+      - name: Activate checkpointed FFmpeg runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$GITHUB_WORKSPACE/.artifacts/r25-demo/ci-ffmpeg-runtime"
+          (cd "$root" && sha256sum -c runtime.manifest.sha256)
+          chmod 0755 "$root/bin/ffmpeg" "$root/bin/ffprobe"
+          test -x "$root/bin/ffmpeg"
+          test -x "$root/bin/ffprobe"
+          echo "$root/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$root/lib" >> "$GITHUB_ENV"
+          LD_LIBRARY_PATH="$root/lib" "$root/bin/ffmpeg" -version
+          LD_LIBRARY_PATH="$root/lib" "$root/bin/ffprobe" -version
+      - name: Assemble and QA candidate 4 from verified durable segments
+        run: npm run r25:candidate4:assemble
       - uses: actions/upload-artifact@v4
         with:
           name: media-r25-checkpoint-candidate-4
