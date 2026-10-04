@@ -20,6 +20,7 @@ on:
       - agent/media-r22-live-package-materializer-20261002
       - agent/media-r23-next-round-export-20261002
       - agent/media-r24-canonical-live-artifact-20261002
+      - agent/media-r25-multicandidate-round-engine-20261004
   pull_request:
 
 permissions:
@@ -119,6 +120,12 @@ jobs:
         with:
           name: media-r24-ci-readiness
           path: .artifacts/r24-actions-readiness.json
+          if-no-files-found: error
+      - run: npm run verify:r25
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-multicandidate-tournament
+          path: .artifacts/r25-demo
           if-no-files-found: error
       - name: Verify accepted R17 Actions authority
         env:
