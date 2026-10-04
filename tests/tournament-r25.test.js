@@ -735,3 +735,32 @@ test("R25 stale conformance blob pins fail closed instead of being tolerated", (
     assert.throws(() => assertPins(stale), new RegExp(`stale conformance pin: ${tamperKey}`));
   }
 });
+
+
+test("R25 CI checkpoints FFmpeg once and continuation jobs reuse it without apt reinstall", () => {
+  const workflow = readFileSync(
+    new URL("../.github/workflows/test.yml", import.meta.url),
+    "utf8"
+  );
+  const section = (name, next) => {
+    const start = workflow.indexOf(`  ${name}:\n`);
+    assert.notEqual(start, -1, `missing workflow job ${name}`);
+    const end = next ? workflow.indexOf(`  ${next}:\n`, start + 1) : workflow.length;
+    return workflow.slice(start, end === -1 ? workflow.length : end);
+  };
+  const pair1 = section("r25-pair-1", "r25-candidate-3");
+  const candidate3 = section("r25-candidate-3", "r25-candidate-4");
+  const candidate4 = section("r25-candidate-4", "r25-initial-finalize");
+  const targeted = section("r25-targeted-evidence", "r25-postdownload-verify");
+
+  assert.match(pair1, /Install bounded R25 FFmpeg dependency only/);
+  assert.match(pair1, /Checkpoint exact FFmpeg runtime for continuation jobs/);
+  for (const [name, body] of [["candidate-3", candidate3], ["candidate-4", candidate4]]) {
+    assert.doesNotMatch(body, /apt-get install/);
+    assert.match(body, /Activate checkpointed FFmpeg runtime/);
+    assert.match(body, /runtime\.manifest\.sha256/);
+  }
+  assert.doesNotMatch(targeted, /apt-get install/);
+  assert.match(targeted, /Activate checkpointed FFmpeg runtime/);
+  assert.match(targeted, /Remove CI-only FFmpeg runtime before final evidence upload/);
+});
