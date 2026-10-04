@@ -123,9 +123,9 @@ The umbrella pins the accepted R24 authority (producer `244acdf154741e669991b17d
 
 R25 no longer proves replay by immediately running the complete four-candidate tournament a second time. The real rehearsal materializes once, records persistent R16 candidate state/cache checkpoints, and then `npm run verify:r25:dir` independently verifies the encoded candidate files, manifests, bracket packages, targeted re-edit lineage and deterministic archives without invoking a render path.
 
-The main regression job runs only the fast focused R25 contract suite. Real evidence is checkpointed across `r25-pair-1` (candidates 1-2), `r25-pair-2` (candidates 3-4), `r25-initial-finalize` (no render), `r25-targeted-evidence` (one real R19 challenger), and `r25-postdownload-verify` (no render). Each phase is handed to the next as an Actions artifact, so completed encoded candidates survive job boundaries and the final verification consumes a freshly downloaded artifact.
+The main regression job runs only the fast focused R25 contract suite. Real evidence is checkpointed across `r25-pair-1` (candidates 1-2), `r25-candidate-3`, `r25-candidate-4`, `r25-initial-finalize` (no render), `r25-targeted-evidence` (one real R19 challenger), and `r25-postdownload-verify` (no render). Each continuation remains a valid R16 two-candidate batch: candidate 3 is submitted with completed candidate 2 as an exact-cache anchor, and candidate 4 is submitted with completed candidate 3 as an exact-cache anchor. The phase asserts one cache hit, one render call, and no completed-candidate rerender. Each phase is handed to the next as an Actions artifact, so completed encoded candidates survive job boundaries and final verification consumes a freshly downloaded artifact.
 
-The focused restart test simulates an interruption after candidates 1 and 2 have succeeded and candidate 3 is marked running. On reconstruction the running entry becomes pending, candidates 1-2 are validated/reused with their exact completed hashes, and only candidates 3-4 execute.
+The focused restart test simulates an interruption after candidates 1 and 2 have succeeded and candidate 3 is marked running. On reconstruction the running entry becomes pending, candidates 1-2 are validated/reused with their exact completed hashes, and only candidates 3-4 execute. A separate phase-selection regression proves R16 still rejects one-candidate requests and that every CI continuation contains exactly two candidates.
 
 Commands:
 
@@ -138,7 +138,13 @@ Commands:
 ### CI phase commands
 
 - `npm run r25:phase1` — encode/QA candidates 1-2 and emit checkpoint.
-- `npm run r25:phase2` — consume the checkpoint and encode/QA candidates 3-4.
+- `npm run r25:candidate3` — consume the 2/4 checkpoint, exact-cache reuse candidate 2, and encode/QA only candidate 3.
+- `npm run r25:candidate4` — consume the 3/4 checkpoint, exact-cache reuse candidate 3, and encode/QA only candidate 4.
 - `npm run r25:finalize` — create candidate manifests, bracket packages and deterministic initial archive without rendering.
 - `R25_INITIAL_PREMATERIALIZED=1 npm run r25:targeted` — consume the finalized initial round and render exactly one targeted re-edit challenger.
 - `npm run verify:r25:dir` — independently verify the downloaded final directory and archives without FFmpeg rendering.
+
+
+### Hosted-runner reliability fixture
+
+The CI rehearsal source is still a real encoded six-second H.264/AAC MP4, but uses FFmpeg's moving `testsrc` generator rather than the higher-entropy `testsrc2`. This bounds hosted-runner CPU pressure for the kinetic candidate without changing candidate plans, operation graphs, source duration, 1080x1920/30fps output profile, R16/R15 execution paths, or any technical/creative gate. Production edit semantics are unchanged.
