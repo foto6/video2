@@ -11,18 +11,62 @@
     "artifactDigest": "sha256:fc5c9b9635d49b643e66efafe602d21ce1ef695a553f81a797bdf16d7b8cf228"
   },
   "pins": {
-    "implementation": {"path":"src/tournament-r25.js","gitBlobSha":"ddbb27a90a191d096b500304fd03bac6b9bca99c"},
-    "runner": {"path":"tools/run-r25-tournament.mjs","gitBlobSha":"e242a092d7d48f661b2713bebf59ad910f7505c5"},
-    "demo": {"path":"tools/demo-r25-tournament.mjs","gitBlobSha":"ddc989a70e5b430e861244dd36c0ab800654ac5a"},
-    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"bf2beae187ab10a32d769c147f6c359bfa946650"},
-    "contract": {"path":"conformance/media.edit_tournament.r25.v1/contract.json","gitBlobSha":"a1cf66ed0275ab47815b3f218c840ff4cef182a4"},
-    "candidateSchema": {"path":"conformance/media.edit_tournament.r25.v1/candidate-manifest.schema.json","gitBlobSha":"b0f1a5c5e717e37733b8249635eaef23221ca74c"},
-    "package": {"path":"package.json","gitBlobSha":"72ac963ad1c1f0a9f051f4c27fd9a223a72335cf"},
-    "workflow": {"path":".github/workflows/test.yml","gitBlobSha":"2a5036cdde3fe47318b7cd5b222d8ffb772ab9fc"},
-    "r16BatchRuntime": {"path":"src/candidate-batch-r16.js","gitBlobSha":"47b4950d85cfcd15a1c0eaf952bdd57ea99505fb"},
-    "r19EditorialRuntime": {"path":"src/editorial-reedit-r19.js","gitBlobSha":"8110a086b5b319bd2601860845c6afbf97681921"},
-    "r21RoundPackaging": {"path":"src/review-round-r21.js","gitBlobSha":"c6f556b8a177b6182d787356625094cdcad5a58e"},
-    "r24CanonicalVerifier": {"path":"src/canonical-live-review-r24.js","gitBlobSha":"6ac715d57cb5ec37792a84190ec481c0f7194a77"}
+    "implementation": {
+      "path": "src/tournament-r25.js",
+      "gitBlobSha": "ddbb27a90a191d096b500304fd03bac6b9bca99c"
+    },
+    "runner": {
+      "path": "tools/run-r25-tournament.mjs",
+      "gitBlobSha": "e242a092d7d48f661b2713bebf59ad910f7505c5"
+    },
+    "demo": {
+      "path": "tools/demo-r25-tournament.mjs",
+      "gitBlobSha": "ec94d3698584b3c10f114785cd4c518a30b39108"
+    },
+    "tests": {
+      "path": "tests/tournament-r25.test.js",
+      "gitBlobSha": "12d9419e9dddc0b74edafe4478889f452dd06d1d"
+    },
+    "contract": {
+      "path": "conformance/media.edit_tournament.r25.v1/contract.json",
+      "gitBlobSha": "a1cf66ed0275ab47815b3f218c840ff4cef182a4"
+    },
+    "candidateSchema": {
+      "path": "conformance/media.edit_tournament.r25.v1/candidate-manifest.schema.json",
+      "gitBlobSha": "b0f1a5c5e717e37733b8249635eaef23221ca74c"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "670f1cddc34a3f94e1d3a41d8c1df856f4f934ba"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "1822498c4c66768a205d328aafa5d117037d5070"
+    },
+    "r16BatchRuntime": {
+      "path": "src/candidate-batch-r16.js",
+      "gitBlobSha": "47b4950d85cfcd15a1c0eaf952bdd57ea99505fb"
+    },
+    "r19EditorialRuntime": {
+      "path": "src/editorial-reedit-r19.js",
+      "gitBlobSha": "8110a086b5b319bd2601860845c6afbf97681921"
+    },
+    "r21RoundPackaging": {
+      "path": "src/review-round-r21.js",
+      "gitBlobSha": "c6f556b8a177b6182d787356625094cdcad5a58e"
+    },
+    "r24CanonicalVerifier": {
+      "path": "src/canonical-live-review-r24.js",
+      "gitBlobSha": "6ac715d57cb5ec37792a84190ec481c0f7194a77"
+    },
+    "phaseMaterializer": {
+      "path": "tools/materialize-r25-ci-phase.mjs",
+      "gitBlobSha": "584977f2de2ee25046dac7e866d708f9409d2de7"
+    },
+    "verifier": {
+      "path": "tools/verify-r25-rehearsal.mjs",
+      "gitBlobSha": "5767ad2866eb22a967db0d55555f99c1d8632072"
+    }
   },
   "reproductionCommand": "npm run verify:r25",
   "artifactRoot": ".artifacts/r25-demo",
