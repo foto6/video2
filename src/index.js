@@ -13,6 +13,14 @@ export {
 } from "./creator-consumer-compat-r13.js";
 export { canonicalizeTimeline, expectedMediaShape, validateTimeline } from "./timeline.js";
 export {
+  MEDIA_MULTICANDIDATE_ROUND_VERSION,
+  R25_EXTERNAL_UMBRELLA_MAP,
+  buildMulticandidateRoundAuthority,
+  validateMulticandidateRoundAuthority,
+  multicandidateRoundAuthorityDigest
+} from "./multicandidate-round-r25.js";
+
+export {
   MEDIA_TOURNAMENT_REQUEST_VERSION,
   MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION,
   MEDIA_TOURNAMENT_BRACKET_VERSION,
