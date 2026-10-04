@@ -165,7 +165,7 @@ if (existsSync(phasedCheckpointPath)) {
   if (
     phased.contractVersion !== "media.r25.rehearsal_checkpoints.v1" ||
     !Array.isArray(phased.phases) ||
-    phased.phases.length !== 2 ||
+    phased.phases.length !== 3 ||
     !Array.isArray(phased.completedCandidates) ||
     phased.completedCandidates.length !== 4 ||
     phased.exactReplayProjection?.cacheHits !== 4 ||
@@ -174,8 +174,14 @@ if (existsSync(phasedCheckpointPath)) {
   ) throw new Error("R25 phased checkpoint summary mismatch");
   const seen = new Set();
   const completedHashes = [];
+  const expectedPhaseSizes = new Map([
+    ["pair-1", 2],
+    ["candidate-3", 1],
+    ["candidate-4", 1]
+  ]);
   for (const phase of phased.phases) {
-    if (!["pair-1", "pair-2"].includes(phase.phase) || !Array.isArray(phase.candidates) || phase.candidates.length !== 2) {
+    const expectedSize = expectedPhaseSizes.get(phase.phase);
+    if (!expectedSize || !Array.isArray(phase.candidates) || phase.candidates.length !== expectedSize) {
       throw new Error("R25 phased checkpoint shape mismatch");
     }
     for (const entry of phase.candidates) {
