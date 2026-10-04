@@ -79,6 +79,19 @@
       "durationMs": 6000,
       "actualEncodedMp4": true,
       "rationale": "bound hosted-runner CPU pressure without changing edit/product semantics or QA gates"
+    },
+    "ffmpegRuntimeCheckpoint": {
+      "sourceJob": "r25-pair-1",
+      "manifest": "ci-ffmpeg-runtime/runtime.manifest.sha256",
+      "verifiedBeforeContinuation": true,
+      "reusedBy": [
+        "r25-candidate-3",
+        "r25-candidate-4",
+        "r25-targeted-evidence"
+      ],
+      "repeatedAptInstallOnContinuation": false,
+      "removedBeforeFinalArtifact": true,
+      "productRenderSemanticsChanged": false
     }
   }
 }
