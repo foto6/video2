@@ -73,7 +73,7 @@
     },
     "candidate4CheckpointImplementation": {
       "path": "src/r25-candidate4-checkpoint.js",
-      "gitBlobSha": "b5b8c13a92bedf05bea9f25c10f714e3f82523ba"
+      "gitBlobSha": "c1dfcdb529c845bc509bacbdee48e68ae4aee063"
     },
     "candidate4SubphaseMaterializer": {
       "path": "tools/materialize-r25-candidate4-subphase.mjs",
@@ -81,7 +81,7 @@
     },
     "candidate4CheckpointTests": {
       "path": "tests/r25-candidate4-checkpoint.test.js",
-      "gitBlobSha": "8d6d65b56fceceada3e1d34ded5c845c8c0cb18a"
+      "gitBlobSha": "ce577da05e97c945762607addf8480c26119e1a2"
     }
   },
   "reproductionCommand": "npm run verify:r25",
