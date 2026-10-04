@@ -638,7 +638,8 @@ test("R25 external umbrella conformance manifest pins exact mappings and impleme
   );
   assert.equal(manifest.externalAuthorityOnly, true);
   assert.equal(manifest.internalContractMayMasqueradeAsUmbrella, false);
-  assert.equal(manifest.ciReliability.expensiveMaterializationsPerEvidenceJob, 1);
+  assert.equal(manifest.ciReliability.maxInitialCandidateRendersPerJob, 2);
+  assert.equal(manifest.ciReliability.targetedCandidateRendersPerJob, 1);
   assert.equal(manifest.ciReliability.postMaterializationVerificationRerenders, 0);
   for (const [name, pin] of Object.entries(manifest.pins)) {
     if (name === "tests") continue;
