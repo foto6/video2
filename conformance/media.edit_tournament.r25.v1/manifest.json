@@ -25,7 +25,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "3c2f7c869301ec858229bf5396b8744e5756845c"
+      "gitBlobSha": "d69108698d478ed283e1453dab2a5b1448e19195"
     },
     "contract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -41,7 +41,7 @@
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "b9d52aecfea0c5461b54b18707a5de749a90c50b"
+      "gitBlobSha": "01ea3242fab5e5b8359097cbb42af04bc5dadf05"
     },
     "r16BatchRuntime": {
       "path": "src/candidate-batch-r16.js",
