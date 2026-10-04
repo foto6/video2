@@ -9,6 +9,7 @@ import {
   MEDIA_R25_CANDIDATE4_CHECKPOINT_VERSION,
   buildR25Candidate4Checkpoint,
   buildR25Candidate4Decomposition,
+  compileFfmpegCommand,
   r25Candidate4ResumeState,
   sliceTimelineForR25Checkpoint,
   stableStringify,
@@ -32,27 +33,41 @@ function timeline() {
           {
             id: "motion",
             startMs: 0,
-            endMs: 1200,
+            endMs: 1600,
             role: "body",
             source: {
               id: "src",
               uri: "source.mp4",
               inMs: 0,
-              outMs: 1200,
+              outMs: 1600,
               sha256: SHA("a"),
               size: 1000
             },
             motion: { type: "slow_push", zoom: 1.05 }
           },
           {
+            id: "middle",
+            startMs: 1600,
+            endMs: 3400,
+            role: "body",
+            source: {
+              id: "src",
+              uri: "source.mp4",
+              inMs: 1600,
+              outMs: 3400,
+              sha256: SHA("a"),
+              size: 1000
+            }
+          },
+          {
             id: "tail",
-            startMs: 1200,
+            startMs: 3400,
             endMs: 5000,
             role: "body",
             source: {
               id: "src",
               uri: "source.mp4",
-              inMs: 1200,
+              inMs: 3400,
               outMs: 5000,
               sha256: SHA("a"),
               size: 1000
@@ -136,22 +151,23 @@ test("R25 candidate-4 decomposition bounds kinetic motion into deterministic glo
   assert.equal(dec.maxMotionChunkMs, 800);
   assert.deepEqual(dec.segments.map((x) => [x.phase, x.startMs, x.endMs]), [
     ["segment-1", 0, 800],
-    ["segment-2", 800, 1200],
-    ["segment-3", 1200, 5000]
+    ["segment-2", 800, 1600],
+    ["segment-3", 1600, 3400],
+    ["segment-4", 3400, 5000]
   ]);
   const one = sliceTimelineForR25Checkpoint(timeline(), 0, 800);
-  const two = sliceTimelineForR25Checkpoint(timeline(), 800, 1200);
+  const two = sliceTimelineForR25Checkpoint(timeline(), 800, 1600);
   assert.equal(one.canvas.durationMs, 800);
-  assert.equal(two.canvas.durationMs, 400);
+  assert.equal(two.canvas.durationMs, 800);
   assert.equal(one.profileVersion, undefined);
   assert.equal(two.profileVersion, undefined);
   const firstMotion = one.tracks.find((x) => x.kind === "video").items[0].motion;
   const secondMotion = two.tracks.find((x) => x.kind === "video").items[0].motion;
   assert.equal(firstMotion.type, "slow_push");
   assert.equal(firstMotion.checkpointProgressStartFrame, 0);
-  assert.equal(firstMotion.checkpointProgressTotalFrames, 36);
+  assert.equal(firstMotion.checkpointProgressTotalFrames, 48);
   assert.equal(secondMotion.checkpointProgressStartFrame, 24);
-  assert.equal(secondMotion.checkpointProgressTotalFrames, 36);
+  assert.equal(secondMotion.checkpointProgressTotalFrames, 48);
   assert.equal(timeline().profileVersion, "media.shortform_profile.r11.v1");
 });
 
@@ -159,7 +175,20 @@ test("R25 checkpoint slicer preserves global motion progress instead of restarti
   const clipped = sliceTimelineForR25Checkpoint(timeline(), 400, 800);
   const motion = clipped.tracks.find((x) => x.kind === "video").items[0].motion;
   assert.equal(motion.checkpointProgressStartFrame, 12);
-  assert.equal(motion.checkpointProgressTotalFrames, 36);
+  assert.equal(motion.checkpointProgressTotalFrames, 48);
+});
+
+test("R25 chunked slow-push FFmpeg preserves global frame progression", () => {
+  const second = sliceTimelineForR25Checkpoint(timeline(), 800, 1600);
+  const command = compileFfmpegCommand(second, {
+    format: "mp4",
+    videoCodec: "libx264",
+    audioCodec: "aac",
+    preset: "ultrafast"
+  }, "segment.mp4");
+  const joined = command.args.join(" ");
+  assert.match(joined, /\(on\+24\)\/47/);
+  assert.doesNotMatch(joined, /on\/23\*0\.08000/);
 });
 
 test("R25 simulates SIGTERM after each expensive subphase and resumes only the next phase", () => {
