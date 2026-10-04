@@ -164,7 +164,9 @@ function makeR21Candidate(manifest) {
 
 const args = parseArgs(process.argv.slice(2));
 const phase = args.phase;
-if (!["pair-1", "pair-2", "finalize"].includes(phase)) throw new Error("--phase must be pair-1, pair-2 or finalize");
+if (!["pair-1", "candidate-3", "candidate-4", "finalize"].includes(phase)) {
+  throw new Error("--phase must be pair-1, candidate-3, candidate-4 or finalize");
+}
 const root = path.resolve(args.root ?? path.join(repoRoot, ".artifacts", "r25-demo"));
 mkdirSync(root, { recursive: true });
 const producerSha = execFileSync("git", ["rev-parse", "HEAD"], {
@@ -280,8 +282,8 @@ const plans = buildTournamentCandidatePlans(request);
 const initialRoot = path.join(root, "initial");
 mkdirSync(initialRoot, { recursive: true });
 
-if (phase === "pair-1" || phase === "pair-2") {
-  const indexes = phase === "pair-1" ? [0, 1] : [2, 3];
+if (phase === "pair-1" || phase === "candidate-3" || phase === "candidate-4") {
+  const indexes = phase === "pair-1" ? [0, 1] : (phase === "candidate-3" ? [2] : [3]);
   const selected = indexes.map((index) => plans[index]);
   const phaseRoot = path.join(initialRoot, "phases", phase);
   const batchRoot = path.join(phaseRoot, "render-batch");
@@ -414,12 +416,15 @@ if (new Set(candidateManifests.map((m) => fingerprint(m.operationGraph.operation
   throw new Error("R25 phased finalize lacks structural diversity");
 }
 const phase1 = JSON.parse(readFileSync(path.join(initialRoot, "phases", "pair-1", "r25-phase-checkpoint.json"), "utf8"));
-const phase2 = JSON.parse(readFileSync(path.join(initialRoot, "phases", "pair-2", "r25-phase-checkpoint.json"), "utf8"));
+const phase3 = JSON.parse(readFileSync(path.join(initialRoot, "phases", "candidate-3", "r25-phase-checkpoint.json"), "utf8"));
+const phase4 = JSON.parse(readFileSync(path.join(initialRoot, "phases", "candidate-4", "r25-phase-checkpoint.json"), "utf8"));
+const completedCandidates = [...phase1.candidates, ...phase3.candidates, ...phase4.candidates];
+if (completedCandidates.length !== 4) throw new Error("R25 phased finalize requires four completed candidates");
 writeStable(path.join(initialRoot, "phased-checkpoints.json"), {
   contractVersion: "media.r25.rehearsal_checkpoints.v1",
   requestIdentityDigest: tournamentRequestIdentityDigest(request),
-  phases: [phase1, phase2],
-  completedCandidates: [...phase1.candidates, ...phase2.candidates],
+  phases: [phase1, phase3, phase4],
+  completedCandidates,
   exactReplayProjection: {
     cacheHits: 4,
     renderCalls: 0,
@@ -501,16 +506,20 @@ if (parsed.sha256 !== archive.sha256 || parsed.entries.size !== payloadFiles.len
   throw new Error("R25 phased deterministic archive verification failed");
 }
 const metrics = {
-  detectorCalls: (phase1.metrics.detectorCalls ?? 0) + (phase2.metrics.detectorCalls ?? 0),
-  renderCalls: (phase1.metrics.renderCalls ?? 0) + (phase2.metrics.renderCalls ?? 0),
-  probeCalls: (phase1.metrics.probeCalls ?? 0) + (phase2.metrics.probeCalls ?? 0),
-  qaCalls: (phase1.metrics.qaCalls ?? 0) + (phase2.metrics.qaCalls ?? 0),
-  processCalls: (phase1.metrics.processCalls ?? 0) + (phase2.metrics.processCalls ?? 0),
-  cacheHits: (phase1.metrics.cacheHits ?? 0) + (phase2.metrics.cacheHits ?? 0),
-  staleCacheInvalidations: (phase1.metrics.staleCacheInvalidations ?? 0) + (phase2.metrics.staleCacheInvalidations ?? 0),
-  peakConcurrentCandidates: Math.max(phase1.metrics.peakConcurrentCandidates ?? 0, phase2.metrics.peakConcurrentCandidates ?? 0),
+  detectorCalls: (phase1.metrics.detectorCalls ?? 0) + (phase3.metrics.detectorCalls ?? 0) + (phase4.metrics.detectorCalls ?? 0),
+  renderCalls: (phase1.metrics.renderCalls ?? 0) + (phase3.metrics.renderCalls ?? 0) + (phase4.metrics.renderCalls ?? 0),
+  probeCalls: (phase1.metrics.probeCalls ?? 0) + (phase3.metrics.probeCalls ?? 0) + (phase4.metrics.probeCalls ?? 0),
+  qaCalls: (phase1.metrics.qaCalls ?? 0) + (phase3.metrics.qaCalls ?? 0) + (phase4.metrics.qaCalls ?? 0),
+  processCalls: (phase1.metrics.processCalls ?? 0) + (phase3.metrics.processCalls ?? 0) + (phase4.metrics.processCalls ?? 0),
+  cacheHits: (phase1.metrics.cacheHits ?? 0) + (phase3.metrics.cacheHits ?? 0) + (phase4.metrics.cacheHits ?? 0),
+  staleCacheInvalidations: (phase1.metrics.staleCacheInvalidations ?? 0) + (phase3.metrics.staleCacheInvalidations ?? 0) + (phase4.metrics.staleCacheInvalidations ?? 0),
+  peakConcurrentCandidates: Math.max(
+    phase1.metrics.peakConcurrentCandidates ?? 0,
+    phase3.metrics.peakConcurrentCandidates ?? 0,
+    phase4.metrics.peakConcurrentCandidates ?? 0
+  ),
   maxParallel: 2,
-  wallTimeMs: (phase1.metrics.wallTimeMs ?? 0) + (phase2.metrics.wallTimeMs ?? 0)
+  wallTimeMs: (phase1.metrics.wallTimeMs ?? 0) + (phase3.metrics.wallTimeMs ?? 0) + (phase4.metrics.wallTimeMs ?? 0)
 };
 const evidence = {
   evidenceVersion: MEDIA_TOURNAMENT_EVIDENCE_VERSION,
@@ -545,7 +554,7 @@ const evidence = {
   },
   r16: {
     phased: true,
-    phaseManifestDigests: [phase1.batchManifestDigest, phase2.batchManifestDigest],
+    phaseManifestDigests: [phase1.batchManifestDigest, phase3.batchManifestDigest, phase4.batchManifestDigest],
     metrics,
     resourceEnvelope: {
       candidateParallelismLimit: 2,
