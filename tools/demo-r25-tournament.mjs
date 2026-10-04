@@ -184,13 +184,13 @@ const baseTimeline = {
       items: [{
         id: "main",
         startMs: 0,
-        endMs: 6000,
+        endMs: 5000,
         role: "body",
         source: {
           id: "r25-real-source",
           uri: "source.mp4",
           inMs: 0,
-          outMs: 6000,
+          outMs: 5000,
           sha256: source.sha256,
           size: source.size
         }
@@ -210,13 +210,13 @@ const baseTimeline = {
       items: [{
         id: "voice",
         startMs: 0,
-        endMs: 6000,
+        endMs: 5000,
         role: "voiceover",
         source: {
           id: "r25-real-source",
           uri: "source.mp4",
           inMs: 0,
-          outMs: 6000,
+          outMs: 5000,
           sha256: source.sha256,
           size: source.size
         },
