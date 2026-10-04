@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.canonical_live_review_export.r24.v1",
+  "title": "Media R24 canonical live review export index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion","state","producer","packageDigest","payloadDirectory",
+    "archive","packageManifest","authorityProfile","bridgeHandoff","sourceLineage",
+    "promptDigest","sealedMappingDigest","attachments","nestedR23",
+    "nonHumanGroundTruthDemo","modelReviewPerformed","liveModelReviewed",
+    "browserMutationPerformed","providerPublish","humanQuality"
+  ],
+  "properties": {
+    "contractVersion": { "const": "media.canonical_live_review_export.r24.v1" },
+    "state": { "const": "CANONICAL_LIVE_REVIEW_ARTIFACT_READY" },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository","sha","ciRunId"],
+      "properties": {
+        "repository": { "const": "foto6/video2" },
+        "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "ciRunId": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "packageDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "payloadDirectory": {
+      "type": "object",
+      "required": ["relativePath","digest","fileCount"],
+      "properties": {
+        "relativePath": { "const": "payload" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "fileCount": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "archive": {
+      "type": "object",
+      "required": ["relativePath","sha256","size","mime"],
+      "properties": {
+        "relativePath": { "const": "media-r24-canonical-live-review.tar" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 },
+        "mime": { "const": "application/x-tar" }
+      }
+    },
+    "promptDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "sealedMappingDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "attachments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["blindLabel","relativePath","sha256","size","mime"],
+        "properties": {
+          "blindLabel": { "enum": ["A","B"] },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "size": { "type": "integer", "minimum": 1 },
+          "mime": { "const": "video/mp4" }
+        }
+      }
+    },
+    "nonHumanGroundTruthDemo": { "const": true },
+    "modelReviewPerformed": { "const": false },
+    "liveModelReviewed": { "const": false },
+    "browserMutationPerformed": { "const": false },
+    "providerPublish": { "const": false },
+    "humanQuality": { "const": false },
+    "packageManifest": { "type": "object" },
+    "authorityProfile": { "type": "object" },
+    "bridgeHandoff": { "type": "object" },
+    "sourceLineage": { "type": "object" },
+    "nestedR23": { "type": "object" }
+  }
+}
