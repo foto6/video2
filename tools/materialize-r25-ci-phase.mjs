@@ -21,6 +21,7 @@ import {
   TOURNAMENT_ROUND_READY,
   buildTournamentBracket,
   buildTournamentCandidatePlans,
+  buildTournamentCiPhaseSelection,
   candidateRendererConfigDigest,
   captionsToSrt,
   createDeterministicTar,
@@ -283,8 +284,9 @@ const initialRoot = path.join(root, "initial");
 mkdirSync(initialRoot, { recursive: true });
 
 if (phase === "pair-1" || phase === "candidate-3" || phase === "candidate-4") {
-  const indexes = phase === "pair-1" ? [0, 1] : (phase === "candidate-3" ? [2] : [3]);
-  const selected = indexes.map((index) => plans[index]);
+  const selection = buildTournamentCiPhaseSelection(plans, phase);
+  const selected = selection.batchCandidates;
+  const targets = selection.targetCandidates;
   const phaseRoot = path.join(initialRoot, "phases", phase);
   const batchRoot = path.join(phaseRoot, "render-batch");
   const batchRequest = {
@@ -310,9 +312,35 @@ if (phase === "pair-1" || phase === "candidate-3" || phase === "candidate-4") {
   const batchManifest = JSON.parse(readFileSync(path.join(batchRoot, "media.candidate_batch.v1.json"), "utf8"));
   const batchEvidence = JSON.parse(readFileSync(path.join(batchRoot, "media.candidate_batch.r16.evidence.json"), "utf8"));
   if (batchManifest.status !== "succeeded") throw new Error(`R25 ${phase} batch failed`);
+  if (
+    batchEvidence.metrics?.cacheHits !== selection.expectedCacheHits ||
+    batchEvidence.metrics?.renderCalls !== selection.expectedRenderCalls
+  ) {
+    throw new Error(`R25 ${phase} continuation metrics mismatch: ${stableStringify({
+      actual: batchEvidence.metrics,
+      expectedCacheHits: selection.expectedCacheHits,
+      expectedRenderCalls: selection.expectedRenderCalls
+    })}`);
+  }
+  if (selection.anchorCandidateId) {
+    const anchor = batchEvidence.candidateStatuses.find((entry) =>
+      entry.candidateId === selection.anchorCandidateId
+    );
+    if (!anchor || anchor.status !== "succeeded" || anchor.reused !== true) {
+      throw new Error(`R25 ${phase} completed anchor was not exact-cache reused`);
+    }
+  }
+  for (const target of targets) {
+    const status = batchEvidence.candidateStatuses.find((entry) =>
+      entry.candidateId === target.candidateId
+    );
+    if (!status || status.status !== "succeeded" || status.reused === true) {
+      throw new Error(`R25 ${phase} unfinished target reuse/render state mismatch: ${target.candidateId}`);
+    }
+  }
 
   const phaseCandidates = [];
-  for (const planEntry of selected) {
+  for (const planEntry of targets) {
     const terminal = batchManifest.candidates.find((x) => x.candidateId === planEntry.candidateId);
     if (!terminal || terminal.status !== "succeeded") throw new Error(`R25 ${phase} candidate failed: ${planEntry.candidateId}`);
     const srcDir = path.join(batchRoot, "candidates", planEntry.candidateId);
@@ -394,6 +422,10 @@ if (phase === "pair-1" || phase === "candidate-3" || phase === "candidate-4") {
     requestIdentityDigest: tournamentRequestIdentityDigest(request),
     batchManifestDigest: batchEvidence.manifestDigest,
     metrics: batchEvidence.metrics,
+    batchCandidateIds: selected.map((entry) => entry.candidateId),
+    targetCandidateIds: targets.map((entry) => entry.candidateId),
+    anchorCandidateId: selection.anchorCandidateId,
+    completedCandidateRerendered: false,
     candidates: phaseCandidates,
     runnerLogSha256: createHash("sha256").update(log).digest("hex"),
     modelReviewPerformed: false,
