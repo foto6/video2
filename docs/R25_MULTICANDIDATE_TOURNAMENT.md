@@ -153,3 +153,26 @@ The CI rehearsal source is still a real encoded six-second H.264/AAC MP4, but us
 ### Continuation FFmpeg runtime checkpoint
 
 The pair-1 job is the only R25 phase job that installs FFmpeg from apt. After candidates 1-2 finish, it snapshots the exact `ffmpeg`/`ffprobe` binaries and their resolved shared libraries into the checkpoint artifact with a SHA-256 manifest. Candidate-3, candidate-4 and targeted-reedit jobs independently verify that manifest and activate the checkpointed runtime through `PATH`/`LD_LIBRARY_PATH`. This removes repeated package-install wall time from the runner-shutdown window without changing any rendered timeline, FFmpeg argument graph, codec/profile setting or QA threshold. The CI-only runtime is deleted before the final `media-r25-multicandidate-tournament` artifact is uploaded.
+
+
+## Candidate-4 hostile-preemption checkpointing
+
+Hosted-runner evidence on run `37212319175` showed candidate-4 repeatedly receiving SIGTERM/exit 143 about 32 seconds after materialization began, after the checkpointed FFmpeg runtime had already passed `runtime.manifest.sha256` verification and execute-bit restoration.
+
+R25 now decomposes candidate-4 rendering only; the frozen edit timeline and operation graph are unchanged. The decomposition chooses an existing video-item boundary that does not split a motion-bearing item, then creates two independently durable render checkpoints:
+
+1. `r25-candidate-4-segment-1`
+2. `r25-candidate-4-segment-2`
+3. `r25-candidate-4` performs stream-copy assembly, full final probe/technical+creative QA, R15 render export, candidate manifest emission, and exact R16 cache seeding.
+
+Every segment checkpoint uses `media.r25.candidate4_checkpoint.v1` and binds the tournament/candidate identity, exact producer SHA, source SHA/size, candidate operation-graph digest, full timeline digest, exact FFmpeg runtime-manifest SHA, stable phase operation ID, segment timeline digest, input checkpoint identities, and exact intermediate output SHA/size.
+
+Each continuation job preserves the existing security order:
+
+`runtime.manifest.sha256 verification -> chmod exact ffmpeg/ffprobe -> executable check -> runtime execution`.
+
+No continuation job installs or substitutes FFmpeg.
+
+Exact replay of an existing segment validates its authority and output bytes and reuses it. A changed source, graph, producer/runtime authority, phase identity, missing artifact, or corrupt output fails closed. The final assembled candidate explicitly does **not** claim byte identity with the legacy monolithic candidate-4 encoder; its frozen output authority is the same candidate-4 edit timeline/operation graph rendered by the new deterministic segmented method. Final QA and the R15/R25 evidence gates remain unchanged.
+
+The final candidate-4 phase seeds the same R16 candidate cache identity derived from source + candidate plan digest + renderer config + producer SHA. Earlier completed candidates are not re-rendered.
