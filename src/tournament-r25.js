@@ -544,12 +544,68 @@ function sourceWindows(timelineInput) {
     .filter((item) => item.source)
     .map((item) => ({
       sourceId: item.source.id ?? null,
+      startMs: item.startMs,
+      endMs: item.endMs,
       inMs: item.source.inMs ?? 0,
       outMs: item.source.outMs ?? null,
       speed: item.speed ?? 1,
       role: item.role ?? null
     }))
-    .sort((a, b) => (a.inMs - b.inMs) || String(a.sourceId).localeCompare(String(b.sourceId)));
+    .sort((a, b) => (a.startMs - b.startMs) || String(a.sourceId).localeCompare(String(b.sourceId)));
+}
+
+function subtractTimelineIntervals(window, declared) {
+  let spans = [{ startMs: window.startMs, endMs: window.endMs }];
+  for (const cut of declared) {
+    const next = [];
+    for (const span of spans) {
+      if (cut.endMs <= span.startMs || cut.startMs >= span.endMs) {
+        next.push(span);
+        continue;
+      }
+      if (span.startMs < cut.startMs) next.push({ startMs: span.startMs, endMs: cut.startMs });
+      if (cut.endMs < span.endMs) next.push({ startMs: cut.endMs, endMs: span.endMs });
+    }
+    spans = next;
+  }
+  return spans.filter((span) => span.endMs > span.startMs).map((span) => {
+    const offset = span.startMs - window.startMs;
+    const duration = span.endMs - span.startMs;
+    const inMs = window.inMs + Math.round(offset * window.speed);
+    return {
+      sourceId: window.sourceId,
+      inMs,
+      outMs: inMs + Math.round(duration * window.speed),
+      speed: window.speed,
+      role: window.role
+    };
+  });
+}
+
+function normalizeSourceCoverage(windows) {
+  const sorted = windows
+    .filter((x) => Number.isInteger(x.inMs) && Number.isInteger(x.outMs) && x.outMs > x.inMs)
+    .sort((a, b) =>
+      String(a.sourceId).localeCompare(String(b.sourceId)) ||
+      String(a.role).localeCompare(String(b.role)) ||
+      a.speed - b.speed ||
+      a.inMs - b.inMs ||
+      a.outMs - b.outMs
+    );
+  const out = [];
+  for (const item of sorted) {
+    const prior = out.at(-1);
+    if (
+      prior &&
+      prior.sourceId === item.sourceId &&
+      prior.role === item.role &&
+      prior.speed === item.speed &&
+      prior.outMs === item.inMs
+    ) {
+      prior.outMs = item.outMs;
+    } else out.push({ ...item });
+  }
+  return out;
 }
 
 export function buildUnaffectedRegionEvidence({
@@ -562,24 +618,23 @@ export function buildUnaffectedRegionEvidence({
     endMs: app.originalInterval?.endMs ?? null,
     operation: app.operation
   })).filter((x) => Number.isInteger(x.startMs) && Number.isInteger(x.endMs));
-  const sourceRanges = sourceWindows(baselineTimeline);
-  const challenged = sourceWindows(challengerTimeline);
-  const fullyInsideDeclared = (window) => declared.some((d) =>
-    window.inMs >= d.startMs && window.outMs <= d.endMs
+  const baselineUnaffected = normalizeSourceCoverage(
+    sourceWindows(baselineTimeline).flatMap((window) => subtractTimelineIntervals(window, declared))
   );
-  const baselineUnaffected = sourceRanges.filter((x) => !fullyInsideDeclared(x));
-  const challengerUnaffected = challenged.filter((x) => !fullyInsideDeclared(x));
+  const challengerUnaffected = normalizeSourceCoverage(
+    sourceWindows(challengerTimeline).flatMap((window) => subtractTimelineIntervals(window, declared))
+  );
   const baselineDigest = fingerprint(baselineUnaffected);
   const challengerDigest = fingerprint(challengerUnaffected);
   return {
-    method: "source-window-lineage-outside-declared-edit-intervals",
+    method: "normalized-source-window-lineage-outside-declared-edit-intervals",
     declaredIntervals: declared,
     baselineDigest,
     challengerDigest,
     preserved: baselineDigest === challengerDigest,
     baselineWindows: baselineUnaffected,
     challengerWindows: challengerUnaffected,
-    limitation: "proves source-window mapping outside declared intervals where comparable; does not claim pixel identity after full re-encode"
+    limitation: "proves normalized source-window mapping outside declared intervals where timeline clocks remain comparable; does not claim pixel identity after full re-encode"
   };
 }
 
