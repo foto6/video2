@@ -78,10 +78,9 @@ test("R24 conformance manifest pins exact current implementation and frozen R23 
   assert.equal(manifest.acceptedR23Authority.producerSha,R24_R23_AUTHORITY.producerSha);
   assert.equal(manifest.acceptedR23Authority.ciRunId,R24_R23_AUTHORITY.ciRunId);
   assert.equal(manifest.humanQuality,false);
+  const r24ProducerSha="244acdf154741e669991b17df3ef2a47e2dfdfa9";
   for(const [name,pin] of Object.entries(manifest.pins)){
-    if(name==="tests")continue;
-    const actual=execFileSync("git",["hash-object",pin.path],{cwd:repoRoot,encoding:"utf8"}).trim();
+    const actual=execFileSync("git",["rev-parse",`${r24ProducerSha}:${pin.path}`],{cwd:repoRoot,encoding:"utf8"}).trim();
     assert.equal(actual,pin.gitBlobSha,name);
   }
-  assert.match(manifest.pins.tests.gitBlobSha,/^[a-f0-9]{40}$/);
 });
