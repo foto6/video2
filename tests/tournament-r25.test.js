@@ -19,6 +19,7 @@ import {
   buildMulticandidateRoundAuthority,
   buildTournamentBracket,
   buildTournamentCandidatePlans,
+  buildTournamentCiPhaseSelection,
   buildUnaffectedRegionEvidence,
   candidateCacheIdentity,
   candidatePlanDigest,
@@ -31,7 +32,8 @@ import {
   validateTournamentBracket,
   validateTournamentCandidateManifest,
   validateTournamentReplayBinding,
-  validateTournamentRequest
+  validateTournamentRequest,
+  validateCandidateBatchRequest
 } from "../src/index.js";
 
 const SHA = (c) => c.repeat(64);
@@ -479,6 +481,58 @@ test("R25 unaffected-region evidence explicitly avoids pixel-identity claims", (
 });
 
 
+test("R25 phased continuation keeps frozen R16 2-4 invariant and authorizes only unfinished work", () => {
+  const tournament = baseRequest();
+  const plans = buildTournamentCandidatePlans(tournament);
+  const source = {
+    sourceId: tournament.source.sourceId,
+    sha256: tournament.source.sha256,
+    size: tournament.source.size
+  };
+  const renderer = { configDigest: candidateRendererConfigDigest({ maxParallel: 2 }) };
+
+  const pair1 = buildTournamentCiPhaseSelection(plans, "pair-1");
+  const candidate3 = buildTournamentCiPhaseSelection(plans, "candidate-3");
+  const candidate4 = buildTournamentCiPhaseSelection(plans, "candidate-4");
+
+  assert.deepEqual(pair1.batchCandidates.map((x) => x.candidateId), ["candidate-1", "candidate-2"]);
+  assert.deepEqual(candidate3.batchCandidates.map((x) => x.candidateId), ["candidate-2", "candidate-3"]);
+  assert.deepEqual(candidate3.targetCandidates.map((x) => x.candidateId), ["candidate-3"]);
+  assert.equal(candidate3.anchorCandidateId, "candidate-2");
+  assert.equal(candidate3.expectedCacheHits, 1);
+  assert.equal(candidate3.expectedRenderCalls, 1);
+  assert.deepEqual(candidate4.batchCandidates.map((x) => x.candidateId), ["candidate-3", "candidate-4"]);
+  assert.deepEqual(candidate4.targetCandidates.map((x) => x.candidateId), ["candidate-4"]);
+  assert.equal(candidate4.anchorCandidateId, "candidate-3");
+  assert.equal(candidate4.expectedCacheHits, 1);
+  assert.equal(candidate4.expectedRenderCalls, 1);
+
+  for (const selection of [pair1, candidate3, candidate4]) {
+    assert.doesNotThrow(() => validateCandidateBatchRequest({
+      contractVersion: MEDIA_CANDIDATE_BATCH_VERSION,
+      batchId: `phase-${selection.phase}`,
+      source,
+      renderer,
+      candidates: selection.batchCandidates.map((entry) => ({
+        candidateId: entry.candidateId,
+        plan: entry.plan
+      }))
+    }));
+    assert.equal(selection.batchCandidates.length, 2);
+  }
+
+  assert.throws(() => validateCandidateBatchRequest({
+    contractVersion: MEDIA_CANDIDATE_BATCH_VERSION,
+    batchId: "invalid-single-candidate",
+    source,
+    renderer,
+    candidates: [{
+      candidateId: candidate3.targetCandidates[0].candidateId,
+      plan: candidate3.targetCandidates[0].plan
+    }]
+  }), /candidate batch must contain 2-4 candidates/);
+});
+
 test("R25 conformance manifest pins exact implementation and accepted R24 authority", () => {
   const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
   const manifest = JSON.parse(readFileSync(
@@ -653,4 +707,31 @@ test("R25 external umbrella conformance manifest pins exact mappings and impleme
     () => validateMulticandidateRoundAuthority({ contractVersion: MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION }),
     /cannot masquerade as external umbrella authority/
   );
+});
+
+
+test("R25 stale conformance blob pins fail closed instead of being tolerated", () => {
+  const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+  function assertPins(manifest) {
+    for (const [name, pin] of Object.entries(manifest.pins)) {
+      if (name === "tests") continue;
+      const actual = execFileSync("git", ["hash-object", pin.path], {
+        cwd: repoRoot,
+        encoding: "utf8"
+      }).trim();
+      if (actual !== pin.gitBlobSha) {
+        throw new Error(`stale conformance pin: ${name}: actual=${actual} expected=${pin.gitBlobSha}`);
+      }
+    }
+  }
+  for (const [relativePath, tamperKey] of [
+    ["../conformance/media.edit_tournament.r25.v1/manifest.json", "package"],
+    ["../conformance/media.multicandidate_round.r25.v1/manifest.json", "verifier"]
+  ]) {
+    const manifest = JSON.parse(readFileSync(new URL(relativePath, import.meta.url), "utf8"));
+    assert.doesNotThrow(() => assertPins(manifest));
+    const stale = structuredClone(manifest);
+    stale.pins[tamperKey].gitBlobSha = "0".repeat(40);
+    assert.throws(() => assertPins(stale), new RegExp(`stale conformance pin: ${tamperKey}`));
+  }
 });
