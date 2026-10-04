@@ -509,10 +509,11 @@ test("R25 external umbrella is the only Hard Wave authority and exact-maps inter
       tournamentImplementation: GIT("2"),
       umbrellaImplementation: GIT("3"),
       runner: GIT("4"),
-      rehearsal: GIT("5"),
-      verifier: GIT("6"),
-      externalContract: GIT("7"),
-      externalSchema: GIT("8")
+      phaseMaterializer: GIT("5"),
+      rehearsal: GIT("6"),
+      verifier: GIT("7"),
+      externalContract: GIT("8"),
+      externalSchema: GIT("9")
     }
   });
   assert.equal(authority.contractVersion, MEDIA_MULTICANDIDATE_ROUND_VERSION);
