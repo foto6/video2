@@ -18,6 +18,7 @@ import {
   MEDIA_TOURNAMENT_CANDIDATE_MANIFEST_VERSION,
   MEDIA_TOURNAMENT_REQUEST_VERSION,
   R19_GROWTH_R23_AUTHORITY,
+  buildMulticandidateRoundAuthority,
   buildOperationGraph,
   buildTournamentCandidatePlans,
   captionsToSrt,
@@ -61,6 +62,13 @@ function runNode(script, args = []) {
     windowsHide: true,
     maxBuffer: 32 * 1024 * 1024
   });
+}
+function gitBlob(relativePath) {
+  return execFileSync("git", ["hash-object", relativePath], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    windowsHide: true
+  }).trim();
 }
 function parseRate(value) {
   const [n, d] = String(value ?? "").split("/").map(Number);
@@ -605,9 +613,29 @@ if (outerParsed.sha256 !== outerArchive.sha256 || outerParsed.entries.size !== p
   throw new Error("R25 outer rehearsal archive verification failed");
 }
 
+const umbrellaAuthority = buildMulticandidateRoundAuthority({
+  producerSha,
+  implementationBlobs: {
+    tournamentImplementation: gitBlob("src/tournament-r25.js"),
+    umbrellaImplementation: gitBlob("src/multicandidate-round-r25.js"),
+    runner: gitBlob("tools/run-r25-tournament.mjs"),
+    rehearsal: gitBlob("tools/demo-r25-tournament.mjs"),
+    verifier: gitBlob("tools/verify-r25-rehearsal.mjs"),
+    externalContract: gitBlob("conformance/media.multicandidate_round.r25.v1/contract.json"),
+    externalSchema: gitBlob("conformance/media.multicandidate_round.r25.v1/schema.json")
+  }
+});
+writeJson(path.join(root, "media.multicandidate_round.r25.v1.json"), umbrellaAuthority);
+
 const summary = {
   evidenceVersion: "media.edit_tournament.r25.demo.v1",
   producer: { repository: "foto6/video2", sha: producerSha },
+  externalUmbrella: {
+    contractVersion: umbrellaAuthority.contractVersion,
+    digest: fingerprint(umbrellaAuthority),
+    internalContracts: umbrellaAuthority.internalContracts,
+    implementationBlobs: umbrellaAuthority.implementationBlobs
+  },
   acceptedR24: {
     producerSha: "244acdf154741e669991b17df3ef2a47e2dfdfa9",
     ciRunId: 37195239582,
