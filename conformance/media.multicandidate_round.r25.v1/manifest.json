@@ -19,17 +19,58 @@
     "evidence": "media.edit_tournament.r25.evidence.v1"
   },
   "pins": {
-    "umbrellaImplementation": {"path":"src/multicandidate-round-r25.js","gitBlobSha":"86a9ef07f61d0e514832bd5b6e11514d2048b475"},
-    "tournamentImplementation": {"path":"src/tournament-r25.js","gitBlobSha":"ddbb27a90a191d096b500304fd03bac6b9bca99c"},
-    "runner": {"path":"tools/run-r25-tournament.mjs","gitBlobSha":"e242a092d7d48f661b2713bebf59ad910f7505c5"},
-    "rehearsal": {"path":"tools/demo-r25-tournament.mjs","gitBlobSha":"ddc989a70e5b430e861244dd36c0ab800654ac5a"},
-    "verifier": {"path":"tools/verify-r25-rehearsal.mjs","gitBlobSha":"95cbdf3a418bc6e86bfbb7a2d0bf9cdba411e0ae"},
-    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"bf2beae187ab10a32d769c147f6c359bfa946650"},
-    "externalContract": {"path":"conformance/media.multicandidate_round.r25.v1/contract.json","gitBlobSha":"95d958248dbeaf92c072cd3af98a5b1eb06e613e"},
-    "externalSchema": {"path":"conformance/media.multicandidate_round.r25.v1/schema.json","gitBlobSha":"0c2885a3842b2c72a8545b274eeb6f781d1150e2"},
-    "internalManifest": {"path":"conformance/media.edit_tournament.r25.v1/manifest.json","gitBlobSha":"732d978c1a9fdfc96136c381cbd939e61da939c2"},
-    "package": {"path":"package.json","gitBlobSha":"72ac963ad1c1f0a9f051f4c27fd9a223a72335cf"},
-    "workflow": {"path":".github/workflows/test.yml","gitBlobSha":"fc4cf7bfadff9ef21845f6be2f301f4b9b59b9b4"}
+    "umbrellaImplementation": {
+      "path": "src/multicandidate-round-r25.js",
+      "gitBlobSha": "86a9ef07f61d0e514832bd5b6e11514d2048b475"
+    },
+    "tournamentImplementation": {
+      "path": "src/tournament-r25.js",
+      "gitBlobSha": "ddbb27a90a191d096b500304fd03bac6b9bca99c"
+    },
+    "runner": {
+      "path": "tools/run-r25-tournament.mjs",
+      "gitBlobSha": "e242a092d7d48f661b2713bebf59ad910f7505c5"
+    },
+    "rehearsal": {
+      "path": "tools/demo-r25-tournament.mjs",
+      "gitBlobSha": "ddc989a70e5b430e861244dd36c0ab800654ac5a"
+    },
+    "verifier": {
+      "path": "tools/verify-r25-rehearsal.mjs",
+      "gitBlobSha": "95cbdf3a418bc6e86bfbb7a2d0bf9cdba411e0ae"
+    },
+    "tests": {
+      "path": "tests/tournament-r25.test.js",
+      "gitBlobSha": "bf2beae187ab10a32d769c147f6c359bfa946650"
+    },
+    "externalContract": {
+      "path": "conformance/media.multicandidate_round.r25.v1/contract.json",
+      "gitBlobSha": "95d958248dbeaf92c072cd3af98a5b1eb06e613e"
+    },
+    "externalSchema": {
+      "path": "conformance/media.multicandidate_round.r25.v1/schema.json",
+      "gitBlobSha": "0c2885a3842b2c72a8545b274eeb6f781d1150e2"
+    },
+    "internalManifest": {
+      "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
+      "gitBlobSha": "7009f2b7f660b721a89f807990da71790a7e5d2f"
+    },
+    "package": {
+      "path": "package.json",
+      "gitBlobSha": "72ac963ad1c1f0a9f051f4c27fd9a223a72335cf"
+    },
+    "workflow": {
+      "path": ".github/workflows/test.yml",
+      "gitBlobSha": "fc4cf7bfadff9ef21845f6be2f301f4b9b59b9b4"
+    },
+    "internalContract": {
+      "path": "conformance/media.edit_tournament.r25.v1/contract.json",
+      "gitBlobSha": "a1cf66ed0275ab47815b3f218c840ff4cef182a4"
+    },
+    "candidateSchema": {
+      "path": "conformance/media.edit_tournament.r25.v1/candidate-manifest.schema.json",
+      "gitBlobSha": "b0f1a5c5e717e37733b8249635eaef23221ca74c"
+    }
   },
   "ciReliability": {
     "focusedTestsInMainRegressionJob": true,
