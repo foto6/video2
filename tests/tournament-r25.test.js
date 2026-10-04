@@ -21,6 +21,7 @@ import {
   buildTournamentCandidatePlans,
   buildTournamentCiPhaseSelection,
   buildUnaffectedRegionEvidence,
+  compileFfmpegCommand,
   candidateCacheIdentity,
   candidatePlanDigest,
   candidateRendererConfigDigest,
@@ -480,6 +481,31 @@ test("R25 unaffected-region evidence explicitly avoids pixel-identity claims", (
   assert.match(evidence.limitation, /does not claim pixel identity/);
 });
 
+
+
+test("R25 kinetic candidate preserves slow-push graph while avoiding redundant full-HD pre-scale", () => {
+  const plans = buildTournamentCandidatePlans(baseRequest());
+  const kinetic = plans.find((entry) => entry.strategy === "kinetic_punch");
+  assert.ok(kinetic);
+  const motion = kinetic.operationGraph.operations.find((entry) => entry.type === "motion_zoom_pan");
+  assert.equal(motion?.motion?.type, "slow_push");
+  assert.equal(motion?.motion?.zoom, 1.05);
+
+  const command = compileFfmpegCommand(
+    kinetic.plan.timeline,
+    kinetic.plan.exportSpec,
+    "candidate-4.mp4"
+  );
+  const filterIndex = command.args.indexOf("-filter_complex");
+  assert.ok(filterIndex >= 0);
+  const graph = command.args[filterIndex + 1];
+  assert.match(graph, /crop=w='if\(gte\(iw\/ih,0\.5625\),ih\*0\.5625,iw\)'/);
+  assert.match(graph, /zoompan=z='min\(1\+on\//);
+  assert.doesNotMatch(
+    graph,
+    /scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920:\(in_w-out_w\)\/2:\(in_h-out_h\)\/2,zoompan/
+  );
+});
 
 test("R25 phased continuation keeps frozen R16 2-4 invariant and authorizes only unfinished work", () => {
   const tournament = baseRequest();
