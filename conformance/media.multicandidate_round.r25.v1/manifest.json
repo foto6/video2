@@ -24,7 +24,7 @@
     "runner": {"path":"tools/run-r25-tournament.mjs","gitBlobSha":"e242a092d7d48f661b2713bebf59ad910f7505c5"},
     "rehearsal": {"path":"tools/demo-r25-tournament.mjs","gitBlobSha":"ddc989a70e5b430e861244dd36c0ab800654ac5a"},
     "verifier": {"path":"tools/verify-r25-rehearsal.mjs","gitBlobSha":"95cbdf3a418bc6e86bfbb7a2d0bf9cdba411e0ae"},
-    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"efc9921aa130244b2876da024d05ffc75caabcf5"},
+    "tests": {"path":"tests/tournament-r25.test.js","gitBlobSha":"bf2beae187ab10a32d769c147f6c359bfa946650"},
     "externalContract": {"path":"conformance/media.multicandidate_round.r25.v1/contract.json","gitBlobSha":"95d958248dbeaf92c072cd3af98a5b1eb06e613e"},
     "externalSchema": {"path":"conformance/media.multicandidate_round.r25.v1/schema.json","gitBlobSha":"0c2885a3842b2c72a8545b274eeb6f781d1150e2"},
     "internalManifest": {"path":"conformance/media.edit_tournament.r25.v1/manifest.json","gitBlobSha":"732d978c1a9fdfc96136c381cbd939e61da939c2"},
