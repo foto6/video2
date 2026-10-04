@@ -139,10 +139,10 @@ const sourcePath = path.join(root, "source.mp4");
 if (!initialPrematerialized) {
   execFileSync("ffmpeg", [
     "-hide_banner", "-nostdin", "-y",
-    "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=6",
-    "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=6",
+    "-f", "lavfi", "-i", "testsrc=s=360x640:r=30:d=5",
+    "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=5",
     "-map", "0:v:0", "-map", "1:a:0",
-    "-t", "6",
+    "-t", "5",
     "-map_metadata", "-1",
     "-metadata", "creation_time=1970-01-01T00:00:00Z",
     "-fflags", "+bitexact",
@@ -167,8 +167,8 @@ const brief = {
     pacing: "compare clean/aggressive/cinematic/kinetic",
     humanGroundTruth: false
   }),
-  sentenceBoundariesMs: [0, 900, 1800, 3000, 4500, 6000],
-  beatMarkersMs: [750, 1500, 2250, 3000, 3750, 4500, 5250],
+  sentenceBoundariesMs: [0, 800, 1600, 2500, 3400, 4200, 5000],
+  beatMarkersMs: [650, 1300, 1950, 2600, 3250, 3900, 4550],
   silenceRanges: [{ startMs: 1100, endMs: 1550 }],
   loopFriendly: false
 };
@@ -176,7 +176,7 @@ const baseTimeline = {
   id: "r25-real-base",
   version: 1,
   profileVersion: MEDIA_SHORTFORM_PROFILE_VERSION,
-  canvas: { width: 1080, height: 1920, fps: 30, durationMs: 6000 },
+  canvas: { width: 1080, height: 1920, fps: 30, durationMs: 5000 },
   tracks: [
     {
       id: "video",
@@ -243,7 +243,7 @@ const request = {
     path: "source.mp4",
     sha256: source.sha256,
     size: source.size,
-    durationMs: 6000,
+    durationMs: 5000,
     expectAudio: true
   },
   brief,
