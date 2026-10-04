@@ -123,7 +123,7 @@ The umbrella pins the accepted R24 authority (producer `244acdf154741e669991b17d
 
 R25 no longer proves replay by immediately running the complete four-candidate tournament a second time. The real rehearsal materializes once, records persistent R16 candidate state/cache checkpoints, and then `npm run verify:r25:dir` independently verifies the encoded candidate files, manifests, bracket packages, targeted re-edit lineage and deterministic archives without invoking a render path.
 
-The main regression job runs the fast focused R25 contract suite. A separate `r25-evidence` job performs exactly one expensive real-MP4 materialization and then the read-only verifier. This prevents the R25 evidence workload from inheriting the lifetime of the R19-R24 demo chain while preserving all existing regression gates.
+The main regression job runs only the fast focused R25 contract suite. Real evidence is checkpointed across `r25-pair-1` (candidates 1-2), `r25-pair-2` (candidates 3-4), `r25-initial-finalize` (no render), `r25-targeted-evidence` (one real R19 challenger), and `r25-postdownload-verify` (no render). Each phase is handed to the next as an Actions artifact, so completed encoded candidates survive job boundaries and the final verification consumes a freshly downloaded artifact.
 
 The focused restart test simulates an interruption after candidates 1 and 2 have succeeded and candidate 3 is marked running. On reconstruction the running entry becomes pending, candidates 1-2 are validated/reused with their exact completed hashes, and only candidates 3-4 execute.
 
@@ -133,3 +133,12 @@ Commands:
 - `npm run materialize:r25` — one real encoded four-candidate + targeted-reedit rehearsal.
 - `npm run verify:r25:dir` — read-only verification; no rerender.
 - `npm run verify:r25` — local convenience composition of the three steps.
+
+
+### CI phase commands
+
+- `npm run r25:phase1` — encode/QA candidates 1-2 and emit checkpoint.
+- `npm run r25:phase2` — consume the checkpoint and encode/QA candidates 3-4.
+- `npm run r25:finalize` — create candidate manifests, bracket packages and deterministic initial archive without rendering.
+- `R25_INITIAL_PREMATERIALIZED=1 npm run r25:targeted` — consume the finalized initial round and render exactly one targeted re-edit challenger.
+- `npm run verify:r25:dir` — independently verify the downloaded final directory and archives without FFmpeg rendering.
