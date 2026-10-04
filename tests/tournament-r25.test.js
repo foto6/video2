@@ -755,12 +755,21 @@ test("R25 CI checkpoints FFmpeg once and continuation jobs reuse it without apt 
 
   assert.match(pair1, /Install bounded R25 FFmpeg dependency only/);
   assert.match(pair1, /Checkpoint exact FFmpeg runtime for continuation jobs/);
-  for (const [name, body] of [["candidate-3", candidate3], ["candidate-4", candidate4]]) {
-    assert.doesNotMatch(body, /apt-get install/);
+  for (const [name, body] of [
+    ["candidate-3", candidate3],
+    ["candidate-4", candidate4],
+    ["targeted-evidence", targeted]
+  ]) {
+    assert.doesNotMatch(body, /apt-get install/, `${name} must use checkpointed runtime`);
     assert.match(body, /Activate checkpointed FFmpeg runtime/);
-    assert.match(body, /runtime\.manifest\.sha256/);
+    const verifyIndex = body.indexOf('sha256sum -c runtime.manifest.sha256');
+    const chmodIndex = body.indexOf('chmod 0755 "$root\/bin\/ffmpeg" "$root\/bin\/ffprobe"');
+    const executeIndex = body.indexOf('"$root\/bin\/ffmpeg" -version');
+    assert.ok(verifyIndex >= 0, `${name} must verify runtime manifest`);
+    assert.ok(chmodIndex > verifyIndex, `${name} must restore execute bits only after digest verification`);
+    assert.ok(executeIndex > chmodIndex, `${name} must execute only after permission restoration`);
+    assert.match(body, /test -x "\$root\/bin\/ffmpeg"/);
+    assert.match(body, /test -x "\$root\/bin\/ffprobe"/);
   }
-  assert.doesNotMatch(targeted, /apt-get install/);
-  assert.match(targeted, /Activate checkpointed FFmpeg runtime/);
   assert.match(targeted, /Remove CI-only FFmpeg runtime before final evidence upload/);
 });
