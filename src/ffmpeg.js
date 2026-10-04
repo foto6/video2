@@ -73,6 +73,23 @@ function motionFilter(item, canvas, durationMs) {
   return `zoompan=z='${zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${canvas.width}x${canvas.height}:fps=${canvas.fps}`;
 }
 
+function isDefaultCenteredReframe(item) {
+  if (item.crop) return false;
+  const x = item.reframe?.x ?? "(in_w-out_w)/2";
+  const y = item.reframe?.y ?? "(in_h-out_h)/2";
+  return x === "(in_w-out_w)/2" && y === "(in_h-out_h)/2";
+}
+
+function canUseNativeCenteredMotion(item) {
+  return isDefaultCenteredReframe(item) &&
+    ["slow_push", "pan_left", "pan_right"].includes(item.motion?.type);
+}
+
+function nativeAspectCrop(canvas) {
+  const aspect = Number((canvas.width / canvas.height).toFixed(8));
+  return `crop=w='if(gte(iw/ih,${aspect}),ih*${aspect},iw)':h='if(gte(iw/ih,${aspect}),ih,iw/${aspect})':x='(iw-out_w)/2':y='(ih-out_h)/2'`;
+}
+
 function videoFilter(item, index, inputIndex, canvas) {
   const durationMs = item.endMs - item.startMs;
   const sourceInMs = item.source.inMs ?? 0;
@@ -81,7 +98,13 @@ function videoFilter(item, index, inputIndex, canvas) {
     `[${inputIndex}:v]trim=start=${seconds(sourceInMs)}:duration=${seconds(sourceDurationMs(item))}`,
     speed === 1 ? "setpts=PTS-STARTPTS" : `setpts=(PTS-STARTPTS)/${speed}`
   ];
-  if (item.crop) {
+  const nativeCenteredMotion = canUseNativeCenteredMotion(item);
+  if (nativeCenteredMotion) {
+    // Center-crop before zoompan so the motion filter performs the only scale to
+    // the final canvas. Geometrically this is the same default centered reframe,
+    // but avoids a redundant full-canvas scale before slow_push/pan.
+    parts.push(nativeAspectCrop(canvas));
+  } else if (item.crop) {
     parts.push(`crop=${item.crop.width}:${item.crop.height}:${item.crop.x ?? 0}:${item.crop.y ?? 0}`);
     parts.push(`scale=${canvas.width}:${canvas.height}`);
   } else {
