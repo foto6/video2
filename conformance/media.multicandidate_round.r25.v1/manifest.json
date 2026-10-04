@@ -25,7 +25,7 @@
     },
     "tournamentImplementation": {
       "path": "src/tournament-r25.js",
-      "gitBlobSha": "ddbb27a90a191d096b500304fd03bac6b9bca99c"
+      "gitBlobSha": "b6ba243e7954d35ecb2a6d81ee17893f9df781d1"
     },
     "runner": {
       "path": "tools/run-r25-tournament.mjs",
@@ -37,11 +37,11 @@
     },
     "verifier": {
       "path": "tools/verify-r25-rehearsal.mjs",
-      "gitBlobSha": "5767ad2866eb22a967db0d55555f99c1d8632072"
+      "gitBlobSha": "64a0c801ef678c934bd1f354caf3f90d6a02e5a2"
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "12d9419e9dddc0b74edafe4478889f452dd06d1d"
+      "gitBlobSha": "91cf61545d3df79e70a571676cda3715b8647aac"
     },
     "externalContract": {
       "path": "conformance/media.multicandidate_round.r25.v1/contract.json",
@@ -53,15 +53,15 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "b2360dff1ee6fc2a03c1c4d24d18e491c082db43"
+      "gitBlobSha": "e1a9db044357f372475346e131cc784ab96d90f6"
     },
     "package": {
       "path": "package.json",
-      "gitBlobSha": "670f1cddc34a3f94e1d3a41d8c1df856f4f934ba"
+      "gitBlobSha": "c21aabe64f7b65973281ba5a6c2154bdfcb97ac8"
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "1822498c4c66768a205d328aafa5d117037d5070"
+      "gitBlobSha": "1c44a4f7cd7e6ef2d37a63dfd4351317307aceb6"
     },
     "internalContract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -73,14 +73,15 @@
     },
     "phaseMaterializer": {
       "path": "tools/materialize-r25-ci-phase.mjs",
-      "gitBlobSha": "584977f2de2ee25046dac7e866d708f9409d2de7"
+      "gitBlobSha": "7a0a3dcf655dfcdd3394d2411304012547b79b2b"
     }
   },
   "ciReliability": {
     "focusedTestsInMainRegressionJob": true,
     "phasedJobs": [
       "r25-pair-1",
-      "r25-pair-2",
+      "r25-candidate-3",
+      "r25-candidate-4",
       "r25-initial-finalize",
       "r25-targeted-evidence",
       "r25-postdownload-verify"
@@ -88,8 +89,8 @@
     "maxInitialCandidateRendersPerJob": 2,
     "targetedCandidateRendersPerJob": 1,
     "postMaterializationVerificationRerenders": 0,
-    "checkpointAuthority": "media.candidate_batch.v1 phase artifacts plus exact output hashes",
-    "restartSimulation": "candidate 1-2 succeeded; candidate 3 running -> pending; only candidate 3-4 execute"
+    "checkpointAuthority": "media.candidate_batch.v1 exact cache anchors plus target-only R25 phase checkpoints and output hashes",
+    "restartSimulation": "candidate 1-2 succeeded; candidate 3 continuation batches [candidate-2 cache anchor,candidate-3 target]; candidate 4 continuation batches [candidate-3 cache anchor,candidate-4 target]; only unfinished targets render"
   },
   "externalAuthorityOnly": true,
   "internalContractMayMasqueradeAsUmbrella": false,
