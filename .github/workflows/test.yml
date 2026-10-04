@@ -203,7 +203,7 @@ jobs:
           path: .artifacts/r25-demo
           if-no-files-found: error
 
-  r25-pair-2:
+  r25-candidate-3:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: r25-pair-1
@@ -220,18 +220,43 @@ jobs:
         with:
           name: media-r25-checkpoint-pair-1
           path: .artifacts/r25-demo
-      - name: Materialize R25 candidates 3-4 from checkpoint
-        run: npm run r25:phase2
+      - name: Resume R25 candidate 3 from two-of-four checkpoint
+        run: npm run r25:candidate3
       - uses: actions/upload-artifact@v4
         with:
-          name: media-r25-checkpoint-pair-2
+          name: media-r25-checkpoint-candidate-3
+          path: .artifacts/r25-demo
+          if-no-files-found: error
+
+  r25-candidate-4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: r25-candidate-3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install bounded R25 FFmpeg dependency only
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-r25-checkpoint-candidate-3
+          path: .artifacts/r25-demo
+      - name: Resume R25 candidate 4 from three-of-four checkpoint
+        run: npm run r25:candidate4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r25-checkpoint-candidate-4
           path: .artifacts/r25-demo
           if-no-files-found: error
 
   r25-initial-finalize:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: r25-pair-2
+    needs: r25-candidate-4
     steps:
       - uses: actions/checkout@v4
         with:
@@ -241,7 +266,7 @@ jobs:
           node-version: "22"
       - uses: actions/download-artifact@v4
         with:
-          name: media-r25-checkpoint-pair-2
+          name: media-r25-checkpoint-candidate-4
           path: .artifacts/r25-demo
       - name: Finalize four-candidate bracket and deterministic archive without render
         run: npm run r25:finalize
