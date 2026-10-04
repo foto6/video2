@@ -133,25 +133,30 @@ const producerSha = execFileSync("git", ["rev-parse", "HEAD"], {
 if (process.env.GITHUB_SHA && process.env.GITHUB_SHA !== producerSha) {
   throw new Error(`GITHUB_SHA ${process.env.GITHUB_SHA} != HEAD ${producerSha}`);
 }
+const initialPrematerialized = process.env.R25_INITIAL_PREMATERIALIZED === "1";
 
 const sourcePath = path.join(root, "source.mp4");
-execFileSync("ffmpeg", [
-  "-hide_banner", "-nostdin", "-y",
-  "-f", "lavfi", "-i", "testsrc2=s=360x640:r=30:d=6",
-  "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=6",
-  "-map", "0:v:0", "-map", "1:a:0",
-  "-t", "6",
-  "-map_metadata", "-1",
-  "-metadata", "creation_time=1970-01-01T00:00:00Z",
-  "-fflags", "+bitexact",
-  "-flags:v", "+bitexact",
-  "-threads", "1",
-  "-c:v", "libx264", "-preset", "ultrafast", "-crf", "30", "-pix_fmt", "yuv420p",
-  "-c:a", "aac", "-b:a", "96k",
-  "-movflags", "+faststart",
-  "-f", "mp4",
-  sourcePath
-], { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
+if (!initialPrematerialized) {
+  execFileSync("ffmpeg", [
+    "-hide_banner", "-nostdin", "-y",
+    "-f", "lavfi", "-i", "testsrc2=s=360x640:r=30:d=6",
+    "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=6",
+    "-map", "0:v:0", "-map", "1:a:0",
+    "-t", "6",
+    "-map_metadata", "-1",
+    "-metadata", "creation_time=1970-01-01T00:00:00Z",
+    "-fflags", "+bitexact",
+    "-flags:v", "+bitexact",
+    "-threads", "1",
+    "-c:v", "libx264", "-preset", "ultrafast", "-crf", "30", "-pix_fmt", "yuv420p",
+    "-c:a", "aac", "-b:a", "96k",
+    "-movflags", "+faststart",
+    "-f", "mp4",
+    sourcePath
+  ], { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
+  
+}
+if (!existsSync(sourcePath)) throw new Error("R25 prematerialized source checkpoint missing");
 const source = hashFile(sourcePath);
 
 const brief = {
@@ -251,46 +256,73 @@ const requestPath = path.join(root, "request.json");
 writeJson(requestPath, request);
 
 const initialRoot = path.join(root, "initial");
-const firstLog = runNode("tools/run-r25-tournament.mjs", [
-  "--request", requestPath,
-  "--sandbox-root", root,
-  "--output-dir", initialRoot
-]);
-const firstEvidence = JSON.parse(readFileSync(path.join(initialRoot, "media.edit_tournament.r25.evidence.json"), "utf8"));
-const firstArchive = hashFile(path.join(initialRoot, "media-r25-tournament.tar"));
-copyFileSync(path.join(initialRoot, "media.edit_tournament.r25.evidence.json"), path.join(root, "first-run-evidence.json"));
+let firstEvidence;
+let firstArchive;
+let replayProjection;
+if (initialPrematerialized) {
+  firstEvidence = JSON.parse(readFileSync(
+    path.join(initialRoot, "media.edit_tournament.r25.evidence.json"),
+    "utf8"
+  ));
+  firstArchive = hashFile(path.join(initialRoot, "media-r25-tournament.tar"));
+  const phased = JSON.parse(readFileSync(path.join(initialRoot, "phased-checkpoints.json"), "utf8"));
+  if (
+    phased.exactReplayProjection?.cacheHits !== 4 ||
+    phased.exactReplayProjection?.renderCalls !== 0 ||
+    phased.exactReplayProjection?.duplicateWorkAuthorized !== false
+  ) throw new Error("R25 prematerialized checkpoint replay projection mismatch");
+  replayProjection = {
+    source: "validated-phased-r16-checkpoints",
+    candidateCount: phased.completedCandidates?.length ?? 0,
+    ...phased.exactReplayProjection,
+    completedCandidateHashes: (phased.completedCandidates ?? []).map((entry) => ({
+      candidateId: entry.candidateId,
+      renderSha256: entry.renderSha256,
+      cacheIdentityDigest: entry.cacheIdentityDigest ?? null
+    }))
+  };
+} else {
+  const firstLog = runNode("tools/run-r25-tournament.mjs", [
+    "--request", requestPath,
+    "--sandbox-root", root,
+    "--output-dir", initialRoot
+  ]);
+  firstEvidence = JSON.parse(readFileSync(path.join(initialRoot, "media.edit_tournament.r25.evidence.json"), "utf8"));
+  firstArchive = hashFile(path.join(initialRoot, "media-r25-tournament.tar"));
+  copyFileSync(path.join(initialRoot, "media.edit_tournament.r25.evidence.json"), path.join(root, "first-run-evidence.json"));
 
-const checkpointState = JSON.parse(readFileSync(
-  path.join(initialRoot, "render-batch", "candidate-batch-state.json"),
-  "utf8"
-));
-const checkpointCache = JSON.parse(readFileSync(
-  path.join(initialRoot, "candidate-cache.json"),
-  "utf8"
-));
-const checkpointCandidates = Object.values(checkpointState.candidates ?? {})
-  .sort((a, b) => a.order - b.order);
-if (checkpointCandidates.length !== 4 || checkpointCandidates.some((entry) => entry.status !== "succeeded")) {
-  throw new Error("R25 checkpoint must contain four succeeded candidates");
-}
-for (const entry of checkpointCandidates) {
-  if (!checkpointCache.entries?.[entry.cacheIdentityDigest]) {
-    throw new Error(`R25 checkpoint cache missing completed candidate: ${entry.candidateId}`);
+  const checkpointState = JSON.parse(readFileSync(
+    path.join(initialRoot, "render-batch", "candidate-batch-state.json"),
+    "utf8"
+  ));
+  const checkpointCache = JSON.parse(readFileSync(
+    path.join(initialRoot, "candidate-cache.json"),
+    "utf8"
+  ));
+  const checkpointCandidates = Object.values(checkpointState.candidates ?? {})
+    .sort((a, b) => a.order - b.order);
+  if (checkpointCandidates.length !== 4 || checkpointCandidates.some((entry) => entry.status !== "succeeded")) {
+    throw new Error("R25 checkpoint must contain four succeeded candidates");
   }
+  for (const entry of checkpointCandidates) {
+    if (!checkpointCache.entries?.[entry.cacheIdentityDigest]) {
+      throw new Error(`R25 checkpoint cache missing completed candidate: ${entry.candidateId}`);
+    }
+  }
+  replayProjection = {
+    source: "validated-persistent-r16-state-and-cache",
+    candidateCount: checkpointCandidates.length,
+    cacheHits: checkpointCandidates.length,
+    renderCalls: 0,
+    duplicateWorkAuthorized: false,
+    completedCandidateHashes: checkpointCandidates.map((entry) => ({
+      candidateId: entry.candidateId,
+      renderSha256: entry.result?.final?.sha256 ?? null,
+      cacheIdentityDigest: entry.cacheIdentityDigest
+    }))
+  };
+  writeJson(path.join(root, "checkpoint-replay-evidence.json"), replayProjection);
 }
-const replayProjection = {
-  source: "validated-persistent-r16-state-and-cache",
-  candidateCount: checkpointCandidates.length,
-  cacheHits: checkpointCandidates.length,
-  renderCalls: 0,
-  duplicateWorkAuthorized: false,
-  completedCandidateHashes: checkpointCandidates.map((entry) => ({
-    candidateId: entry.candidateId,
-    renderSha256: entry.result?.final?.sha256 ?? null,
-    cacheIdentityDigest: entry.cacheIdentityDigest
-  }))
-};
-writeJson(path.join(root, "checkpoint-replay-evidence.json"), replayProjection);
 
 if ((firstEvidence.r16.metrics.renderCalls + firstEvidence.r16.metrics.cacheHits) !== 4) {
   throw new Error("R25 materialization must account for all four candidates via render or validated cache reuse");
@@ -619,6 +651,7 @@ const umbrellaAuthority = buildMulticandidateRoundAuthority({
     tournamentImplementation: gitBlob("src/tournament-r25.js"),
     umbrellaImplementation: gitBlob("src/multicandidate-round-r25.js"),
     runner: gitBlob("tools/run-r25-tournament.mjs"),
+    phaseMaterializer: gitBlob("tools/materialize-r25-ci-phase.mjs"),
     rehearsal: gitBlob("tools/demo-r25-tournament.mjs"),
     verifier: gitBlob("tools/verify-r25-rehearsal.mjs"),
     externalContract: gitBlob("conformance/media.multicandidate_round.r25.v1/contract.json"),
