@@ -779,7 +779,9 @@ test("R25 CI checkpoints FFmpeg once and candidate-4 durable subphases reuse it 
   const segment1 = section("r25-candidate-4-segment-1", "r25-candidate-4-segment-2");
   const segment2 = section("r25-candidate-4-segment-2", "r25-candidate-4-segment-3");
   const segment3 = section("r25-candidate-4-segment-3", "r25-candidate-4-segment-4");
-  const segment4 = section("r25-candidate-4-segment-4", "r25-candidate-4");
+  const segment4 = section("r25-candidate-4-segment-4", "r25-candidate-4-segment-5");
+  const segment5 = section("r25-candidate-4-segment-5", "r25-candidate-4-segment-6");
+  const segment6 = section("r25-candidate-4-segment-6", "r25-candidate-4");
   const candidate4 = section("r25-candidate-4", "r25-initial-finalize");
   const targeted = section("r25-targeted-evidence", "r25-postdownload-verify");
 
@@ -791,6 +793,8 @@ test("R25 CI checkpoints FFmpeg once and candidate-4 durable subphases reuse it 
     ["candidate-4-segment-2", segment2],
     ["candidate-4-segment-3", segment3],
     ["candidate-4-segment-4", segment4],
+    ["candidate-4-segment-5", segment5],
+    ["candidate-4-segment-6", segment6],
     ["candidate-4-assemble", candidate4],
     ["targeted-evidence", targeted]
   ]) {
@@ -809,11 +813,15 @@ test("R25 CI checkpoints FFmpeg once and candidate-4 durable subphases reuse it 
   assert.match(segment2, /r25:candidate4:segment2/);
   assert.match(segment3, /r25:candidate4:segment3/);
   assert.match(segment4, /r25:candidate4:segment4/);
+  assert.match(segment5, /r25:candidate4:segment5/);
+  assert.match(segment6, /r25:candidate4:segment6/);
   assert.match(candidate4, /r25:candidate4:assemble/);
   assert.match(segment1, /media-r25-checkpoint-candidate-4-segment-1/);
   assert.match(segment2, /media-r25-checkpoint-candidate-4-segment-2/);
   assert.match(segment3, /media-r25-checkpoint-candidate-4-segment-3/);
   assert.match(segment4, /media-r25-checkpoint-candidate-4-segment-4/);
+  assert.match(segment5, /media-r25-checkpoint-candidate-4-segment-5/);
+  assert.match(segment6, /media-r25-checkpoint-candidate-4-segment-6/);
   assert.match(candidate4, /media-r25-checkpoint-candidate-4/);
   assert.match(targeted, /R25_HEARTBEAT targeted-reedit/);
   assert.match(targeted, /Remove CI-only FFmpeg runtime before final evidence upload/);
