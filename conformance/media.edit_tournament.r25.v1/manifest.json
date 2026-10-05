@@ -25,7 +25,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "99213824764c53b6c301319b1559e39ac19b0429"
+      "gitBlobSha": "a14825aa2a3f4d122a334c012b242ce4035aef8d"
     },
     "contract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -37,11 +37,11 @@
     },
     "package": {
       "path": "package.json",
-      "gitBlobSha": "a5abf4cc8fd5b64355d0ad1d6d168ad97a6c3fe4"
+      "gitBlobSha": "84271b233ad69f7647506c059d77328f9f634961"
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "d5b12c42ed56ba7943ed4bf346915da83473c1f2"
+      "gitBlobSha": "c00ed4f0c78ce69241627d8140a42210860e5318"
     },
     "r16BatchRuntime": {
       "path": "src/candidate-batch-r16.js",
@@ -73,7 +73,7 @@
     },
     "candidate4CheckpointImplementation": {
       "path": "src/r25-candidate4-checkpoint.js",
-      "gitBlobSha": "15244fc9ba74f518a46a216aed64ba7a845a949a"
+      "gitBlobSha": "9c1f848a34277b0968e8227b7e8a3d724d8ddd9e"
     },
     "candidate4SubphaseMaterializer": {
       "path": "tools/materialize-r25-candidate4-subphase.mjs",
@@ -81,7 +81,7 @@
     },
     "candidate4CheckpointTests": {
       "path": "tests/r25-candidate4-checkpoint.test.js",
-      "gitBlobSha": "7782e5e3f39f064c38ad403c33e818bfaf0afaa0"
+      "gitBlobSha": "8d39d5a8af1839bf2d80ba30b6e8f51d59f8124b"
     }
   },
   "reproductionCommand": "npm run verify:r25",
@@ -93,12 +93,12 @@
   "humanQuality": false,
   "candidate4Durability": {
     "contractVersion": "media.r25.candidate4_checkpoint.v1",
-    "decomposition": "four deterministic render chunks (0-800, 800-1600, 1600-3400, 3400-5000ms for the frozen rehearsal graph) plus stream-copy assembly and full final QA",
+    "decomposition": "six deterministic render chunks (0-400, 400-800, 800-1200, 1200-1600, 1600-3400, 3400-5000ms for the frozen rehearsal graph) plus stream-copy assembly and full final QA",
     "verifyRuntimeDigestBeforeExecute": true,
     "completedSegmentReplay": "verify_and_reuse",
     "changedSourceGraphRuntime": "conflict",
     "byteIdentityToLegacyUnsegmentedRenderClaimed": false,
     "finalSemanticAuthority": "frozen candidate-4 timeline and operation graph",
-    "motionProgress": "checkpoint-only global frame progression preserves the frozen slow-push across 0-800/800-1600ms chunks"
+    "motionProgress": "checkpoint-only global 48-frame progression preserves the frozen slow-push across four 400ms kinetic chunks"
   }
 }
