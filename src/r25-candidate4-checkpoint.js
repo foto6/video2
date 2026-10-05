@@ -105,7 +105,7 @@ export function buildR25Candidate4Decomposition({
     .flatMap((track) => track.items)
     .sort((a, b) => a.startMs - b.startMs || a.endMs - b.endMs || a.id.localeCompare(b.id));
   if (!videoItems.length) fail("r25_checkpoint_no_video", "candidate-4 has no video items");
-  const maxMotionChunkMs = 800;
+  const maxMotionChunkMs = 400;
   const rawSegments = [];
   for (const item of videoItems) {
     if (item.motion && item.endMs - item.startMs > maxMotionChunkMs) {
