@@ -159,13 +159,15 @@ The pair-1 job is the only R25 phase job that installs FFmpeg from apt. After ca
 
 Hosted-runner evidence on run `37212319175` showed candidate-4 repeatedly receiving SIGTERM/exit 143 about 32 seconds after materialization began, after the checkpointed FFmpeg runtime had already passed `runtime.manifest.sha256` verification and execute-bit restoration.
 
-R25 decomposes candidate-4 rendering only; the frozen edit timeline and operation graph are unchanged. Exact checkpoint evidence showed the original 0-1600 ms slow-push segment itself consumed about 28.7 seconds before hosted-runner shutdown. The frozen rehearsal graph is therefore chunked at 0-800, 800-1600, 1600-3400 and 3400-5000 ms. The two kinetic chunks carry global slow-push frame progress (0-23 and 24-47 of the original 48-frame motion) so the motion does not restart at the checkpoint. Four independently durable render checkpoints are created:
+R25 decomposes candidate-4 rendering only; the frozen edit timeline and operation graph are unchanged. Exact checkpoint evidence showed the original 0-1600 ms slow-push segment itself consumed about 28.7 seconds before hosted-runner shutdown. The 800 ms kinetic chunk still consumed about 31.68 seconds before hosted-runner shutdown. The frozen rehearsal graph is therefore chunked at 0-400, 400-800, 800-1200, 1200-1600, 1600-3400 and 3400-5000 ms. The four kinetic chunks carry global slow-push frame progress across the original 48-frame motion, so the motion does not restart at a checkpoint. Six independently durable render checkpoints are created:
 
-1. `r25-candidate-4-segment-1` (0-800 ms kinetic)
-2. `r25-candidate-4-segment-2` (800-1600 ms kinetic continuation)
-3. `r25-candidate-4-segment-3` (1600-3400 ms existing video item)
-4. `r25-candidate-4-segment-4` (3400-5000 ms existing video item)
-5. `r25-candidate-4` performs stream-copy assembly, full final probe/technical+creative QA, R15 render export, candidate manifest emission, and exact R16 cache seeding.
+1. `r25-candidate-4-segment-1` (0-400 ms kinetic)
+2. `r25-candidate-4-segment-2` (400-800 ms kinetic continuation)
+3. `r25-candidate-4-segment-3` (800-1200 ms kinetic continuation)
+4. `r25-candidate-4-segment-4` (1200-1600 ms kinetic continuation)
+5. `r25-candidate-4-segment-5` (1600-3400 ms existing video item)
+6. `r25-candidate-4-segment-6` (3400-5000 ms existing video item)
+7. `r25-candidate-4` performs stream-copy assembly, full final probe/technical+creative QA, R15 render export, candidate manifest emission, and exact R16 cache seeding.
 
 Every segment checkpoint uses `media.r25.candidate4_checkpoint.v1` and binds the tournament/candidate identity, exact producer SHA, source SHA/size, candidate operation-graph digest, full timeline digest, exact FFmpeg runtime-manifest SHA, stable phase operation ID, segment timeline digest, input checkpoint identities, and exact intermediate output SHA/size.
 
