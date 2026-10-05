@@ -1,0 +1,31 @@
+{
+  "reportVersion": "media.r25.render_path_benchmark_policy.v1",
+  "phase": "A_MEASUREMENT_ONLY",
+  "frozenAuthority": {
+    "headSha": "00319d5795daa5a38260e309102866eec476cb0b",
+    "runId": 37246071924,
+    "candidate3ArtifactId": 11319501040,
+    "candidate3ArtifactDigest": "sha256:f58a92c2a88b4bf0436e66b3e3f1be9d70a6254e9a5842fe6571751892dc54e8",
+    "requestSha256": "0b8f5b8d46b1854534163f8ff836c40bc73d919ee0242938302ba161ff0af076",
+    "sourceSha256": "0828975570c9df9e3590f8f56e6776b968d0930bb0117b4bc8feb07259ef1657",
+    "sourceSize": 117594,
+    "runtimeManifestSha256": "9a49ca2fdc1e0b72186e981ecc617363cbd767ae24d28ee4c93478e59705009f"
+  },
+  "repetitionsPerStrategy": 2,
+  "invocationTimeoutMs": 20000,
+  "passTargetMs": 15000,
+  "warnCeilingMs": 20000,
+  "selectionRule": "fastest eligible strategy with both repetitions <=15000ms; else BLOCKED_PERFORMANCE",
+  "strategies": [
+    "BASELINE_FULL_SINGLE_THREAD",
+    "FULL_BOUNDED_THREADS",
+    "VIDEO_ONLY_SEGMENT",
+    "OPTIMIZED_MOTION_PATH",
+    "VIDEO_ONLY_BOUNDED_THREADS"
+  ],
+  "productionSemanticsChanged": false,
+  "implementationCommitAuthorizedBeforeBenchmark": false,
+  "modelBrowserProviderCall": false,
+  "publish": false,
+  "merge": false
+}

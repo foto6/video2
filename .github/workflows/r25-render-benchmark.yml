@@ -1,0 +1,63 @@
+name: r25-render-path-benchmark
+
+on:
+  push:
+    branches:
+      - agent/media-r25-multicandidate-round-engine-20261004
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: r25-render-path-benchmark-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  benchmark-candidate-4-segment-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Download exact frozen candidate-3 checkpoint
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: 11319501040
+          github-token: ${{ github.token }}
+          repository: foto6/video2
+          run-id: 37246071924
+          path: .artifacts/r25-benchmark-input
+          merge-multiple: true
+      - name: Verify frozen runtime bytes before restoring execute permission
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$GITHUB_WORKSPACE/.artifacts/r25-benchmark-input"
+          runtime="$root/ci-ffmpeg-runtime"
+          test "$(sha256sum "$root/request.json" | awk '{print $1}')" = "0b8f5b8d46b1854534163f8ff836c40bc73d919ee0242938302ba161ff0af076"
+          test "$(sha256sum "$root/source.mp4" | awk '{print $1}')" = "0828975570c9df9e3590f8f56e6776b968d0930bb0117b4bc8feb07259ef1657"
+          test "$(sha256sum "$runtime/runtime.manifest.sha256" | awk '{print $1}')" = "9a49ca2fdc1e0b72186e981ecc617363cbd767ae24d28ee4c93478e59705009f"
+          (cd "$runtime" && sha256sum -c runtime.manifest.sha256)
+          chmod 0755 "$runtime/bin/ffmpeg" "$runtime/bin/ffprobe"
+          test -x "$runtime/bin/ffmpeg"
+          test -x "$runtime/bin/ffprobe"
+          echo "$runtime/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$runtime/lib" >> "$GITHUB_ENV"
+          LD_LIBRARY_PATH="$runtime/lib" "$runtime/bin/ffmpeg" -version
+          LD_LIBRARY_PATH="$runtime/lib" "$runtime/bin/ffprobe" -version
+      - name: Run frozen R25 candidate-4 render-path benchmark
+        env:
+          R25_BENCHMARK_INPUT_ROOT: .artifacts/r25-benchmark-input
+          R25_BENCHMARK_OUTPUT_ROOT: .artifacts/r25-render-benchmark
+        run: npm run benchmark:r25:candidate4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-r25-render-path-benchmark
+          path: .artifacts/r25-render-benchmark
+          if-no-files-found: error
