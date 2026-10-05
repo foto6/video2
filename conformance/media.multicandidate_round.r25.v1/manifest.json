@@ -41,7 +41,7 @@
     },
     "tests": {
       "path": "tests/tournament-r25.test.js",
-      "gitBlobSha": "99213824764c53b6c301319b1559e39ac19b0429"
+      "gitBlobSha": "a14825aa2a3f4d122a334c012b242ce4035aef8d"
     },
     "externalContract": {
       "path": "conformance/media.multicandidate_round.r25.v1/contract.json",
@@ -53,15 +53,15 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "68cb0b26bb23f7650f80c3031226962a91f29315"
+      "gitBlobSha": "2952634d67220fa137c6794622f6175e50adc88b"
     },
     "package": {
       "path": "package.json",
-      "gitBlobSha": "a5abf4cc8fd5b64355d0ad1d6d168ad97a6c3fe4"
+      "gitBlobSha": "84271b233ad69f7647506c059d77328f9f634961"
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
-      "gitBlobSha": "d5b12c42ed56ba7943ed4bf346915da83473c1f2"
+      "gitBlobSha": "c00ed4f0c78ce69241627d8140a42210860e5318"
     },
     "internalContract": {
       "path": "conformance/media.edit_tournament.r25.v1/contract.json",
@@ -81,7 +81,7 @@
     },
     "candidate4CheckpointImplementation": {
       "path": "src/r25-candidate4-checkpoint.js",
-      "gitBlobSha": "15244fc9ba74f518a46a216aed64ba7a845a949a"
+      "gitBlobSha": "9c1f848a34277b0968e8227b7e8a3d724d8ddd9e"
     },
     "candidate4SubphaseMaterializer": {
       "path": "tools/materialize-r25-candidate4-subphase.mjs",
@@ -89,7 +89,7 @@
     },
     "candidate4CheckpointTests": {
       "path": "tests/r25-candidate4-checkpoint.test.js",
-      "gitBlobSha": "7782e5e3f39f064c38ad403c33e818bfaf0afaa0"
+      "gitBlobSha": "8d39d5a8af1839bf2d80ba30b6e8f51d59f8124b"
     }
   },
   "ciReliability": {
@@ -101,6 +101,8 @@
       "r25-candidate-4-segment-2",
       "r25-candidate-4-segment-3",
       "r25-candidate-4-segment-4",
+      "r25-candidate-4-segment-5",
+      "r25-candidate-4-segment-6",
       "r25-candidate-4",
       "r25-initial-finalize",
       "r25-targeted-evidence",
@@ -110,7 +112,7 @@
     "targetedCandidateRendersPerJob": 1,
     "postMaterializationVerificationRerenders": 0,
     "checkpointAuthority": "media.candidate_batch.v1 exact cache anchors plus media.r25.candidate4_checkpoint.v1 content-addressed segment checkpoints",
-    "restartSimulation": "candidate 1-2 succeeded; candidate 3 exact-reuses candidate-2 anchor; candidate-4 motion interval is split into two 800ms chunks with global 48-frame progress, followed by existing 1600-3400 and 3400-5000 video-item chunks; each checkpoint is verified/reused before the next phase",
+    "restartSimulation": "candidate 1-2 succeeded; candidate 3 exact-reuses candidate-2 anchor; candidate-4 slow-push is split into four 400ms chunks with global 48-frame progress, followed by existing 1600-3400 and 3400-5000 chunks; each completed checkpoint is verified/reused",
     "ffmpegRuntimeCheckpoint": {
       "sourceJob": "r25-pair-1",
       "runtimeManifest": "ci-ffmpeg-runtime/runtime.manifest.sha256",
@@ -121,6 +123,8 @@
         "r25-candidate-4-segment-2",
         "r25-candidate-4-segment-3",
         "r25-candidate-4-segment-4",
+        "r25-candidate-4-segment-5",
+        "r25-candidate-4-segment-6",
         "r25-candidate-4",
         "r25-targeted-evidence"
       ],
@@ -129,13 +133,14 @@
     },
     "candidate4Preemption": {
       "observedLegacyShutdownWindowSeconds": "30-40",
-      "strategy": "four durable render chunks + no-rerender assembly/QA; kinetic chunks preserve global motion frame progress",
+      "strategy": "six durable render chunks + no-rerender assembly/QA; kinetic chunks preserve global motion frame progress",
       "phaseContract": "media.r25.candidate4_checkpoint.v1",
       "runtimeDigestBound": true,
       "sourceGraphRuntimeConflictClosed": true,
       "exactCompletedPhaseReplay": true,
       "legacyByteIdentityClaimed": false,
-      "measuredLegacySegment1ActiveSeconds": 28.7
+      "measuredLegacySegment1ActiveSeconds": 31.68,
+      "motionChunkMs": 400
     }
   },
   "externalAuthorityOnly": true,
