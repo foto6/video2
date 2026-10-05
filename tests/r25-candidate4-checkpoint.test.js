@@ -148,17 +148,19 @@ function checkpoint(dec, index, output) {
 
 test("R25 candidate-4 decomposition bounds kinetic motion into deterministic global-progress chunks", () => {
   const dec = decomposition();
-  assert.equal(dec.maxMotionChunkMs, 800);
+  assert.equal(dec.maxMotionChunkMs, 400);
   assert.deepEqual(dec.segments.map((x) => [x.phase, x.startMs, x.endMs]), [
-    ["segment-1", 0, 800],
-    ["segment-2", 800, 1600],
-    ["segment-3", 1600, 3400],
-    ["segment-4", 3400, 5000]
+    ["segment-1", 0, 400],
+    ["segment-2", 400, 800],
+    ["segment-3", 800, 1200],
+    ["segment-4", 1200, 1600],
+    ["segment-5", 1600, 3400],
+    ["segment-6", 3400, 5000]
   ]);
-  const one = sliceTimelineForR25Checkpoint(timeline(), 0, 800);
-  const two = sliceTimelineForR25Checkpoint(timeline(), 800, 1600);
-  assert.equal(one.canvas.durationMs, 800);
-  assert.equal(two.canvas.durationMs, 800);
+  const one = sliceTimelineForR25Checkpoint(timeline(), 0, 400);
+  const two = sliceTimelineForR25Checkpoint(timeline(), 400, 800);
+  assert.equal(one.canvas.durationMs, 400);
+  assert.equal(two.canvas.durationMs, 400);
   assert.equal(one.profileVersion, undefined);
   assert.equal(two.profileVersion, undefined);
   const firstMotion = one.tracks.find((x) => x.kind === "video").items[0].motion;
@@ -166,7 +168,7 @@ test("R25 candidate-4 decomposition bounds kinetic motion into deterministic glo
   assert.equal(firstMotion.type, "slow_push");
   assert.equal(firstMotion.checkpointProgressStartFrame, 0);
   assert.equal(firstMotion.checkpointProgressTotalFrames, 48);
-  assert.equal(secondMotion.checkpointProgressStartFrame, 24);
+  assert.equal(secondMotion.checkpointProgressStartFrame, 12);
   assert.equal(secondMotion.checkpointProgressTotalFrames, 48);
   assert.equal(timeline().profileVersion, "media.shortform_profile.r11.v1");
 });
