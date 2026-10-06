@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media.real_input_local_rehearsal.r27.v1",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "state",
+    "producer",
+    "operationBinding",
+    "inputVideo",
+    "normalization",
+    "runtime",
+    "candidates",
+    "bracket",
+    "targetedReedit",
+    "finalArtifact",
+    "controls"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": "media.real_input_local_rehearsal.r27.v1"
+    },
+    "state": {
+      "const": "LOCAL_REAL_INPUT_REHEARSAL_COMPLETE"
+    },
+    "producer": {
+      "type": "object",
+      "required": [
+        "sha",
+        "authorityState",
+        "acceptedByIndependentQa"
+      ]
+    },
+    "operationBinding": {
+      "type": "object"
+    },
+    "inputVideo": {
+      "type": "object"
+    },
+    "normalization": {
+      "type": "object"
+    },
+    "runtime": {
+      "type": "object"
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "bracket": {
+      "type": "object"
+    },
+    "targetedReedit": {
+      "type": "object"
+    },
+    "finalArtifact": {
+      "type": "object"
+    },
+    "controls": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}
