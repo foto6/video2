@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - agent/media-r26-local-windows-render-gate-20261006
-  pull_request:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: r26-local-windows-render-gate-${{ github.ref }}
@@ -24,10 +24,39 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Publish R26 pending exact-head status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fsSL -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -H "X-GitHub-Api-Version: 2022-11-28"             https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}             -d '{"state":"pending","context":"r26-local-windows-render-gate","description":"bounded control-plane fixtures running","target_url":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
       - name: Run bounded R26 control-plane fixtures
         run: npm run ci:r26
-      - uses: actions/upload-artifact@v4
+      - id: upload
+        uses: actions/upload-artifact@v4
         with:
           name: media-r26-local-windows-render-gate-control
           path: .artifacts/r26-ci
           if-no-files-found: error
+      - name: Publish R26 exact-head success evidence
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          desc="run ${{ github.run_id }} artifact $ARTIFACT_ID $ARTIFACT_DIGEST"
+          curl -fsSL -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -H "X-GitHub-Api-Version: 2022-11-28"             https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}             -d "$(node -e 'process.stdout.write(JSON.stringify({state:"success",context:"r26-local-windows-render-gate",description:process.env.DESC,target_url:process.env.URL}))')"             >/dev/null
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+          DESC: run ${{ github.run_id }} artifact ${{ steps.upload.outputs.artifact-id }} ${{ steps.upload.outputs.artifact-digest }}
+          URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Publish R26 exact-head failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DESC: run ${{ github.run_id }} bounded control-plane failure
+          URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          curl -fsSL -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -H "X-GitHub-Api-Version: 2022-11-28"             https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}             -d "$(node -e 'process.stdout.write(JSON.stringify({state:"failure",context:"r26-local-windows-render-gate",description:process.env.DESC,target_url:process.env.URL}))')"             >/dev/null
