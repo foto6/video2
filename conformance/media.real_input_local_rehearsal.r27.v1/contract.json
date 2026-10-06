@@ -1,0 +1,47 @@
+{
+  "contractVersion": "media.real_input_local_rehearsal.r27.v1",
+  "parent": {
+    "contractVersion": "media.local_windows_render_gate.r26.v1",
+    "producerSha": "dba0dce8d44c3b5786c37d2ce793172a058fb40f",
+    "ciRunId": 37405928263
+  },
+  "purpose": "Bind one explicit user video to the existing R25/R26 renderer and produce a sealed offline local rehearsal package.",
+  "authorityState": "PENDING_INDEPENDENT_QA",
+  "input": {
+    "explicitPath": true,
+    "hashBeforeRender": true,
+    "ffprobeBeforeRender": true,
+    "minDurationMs": 5000
+  },
+  "normalization": {
+    "clipStartMs": 0,
+    "clipDurationMs": 5000,
+    "width": 360,
+    "height": 640,
+    "fps": 30,
+    "deterministic": true,
+    "exactRuntimeBound": true
+  },
+  "renderReuse": {
+    "r25Tournament": true,
+    "r26DurableCheckpointSemantics": true,
+    "candidateCount": 4,
+    "candidate4Subphases": 6,
+    "targetedReedit": true
+  },
+  "outputs": {
+    "finalArtifact": true,
+    "growthBundleContract": "media.real_input_growth_bundle.r27.v1"
+  },
+  "effects": {
+    "browser": false,
+    "model": false,
+    "providerMutation": false,
+    "socialPublish": false,
+    "liveAuthorization": false
+  },
+  "hostedCi": {
+    "longEncoding": false,
+    "tinyDeterministicControlFixturesOnly": true
+  }
+}
