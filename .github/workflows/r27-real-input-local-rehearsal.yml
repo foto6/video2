@@ -1,0 +1,61 @@
+name: r27-real-input-local-rehearsal
+
+on:
+  push:
+    branches:
+      - agent/media-r27-real-input-local-rehearsal-20261006
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: r27-real-input-local-rehearsal-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  r27-control-plane:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Publish R27 pending exact-head status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          payload=$(node -e 'process.stdout.write(JSON.stringify({state:"pending",context:"r27-real-input-local-rehearsal",description:"bounded control-plane fixtures running",target_url:process.env.URL}))')
+          curl -fsSL -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -H "X-GitHub-Api-Version: 2022-11-28"             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}"             -d "$payload" >/dev/null
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Run bounded R27 control-plane tests and evidence
+        run: npm run ci:r27
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-r27-real-input-local-rehearsal-control
+          path: .artifacts/r27-ci
+          if-no-files-found: error
+      - name: Publish R27 exact-head success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DESC: run ${{ github.run_id }} artifact ${{ steps.upload.outputs.artifact-id }} ${{ steps.upload.outputs.artifact-digest }}
+          URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          payload=$(node -e 'process.stdout.write(JSON.stringify({state:"success",context:"r27-real-input-local-rehearsal",description:process.env.DESC,target_url:process.env.URL}))')
+          curl -fsSL -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -H "X-GitHub-Api-Version: 2022-11-28"             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}"             -d "$payload" >/dev/null
+      - name: Publish R27 exact-head failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DESC: run ${{ github.run_id }} bounded control-plane failure
+          URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          payload=$(node -e 'process.stdout.write(JSON.stringify({state:"failure",context:"r27-real-input-local-rehearsal",description:process.env.DESC,target_url:process.env.URL}))')
+          curl -fsSL -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -H "X-GitHub-Api-Version: 2022-11-28"             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}"             -d "$payload" >/dev/null
