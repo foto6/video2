@@ -93,7 +93,7 @@
     "status:r26": "node tools/run-r26-local-windows.mjs status",
     "verify:r26": "node tools/run-r26-local-windows.mjs verify",
     "test:r27": "node --test tests/real-input-local-rehearsal-r27.test.js",
-    "ci:r27": "npm run test:r27 && node tools/build-r27-ci-evidence.mjs",
+    "ci:r27": "npm run test:r27 && node tools/run-r27-real-input-local.mjs status --output-root .artifacts/r27-ci-smoke && node tools/build-r27-ci-evidence.mjs",
     "local:r27": "node tools/run-r27-real-input-local.mjs run",
     "status:r27": "node tools/run-r27-real-input-local.mjs status",
     "verify:r27": "node tools/run-r27-real-input-local.mjs verify"
