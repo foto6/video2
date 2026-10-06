@@ -1,0 +1,42 @@
+{
+  "contractVersion": "media.local_windows_render_gate.r26.v1",
+  "purpose": "Deterministic local Windows real-render gate for the R25 four-candidate tournament and targeted re-edit.",
+  "producer": {
+    "repository": "foto6/video2",
+    "branch": "agent/media-r26-local-windows-render-gate-20261006"
+  },
+  "inheritedSemantics": {
+    "fourCandidateTournament": "media.multicandidate_round.r25.v1",
+    "candidate4Checkpoint": "media.r25.candidate4_checkpoint.v1",
+    "targetedReedit": "media.tournament_targeted_reedit.r25.v1"
+  },
+  "phases": [
+    "pair-1",
+    "candidate-3",
+    "candidate-4-segment-1",
+    "candidate-4-segment-2",
+    "candidate-4-segment-3",
+    "candidate-4-segment-4",
+    "candidate-4-segment-5",
+    "candidate-4-segment-6",
+    "candidate-4-assemble",
+    "initial-finalize",
+    "targeted-reedit",
+    "verify"
+  ],
+  "invariants": {
+    "exactRuntimeHashVerification": true,
+    "completedPhaseHashVerificationBeforeReuse": true,
+    "corruptCheckpointFailsClosed": true,
+    "changedGraphSameOperationIdConflicts": true,
+    "actualMp4BytesRequiredForLocalEvidence": true,
+    "hostedCiLongEncoding": false,
+    "liveAuthorization": false,
+    "providerCalls": false,
+    "browserCalls": false,
+    "socialPublish": false,
+    "credentialsRequired": false,
+    "adminRequired": false
+  },
+  "evidenceFile": ".artifacts/r26-local/media.local_windows_render_gate.r26.evidence.json"
+}
