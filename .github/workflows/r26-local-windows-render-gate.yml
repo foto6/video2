@@ -1,0 +1,33 @@
+name: r26-local-windows-render-gate
+
+on:
+  push:
+    branches:
+      - agent/media-r26-local-windows-render-gate-20261006
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r26-local-windows-render-gate-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  r26-control-plane:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run bounded R26 control-plane fixtures
+        run: npm run ci:r26
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-r26-local-windows-render-gate-control
+          path: .artifacts/r26-ci
+          if-no-files-found: error
