@@ -373,3 +373,22 @@ export {
   MEDIA_NATIVE_PC_EXPOSURE_AUDIT_VERSION,
   evaluateNativePcMcpExposure
 } from "./runtime/native-mcp-exposure-gate.js";
+
+export {
+  MEDIA_LOCAL_WINDOWS_RENDER_GATE_VERSION,
+  R26_LOCAL_PHASES,
+  R26LocalRenderGateError,
+  r26Sha256Bytes,
+  r26Sha256File,
+  r26Digest,
+  createR26Ledger,
+  validateR26Ledger,
+  loadOrCreateR26Ledger,
+  bindR26RenderGraph,
+  verifyR26Artifacts,
+  completeR26Phase,
+  runR26DurablePhase,
+  beginR26Invocation,
+  recordR26Cancellation,
+  r26Status
+} from "./local-windows-render-gate-r26.js";
