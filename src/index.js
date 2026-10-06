@@ -392,3 +392,28 @@ export {
   recordR26Cancellation,
   r26Status
 } from "./local-windows-render-gate-r26.js";
+
+export {
+  MEDIA_REAL_INPUT_LOCAL_REHEARSAL_VERSION,
+  MEDIA_R27_GROWTH_BUNDLE_VERSION,
+  R27_AUTHORITY_STATE,
+  R27_CLIP_DURATION_MS,
+  R27_PHASES,
+  R27RealInputError,
+  isR27ProtectedWindowsPath,
+  validateR27PathArguments,
+  validateR27Probe,
+  buildR27NormalizationSpec,
+  createR27OperationBinding,
+  createR27Ledger,
+  validateR27Ledger,
+  loadOrCreateR27Ledger,
+  verifyR27Artifacts,
+  completeR27Phase,
+  runR27DurablePhase,
+  beginR27Invocation,
+  recordR27Cancellation,
+  r27Status,
+  buildR27GrowthBundleManifest,
+  validateR27GrowthBundleManifest
+} from "./real-input-local-rehearsal-r27.js";
