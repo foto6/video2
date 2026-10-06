@@ -86,6 +86,11 @@
     "r25:candidate4:segment4": "node tools/materialize-r25-candidate4-subphase.mjs --phase segment-4",
     "r25:candidate4:segment5": "node tools/materialize-r25-candidate4-subphase.mjs --phase segment-5",
     "r25:candidate4:segment6": "node tools/materialize-r25-candidate4-subphase.mjs --phase segment-6",
-    "benchmark:r25:candidate4": "node tools/benchmark-r25-candidate4-render-paths.mjs"
+    "benchmark:r25:candidate4": "node tools/benchmark-r25-candidate4-render-paths.mjs",
+    "test:r26": "node --test tests/local-windows-render-gate-r26.test.js",
+    "ci:r26": "npm run test:r26 && node tools/build-r26-ci-evidence.mjs",
+    "local:r26": "node tools/run-r26-local-windows.mjs run",
+    "status:r26": "node tools/run-r26-local-windows.mjs status",
+    "verify:r26": "node tools/run-r26-local-windows.mjs verify"
   }
 }
