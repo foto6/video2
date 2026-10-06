@@ -53,11 +53,11 @@
     },
     "internalManifest": {
       "path": "conformance/media.edit_tournament.r25.v1/manifest.json",
-      "gitBlobSha": "2952634d67220fa137c6794622f6175e50adc88b"
+      "gitBlobSha": "a42bb242e69edc93b70a7483e4aada24c4866e1d"
     },
     "package": {
       "path": "package.json",
-      "gitBlobSha": "84271b233ad69f7647506c059d77328f9f634961"
+      "gitBlobSha": "e5fa0ea94c944fe42cb00ecbcecd1791575cb668"
     },
     "workflow": {
       "path": ".github/workflows/test.yml",
