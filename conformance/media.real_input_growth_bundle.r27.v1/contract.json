@@ -1,0 +1,23 @@
+{
+  "contractVersion": "media.real_input_growth_bundle.r27.v1",
+  "mediaContractId": "media.real_input_local_rehearsal.r27.v1",
+  "purpose": "Sealed local evidence bundle for independent Growth consumption.",
+  "required": [
+    "exact producer SHA",
+    "operation binding digest",
+    "original input hash",
+    "normalized source hash",
+    "four candidate IDs/hashes",
+    "targeted re-edit hash",
+    "final artifact hash",
+    "file hashes"
+  ],
+  "authorityState": "PENDING_INDEPENDENT_QA",
+  "reviewDecisionClass": "DETERMINISTIC_OFFLINE_FIXTURE",
+  "effects": {
+    "providerMutation": false,
+    "browserMutation": false,
+    "socialPublish": false,
+    "liveAuthorization": false
+  }
+}
