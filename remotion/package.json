@@ -1,0 +1,16 @@
+{
+  "name": "@foto6/video-studio-animation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=24"},
+  "dependencies": {
+    "@babel/parser": "8.0.7",
+    "@babel/traverse": "8.0.4",
+    "@remotion/bundler": "4.0.536",
+    "@remotion/renderer": "4.0.536",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.536"
+  }
+}

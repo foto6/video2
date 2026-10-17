@@ -6,8 +6,8 @@ import {spawnSync} from 'node:child_process';
 import {compileFfmpegCommand, captionsToSrt} from './ffmpeg.js';
 import {canonicalizeTimeline} from './timeline.js';
 
-const MODES = new Set(['illustration','motion_graphics','kinetic_text','library_video']);
-const MOTIONS = new Set(['push_in','pull_out','pan_left','pan_right','graphic_build','text_reveal','source_motion']);
+const MODES = new Set(['illustration','motion_graphics','kinetic_text','library_video','code_animation']);
+const MOTIONS = new Set(['push_in','pull_out','pan_left','pan_right','graphic_build','text_reveal','source_motion','procedural_motion']);
 const PRESETS = new Set(['cards','comparison','steps','stat','signal']);
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const fileHash = name => hash(fs.readFileSync(name));
@@ -58,7 +58,8 @@ export function validateShortsBundle(bundle) {
     assert(typeof s.narration==='string'&&s.narration.length<=260,'Narration limit');
     assert(finite(s.voice.voice_seconds,.1,20)&&finite(s.lead_seconds,.05,.5)&&finite(s.tail_seconds,.05,.7),'Invalid measured voice timing');
     assert(['cut','fade'].includes(s.transition),'Invalid transition');
-    assert(!s.requires_object_motion||s.mode==='library_video','Object action cannot be supplied by camera motion');
+    assert(!s.requires_object_motion||['library_video','code_animation'].includes(s.mode),'Object action cannot be supplied by camera motion');
+    if(s.mode==='code_animation')assert(s.motion==='procedural_motion'&&s.asset?.kind==='code_animation'&&typeof s.asset.source==='string'&&s.asset.source_sha256===hash(s.asset.source)&&s.asset.fps===30,'Animation needs authored source and verified render receipt');
     if(s.mode==='illustration')assert(['push_in','pull_out','pan_left','pan_right'].includes(s.motion),'Invalid illustration motion');
     if(s.mode==='library_video')assert(s.motion==='source_motion','Video needs real source motion');
     if(s.mode==='kinetic_text')assert(s.motion==='text_reveal','Invalid text motion');
@@ -89,9 +90,10 @@ export function renderShorts(bundle,output) {
     source(scene.voice);
     const actualVoice=Number(probe(scene.voice.path,output,log).format.duration);
     assert(Math.abs(actualVoice-scene.voice.voice_seconds)<=.04,'Measured voice duration differs from file');
-    if(['illustration','library_video'].includes(scene.mode))source(scene.asset);
+    if(['illustration','library_video','code_animation'].includes(scene.mode))source(scene.asset);
     const frames=Math.ceil((scene.lead_seconds+actualVoice+scene.tail_seconds)*30), duration=frames/30;
-    const sceneKey=hash(JSON.stringify({version:1,scene,style:bundle.style,font_sha256:fileHash(process.platform==='win32'?path.join(process.env.WINDIR??'C:\\Windows','Fonts','arialbd.ttf'):'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf')}));
+    if(scene.mode==='code_animation')assert(scene.asset.frames===frames,'Animation frames do not match measured voice');
+    const sceneKey=hash(JSON.stringify({version:scene.mode==='code_animation'?2:1,scene,style:bundle.style,font_sha256:fileHash(process.platform==='win32'?path.join(process.env.WINDIR??'C:\\Windows','Fonts','arialbd.ttf'):'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf')}));
     const folder=path.join(cache,sceneKey);fs.mkdirSync(folder,{recursive:true});
     const clip=path.join(folder,'clip.mp4'),marker=path.join(folder,'receipt.json');
     let reused=false;
@@ -102,7 +104,13 @@ export function renderShorts(bundle,output) {
     } else {
       const args=['-v','warning','-nostdin','-y'];
       const filters=[];
-      if(scene.mode==='illustration') {
+      if(scene.mode==='code_animation') {
+        args.push('-i',scene.asset.path);
+        // Browser JPEG capture carries full-range/ICC metadata. Normalize the
+        // actual pixels and discard the ICC side data before phone-compatible
+        // limited-range H.264 assembly; format=yuv420p alone retains yuvj420p.
+        filters.push('fps=30','scale=in_range=full:out_range=limited:out_color_matrix=bt709','sidedata=mode=delete:type=ICC_PROFILE','setparams=range=limited:color_primaries=bt709:color_trc=bt709:colorspace=bt709');
+      } else if(scene.mode==='illustration') {
         args.push('-i',scene.asset.path);
         const z=scene.motion==='pull_out'?`1.12-0.1*on/${frames}`:scene.motion==='push_in'?`1.02+0.1*on/${frames}`:'1.12';
         const x=scene.motion==='pan_left'?`(iw-iw/zoom)*(1-on/${frames})`:scene.motion==='pan_right'?`(iw-iw/zoom)*on/${frames}`:'iw/2-iw/zoom/2';
@@ -112,7 +120,7 @@ export function renderShorts(bundle,output) {
         assert(Number(info.format.duration)>=duration,'Source video too short; no silent looping or still substitution');
         args.push('-i',scene.asset.path);
         filters.push('scale=1080:1920:force_original_aspect_ratio=increase','crop=1080:1920','fps=30');
-      } else {
+      } else if(scene.mode!=='code_animation') {
         args.push('-f','lavfi','-i',`color=c=${bg}:s=1080x1920:r=30:d=${duration}`);
         filters.push(`drawbox=x=65:y=270:w=8:h=110:color=${accent}:t=fill`);
       }
@@ -121,7 +129,7 @@ export function renderShorts(bundle,output) {
         const lines=wrap(scene.screen_text,21).split('\n');
         assert(lines.length<=5,'Kinetic text does not fit safe area');
         lines.forEach((line,i)=>filters.push(drawText(folder,'word'+i,line,86,'(w-text_w)/2',`${650+i*135}+35*exp(-5*max(0,t-${i*.2}))`,i%2?accent:fg,`:alpha='min(1,max(0,(t-${i*.2})/.16))'`)));
-      } else {
+      } else if(scene.mode!=='code_animation') {
         filters.push('drawbox=x=0:y=0:w=1080:h=500:color=black@0.4:t=fill');
         filters.push(drawText(folder,'title',wrap(scene.screen_text,25),68,85,285,fg,":shadowcolor=black@0.5:shadowy=3"));
       }
@@ -136,7 +144,7 @@ export function renderShorts(bundle,output) {
         });
       }
       // Finite progress segments provide visible movement without generated expressions.
-      for(let i=0;i<14;i++)filters.push(`drawbox=x=${85+i*65}:y=1680:w=55:h=6:color=${accent}:t=fill:enable='gte(t,${i*duration/14})'`);
+      if(scene.mode!=='code_animation')for(let i=0;i<14;i++)filters.push(`drawbox=x=${85+i*65}:y=1680:w=55:h=6:color=${accent}:t=fill:enable='gte(t,${i*duration/14})'`);
       // Phrase timings are proportional estimates inside measured speech, not word alignment.
       const phrases=wrap(scene.narration,64).split('\n'), weight=phrases.reduce((n,p)=>n+p.length,0);
       let phraseStart=scene.lead_seconds;
@@ -156,7 +164,7 @@ export function renderShorts(bundle,output) {
     videoItems.push({id:scene.beat_id,startMs:cursor,endMs:end,source:{uri:clip,sha256:fileHash(clip)},role:scenes.length?'body':'intro'});
     audioItems.push({id:'voice-'+scene.beat_id,startMs:startVoice,endMs:endVoice,source:{uri:scene.voice.path,sha256:scene.voice.sha256},role:'voiceover',gainDb:0});
     captions.push({id:'caption-'+scene.beat_id,startMs:startVoice,endMs:endVoice,text:scene.narration});
-    scenes.push({beat_id:scene.beat_id,start_seconds:cursor/1000,end_seconds:end/1000,mode:scene.mode,motion:scene.motion,cache_key:sceneKey,reused,clip_sha256:fileHash(clip)});
+    scenes.push({beat_id:scene.beat_id,start_seconds:cursor/1000,end_seconds:end/1000,mode:scene.mode,motion:scene.motion,cache_key:sceneKey,reused,clip_sha256:fileHash(clip),...(scene.mode==='code_animation'?{animation_source_sha256:scene.asset.source_sha256,animation_runtime:scene.asset.runtime}: {})});
     cursor=end;
   }
   assert(cursor<=90000,'Short exceeds 90 seconds');
@@ -168,7 +176,7 @@ export function renderShorts(bundle,output) {
   run('ffmpeg',['-v','error','-xerror','-i','final.mp4','-f','null','-'],output,log);
   const info=probe(path.join(output,'final.mp4'),output,log), v=info.streams.find(s=>s.codec_type==='video'),a=info.streams.find(s=>s.codec_type==='audio');
   const checks={h264:v?.codec_name==='h264',vertical_1080p:v?.width===1080&&v?.height===1920,pixel_format:v?.pix_fmt==='yuv420p',fps:v?.avg_frame_rate==='30/1',aac:a?.codec_name==='aac',duration:Math.abs(Number(info.format.duration)-cursor/1000)<.15,full_decode:true};
-  assert(Object.values(checks).every(Boolean),'Technical QA failed');
+  assert(Object.values(checks).every(Boolean),'Technical QA failed: '+JSON.stringify(checks));
   const audio=audioQa(output,log);
   run('ffmpeg',['-v','error','-y','-i','final.mp4','-vf','scale=360:640','-c:v','libx264','-preset','veryfast','-crf','27','-c:a','aac','-movflags','+faststart','preview.mp4'],output,log);
   for(const [i,s] of scenes.entries())run('ffmpeg',['-v','error','-y','-ss',String((s.start_seconds+s.end_seconds)/2),'-i','final.mp4','-frames:v','1','-vf','scale=270:480',`frame-${i}.jpg`],output,log);

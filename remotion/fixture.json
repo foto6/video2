@@ -1,0 +1,5 @@
+{
+  "frames": 60,
+  "palette": {"background":"#101827","foreground":"#FFFFFF","accent":"#6E8EFF"},
+  "source": "function Scene({frame, fps, width, height, durationInFrames, palette}) { const t=frame/fps; const x=240+600*clamp(frame/(durationInFrames-1)); return <svg width={width} height={height} viewBox=\"0 0 1080 1920\"><rect width={1080} height={1920} fill={palette.background}/><circle cx={x} cy={850+Math.sin(t*4)*100} r={100} fill={palette.accent}/><text x={540} y={450} fill={palette.foreground} textAnchor=\"middle\" fontSize={72}>Проверка движения</text><rect x={150} y={1170} width={780} height={8} fill={palette.foreground}/></svg>; }"
+}
